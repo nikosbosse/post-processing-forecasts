@@ -79,7 +79,13 @@ However, it is of particular interest to know
 These forecasts were submitted to the [European Forecast Hub](https://github.com/epiforecasts/covid19-forecast-hub-europe) by different research institutions. The file contains forecasts as well as true observations. 
 
 ```{r}
-hub_data <- fread("data/full-data-european-forecast-hub.csv")
+hub_data <- rbindlist(
+  list(
+    fread("data/full-data-european-forecast-hub-1.csv"), 
+    fread("data/full-data-european-forecast-hub-2.csv")
+  )
+)
+  
 ```
 
 #### Updating the European Forecast Hub data (probably not necessary)
@@ -158,9 +164,18 @@ prediction_data <- map_dfr(file_paths,
 # merge forecast data and truth data and save
 hub_data <- merge_pred_and_obs(prediction_data, truth, 
                                by = c("location", "target_end_date", 
-                                      "target_type"))
+                                      "target_type")) |>
+  filter(target_end_date >= "2021-01-01") |>
+  select(-location_name, -population, -target)
+  
+# split forecast data into two to reduce file size
+split <- floor(nrow(hub_data) / 2)
 
-fwrite(hub_data, "data/full-data-european-forecast-hub.csv")
+fwrite(hub_data[1:split, ], 
+       file = "data/full-data-european-forecast-hub-1.csv")
+fwrite(hub_data[(split + 1):nrow(hub_data), ], 
+       file = "data/full-data-european-forecast-hub-2.csv")
+
 ```
 
 ## (Possible) Methods

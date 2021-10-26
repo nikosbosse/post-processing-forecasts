@@ -12,7 +12,7 @@ knit: (function(inputFile, encoding) {
 ---
 
 
-```{r setup, include=FALSE}
+```{r setup, include=TRUE}
 knitr::opts_chunk$set(echo = TRUE, 
                       eval = FALSE)
 
@@ -106,7 +106,7 @@ To load the forecasts and truth data and to update the csv files, run
 
 ```{r}
 # load truth data using the covidHubutils package ------------------------------
-devtools::install_github("reichlab/covidHubUtils")
+library(covidHubUtils) # devtools::install_github("reichlab/covidHubUtils")
 
 truth <- covidHubUtils::load_truth(hub = "ECDC") |>
   filter(target_variable %in% c("inc case", "inc death")) |>
@@ -152,6 +152,7 @@ prediction_data <- map_dfr(file_paths,
                              )]
                              return(data)
                            }) %>%
+  filter(grepl("case", target) | grepl("death", target)) %>%
   mutate(target_type = ifelse(grepl("death", target), 
                               "Deaths", "Cases"), 
          horizon = as.numeric(substr(target, 1, 1))) %>%

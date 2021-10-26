@@ -1,63 +1,6 @@
 Post-processing forecasts
 ================
 
-``` r
-knitr::opts_chunk$set(echo = TRUE, 
-                      eval = FALSE)
-
-library(dplyr)
-```
-
-    ## 
-    ## Attaching package: 'dplyr'
-
-    ## The following objects are masked from 'package:stats':
-    ## 
-    ##     filter, lag
-
-    ## The following objects are masked from 'package:base':
-    ## 
-    ##     intersect, setdiff, setequal, union
-
-``` r
-library(here)
-```
-
-    ## here() starts at /mnt/data/github-synced/post-processing-forecasts
-
-``` r
-library(stringr)
-library(data.table)
-```
-
-    ## 
-    ## Attaching package: 'data.table'
-
-    ## The following objects are masked from 'package:dplyr':
-    ## 
-    ##     between, first, last
-
-``` r
-library(scoringutils)
-```
-
-    ## Note: The definition of the weighted interval score has slightly changed in version 0.1.5. If you want to use the old definition, use the argument `count_median_twice = TRUE` in the function `eval_forecasts()`
-
-``` r
-library(purrr)
-```
-
-    ## 
-    ## Attaching package: 'purrr'
-
-    ## The following object is masked from 'package:scoringutils':
-    ## 
-    ##     update_list
-
-    ## The following object is masked from 'package:data.table':
-    ## 
-    ##     transpose
-
 Forecasts of COVID-19, especially forecasts made by humans, often are
 not perfectly calibrated and tend to be systematically over-confident.
 Post-processing may be a way to alleviate this problem and improve

@@ -49,19 +49,20 @@ uk_data <- fread("data/full-data-uk-challenge.csv")
 
 The data has the following columns: 
 
-| Column name        | Column prediction                                                                        |
-|--------------------|---------------------------------------------------------------------------------------------------------------|
-| dailytruth_data    | Daily truth data used for the paper                                                                           |
-| ensemble_members   | Models included in the official hub ensemble                                                                  |
-| ensemble_models    | Names of all ensemble models                                                                                  |
-| epitrend           | Classification of the epidemic into falling, rising etc (not used)                                            |
-| filtered_data      | Pre-filtered data used for the paper (with death forecasts restricted to the period after December 14th 2020) |
-| forecast_dates     | Forecast dates used for the paper                                                                             |
-| locations          | Location and Population Look Up for Germany and Poland                                                        |
-| prediction_data    | Forecast data used for the paper                                                                              |
-| regular_models     | Names of all regular models                                                                                   |
-| truth_data         | Truth data used for the paper                                                                                 |
-| unfiltered_data    | Unfiltered version of the combined prediction and truth data used for the paper                               |
+| location        | Country code                                                                |
+|-----------------|-----------------------------------------------------------------------------|
+| location_name   | Name of the country                                                         |
+| target_end_date | Date for which a forecast was made. This is always a Saturday               |
+| target_type     | The target variable to be predicted, cases or deaths                        |
+| true_value      | The corresponding true observed value                                       |
+| population      | population of the target country                                            |
+| forecast_date   | Date on which a forecast was made. This is always a Monday                  |
+| quantile        | quantile-level of the predictive distribution                               |
+| prediction      | Predicted value corresponding to the quantile-level specified in 'quantile' |
+| model           | Name of the forecaster                                                      |
+| target          | Summary of the prediction target variable (redundant information)           |
+| horizon         | Forecast horizon                                                            |
+| expert          | Whether or not a forecaster self-identified as an expert                    |
 
 Potential difficulties are: 
 

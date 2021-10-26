@@ -1,6 +1,63 @@
 Post-processing forecasts
 ================
 
+``` r
+knitr::opts_chunk$set(echo = TRUE, 
+                      eval = FALSE)
+
+library(dplyr)
+```
+
+    ## 
+    ## Attaching package: 'dplyr'
+
+    ## The following objects are masked from 'package:stats':
+    ## 
+    ##     filter, lag
+
+    ## The following objects are masked from 'package:base':
+    ## 
+    ##     intersect, setdiff, setequal, union
+
+``` r
+library(here)
+```
+
+    ## here() starts at /mnt/data/github-synced/post-processing-forecasts
+
+``` r
+library(stringr)
+library(data.table)
+```
+
+    ## 
+    ## Attaching package: 'data.table'
+
+    ## The following objects are masked from 'package:dplyr':
+    ## 
+    ##     between, first, last
+
+``` r
+library(scoringutils)
+```
+
+    ## Note: The definition of the weighted interval score has slightly changed in version 0.1.5. If you want to use the old definition, use the argument `count_median_twice = TRUE` in the function `eval_forecasts()`
+
+``` r
+library(purrr)
+```
+
+    ## 
+    ## Attaching package: 'purrr'
+
+    ## The following object is masked from 'package:scoringutils':
+    ## 
+    ##     update_list
+
+    ## The following object is masked from 'package:data.table':
+    ## 
+    ##     transpose
+
 Forecasts of COVID-19, especially forecasts made by humans, often are
 not perfectly calibrated and tend to be systematically over-confident.
 Post-processing may be a way to alleviate this problem and improve
@@ -38,19 +95,20 @@ uk_data <- fread("data/full-data-uk-challenge.csv")
 
 The data has the following columns:
 
-| Column name      | Column prediction                                                                                             |
-|------------------|---------------------------------------------------------------------------------------------------------------|
-| dailytruth_data  | Daily truth data used for the paper                                                                           |
-| ensemble_members | Models included in the official hub ensemble                                                                  |
-| ensemble_models  | Names of all ensemble models                                                                                  |
-| epitrend         | Classification of the epidemic into falling, rising etc (not used)                                            |
-| filtered_data    | Pre-filtered data used for the paper (with death forecasts restricted to the period after December 14th 2020) |
-| forecast_dates   | Forecast dates used for the paper                                                                             |
-| locations        | Location and Population Look Up for Germany and Poland                                                        |
-| prediction_data  | Forecast data used for the paper                                                                              |
-| regular_models   | Names of all regular models                                                                                   |
-| truth_data       | Truth data used for the paper                                                                                 |
-| unfiltered_data  | Unfiltered version of the combined prediction and truth data used for the paper                               |
+| location        | Country code                                                                |
+|-----------------|-----------------------------------------------------------------------------|
+| location_name   | Name of the country                                                         |
+| target_end_date | Date for which a forecast was made. This is always a Saturday               |
+| target_type     | The target variable to be predicted, cases or deaths                        |
+| true_value      | The corresponding true observed value                                       |
+| population      | population of the target country                                            |
+| forecast_date   | Date on which a forecast was made. This is always a Monday                  |
+| quantile        | quantile-level of the predictive distribution                               |
+| prediction      | Predicted value corresponding to the quantile-level specified in ‘quantile’ |
+| model           | Name of the forecaster                                                      |
+| target          | Summary of the prediction target variable (redundant information)           |
+| horizon         | Forecast horizon                                                            |
+| expert          | Whether or not a forecaster self-identified as an expert                    |
 
 Potential difficulties are:
 
@@ -73,7 +131,12 @@ different research institutions. The file contains forecasts as well as
 true observations.
 
 ``` r
-hub_data <- fread("data/full-data-european-forecast-hub.csv")
+hub_data <- rbindlist(
+  list(
+    fread("data/full-data-european-forecast-hub-1.csv"), 
+    fread("data/full-data-european-forecast-hub-2.csv")
+  )
+)
 ```
 
 #### Updating the European Forecast Hub data (probably not necessary)
@@ -95,7 +158,7 @@ To load the forecasts and truth data and to update the csv files, run
 
 ``` r
 # load truth data using the covidHubutils package ------------------------------
-devtools::install_github("reichlab/covidHubUtils")
+library(covidHubUtils) # devtools::install_github("reichlab/covidHubUtils")
 
 truth <- covidHubUtils::load_truth(hub = "ECDC") |>
   filter(target_variable %in% c("inc case", "inc death")) |>
@@ -141,6 +204,7 @@ prediction_data <- map_dfr(file_paths,
                              )]
                              return(data)
                            }) %>%
+  filter(grepl("case", target) | grepl("death", target)) %>%
   mutate(target_type = ifelse(grepl("death", target), 
                               "Deaths", "Cases"), 
          horizon = as.numeric(substr(target, 1, 1))) %>%
@@ -153,9 +217,17 @@ prediction_data <- map_dfr(file_paths,
 # merge forecast data and truth data and save
 hub_data <- merge_pred_and_obs(prediction_data, truth, 
                                by = c("location", "target_end_date", 
-                                      "target_type"))
+                                      "target_type")) |>
+  filter(target_end_date >= "2021-01-01") |>
+  select(-location_name, -population, -target)
+  
+# split forecast data into two to reduce file size
+split <- floor(nrow(hub_data) / 2)
 
-fwrite(hub_data, "data/full-data-european-forecast-hub.csv")
+fwrite(hub_data[1:split, ], 
+       file = "data/full-data-european-forecast-hub-1.csv")
+fwrite(hub_data[(split + 1):nrow(hub_data), ], 
+       file = "data/full-data-european-forecast-hub-2.csv")
 ```
 
 ## (Possible) Methods

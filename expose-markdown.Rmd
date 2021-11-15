@@ -10,6 +10,7 @@ output:
     number_sections: TRUE
     latex_engine: pdflatex
     keep_tex: FALSE
+geometry: "margin=3.5cm"
 urlcolor: blue
 ---
 

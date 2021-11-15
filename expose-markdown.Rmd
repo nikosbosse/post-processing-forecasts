@@ -18,21 +18,24 @@ urlcolor: blue
 In forecasting, accurately estimating prediction intervals is essential in order to inform decision making. 
 The coverage rate of prediction intervals may however suffer from numerous sources of bias. 
 A distributional assumption about model errors, unwarranted by the data, might for example distort the interval. 
-Furthermore, models might systematically underestimate uncertainty for out-of-sample data due to overfitting the training set. \
-In order to tackle these issues the literature provides a broad range of post processing techniques intended to adjust prediction intervals by evaluating the *validity*, i.e. the coverage probability as well as the *efficiency*, i.e. the interval size, on separate validation data.
+Furthermore, models might systematically underestimate uncertainty for out-of-sample data due to overfitting the training set. 
+
+In order to tackle these issues the literature provides a broad range of post processing techniques intended to adjust prediction intervals by evaluating the *validity*, i.e. the coverage probability, as well as the *efficiency*, i.e. the interval size, on separate validation data.
 
 
 # Research Question
 
-In our Project, we want to investigate whether post-processing techniques can be used in the context of time series forecasting for Covid-19 infection numbers and deaths. \
-We particularly aim at adjusting prediction intervals created by models submitted to the European Forecast Hub as well as prediction intervals based on the UK Covid-19 Crowd Forecasting Challenge. 
+In our Project, we want to investigate whether post-processing techniques can be used in the context of time series forecasting for Covid-19 infection numbers and deaths. 
+
+We particularly aim at adjusting prediction intervals created by models submitted to the [European Forecast Hub](https://github.com/epiforecasts/covid19-forecast-hub-europe) as well as prediction intervals based on the [UK Covid-19 Crowd Forecasting Challenge](https://www.crowdforecastr.org/2021/05/11/uk-challenge/). 
 The former are interesting as post-processing techniques might offer insights into possible model improvements.
 The latter are of interest as the crowd forecasts perform surprisingly well compared to the model's predictions, yet human forecasts tend to be overly confident resulting in too narrow prediction intervals.
 
 
 # Approach
 
-We want to approach our project by creating an `R` framework in which we can implement various post-processing techniques. 
-In a second step we will use these procedures to adjust prediction intervals by means of time series cross validation. 
-Finally, we aim to evaluate our results and determine for which forecasting approach post processing techniques provided a benefit.
+We want to approach our project by creating an `R` framework in which we can implement various post-processing techniques, starting with [Conformalized Quantile Regression](https://arxiv.org/abs/1905.03222#) [*Romano*, *Patterson*, *Candès* 2019].
+
+In a second step, we will use these procedures to adjust prediction intervals and evaluate the results of post processed predictions by means of time series cross validation. 
+Finally, we aim to evaluate our results in order to determine whether post processing techniques provided a benefit for the different forecasting approaches.
 

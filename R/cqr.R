@@ -15,7 +15,10 @@ compute_scores <- function(y, quantiles_low, quantiles_high) {
 # scores is output vector of compute_scores()
 # alpha is quantile value between 0 and 1
 compute_margin <- function(scores, alpha) {
-  (1 - alpha) * (1 + 1 / length(scores))
+  candidate <- (1 - alpha) * (1 + 1 / length(scores))
+  prob <- ifelse(candidate <= 0, 0, min(candidate, 1))
+  
+  stats::quantile(scores, prob)
 }
 
 
@@ -54,8 +57,8 @@ cqr <- function(alpha, df = NULL, true_value = NULL,
         values_from = .data$prediction
       )
 
-    quantiles_low <- df[stringr::str_glue("{alpha}")]
-    quantiles_high <- df[stringr::str_glue("{1-alpha}")]
+    quantiles_low <- df[[stringr::str_glue("{alpha}")]]
+    quantiles_high <- df[[stringr::str_glue("{1-alpha}")]]
     y <- df$true_value
   }
   # case 2: true values and predicted quantiles are given directly
@@ -89,15 +92,20 @@ cqr <- function(alpha, df = NULL, true_value = NULL,
 # convenience function specific for uk data
 # joins new prediction intervals for all alpha values with original predictions,
 # right now only works for cqr(), maybe generalizable for multiple methods
-collect_predictions <- function(df, method) {
+
+# Probably (?) leads to wrong result right now, since the rows are wrongly aligned
+# after back joining to original data frame!!
+collect_predictions <- function(df, method = c("cqr")) {
+  if (method == "cqr") {
+    fun <- cqr
+  }
+  
   new_predictions <- dplyr::tibble(alpha = unique(df$quantile) |> stats::na.omit()) |>
-    # TODO: generalize next line for any input method
-    purrr::map_dfr(.f = ~ cqr(alpha = .x, df = df) |> purrr::pluck(1)) |>
-    tidyr::pivot_longer(
-      cols = dplyr::everything(),
-      names_to = "quantile", values_to = method
-    ) |>
-    dplyr::mutate(quantile = as.numeric(.data$quantile))
+    dplyr::rowwise() |> 
+    # TODO: generalize next two lines for any input method
+    dplyr::mutate(cqr = list(fun(alpha, df) |> purrr::pluck(1))) |> 
+    tidyr::unnest(cols = cqr) |> 
+    dplyr::rename(quantile = alpha)
 
   df |>
     dplyr::rename(original = .data$prediction) |>

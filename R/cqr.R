@@ -21,7 +21,7 @@ compute_margin <- function(scores, alpha) {
 
 
 #   ____________________________________________________________________________
-#   Main Function                                                           ####
+#   Main Functions                                                          ####
 
 
 #' @examples
@@ -29,17 +29,17 @@ compute_margin <- function(scores, alpha) {
 #' corrected_quantiles <- df |>
 #'   dplyr::filter(model == "epiforecasts-EpiExpert") |>
 #'   cqr(alpha = 0.05)
-#'
 #' lower_bound <- corrected_quantiles$lower_bound
 #' upper_bound <- corrected_quantiles$upper_bound
-#' 
 #' @export
 #'
 #' @importFrom rlang .data
 
 
-# initialize inputs with NULL, such that only alpha is mandatory argument
-# required for compute_margin() independent of input type
+# returns corrected lower quantile and upper quantile predictions for a single
+# alpha value,
+# initializes inputs with NULL such that only alpha is a mandatory argument,
+# alpha value is required for compute_margin() independent of input type
 cqr <- function(alpha, df = NULL, true_value = NULL,
                 quantiles_low = NULL, quantiles_high = NULL) {
 
@@ -51,12 +51,11 @@ cqr <- function(alpha, df = NULL, true_value = NULL,
       dplyr::filter(.data$quantile %in% c(alpha, 1 - alpha)) |>
       tidyr::pivot_wider(
         names_from = .data$quantile,
-        values_from = .data$prediction,
-        names_prefix = "q_"
+        values_from = .data$prediction
       )
 
-    quantiles_low <- df[stringr::str_glue("q_{alpha}")]
-    quantiles_high <- df[stringr::str_glue("q_{1-alpha}")]
+    quantiles_low <- df[stringr::str_glue("{alpha}")]
+    quantiles_high <- df[stringr::str_glue("{1-alpha}")]
     y <- df$true_value
   }
   # case 2: true values and predicted quantiles are given directly
@@ -70,8 +69,43 @@ cqr <- function(alpha, df = NULL, true_value = NULL,
   scores <- compute_scores(y, quantiles_low, quantiles_high)
   margin <- compute_margin(scores, alpha)
 
-  return(list(
+  list(
     lower_bound = quantiles_low - margin,
     upper_bound = quantiles_high + margin
-  ))
+  )
+}
+
+
+#' @examples
+#' df <- read.csv("data/full-data-uk-challenge.csv")
+#' df |>
+#'   dplyr::filter(model == "epiforecasts-EpiExpert") |>
+#'   collect_predictions(method = "cqr")
+#' @export
+#'
+#' @importFrom rlang .data
+
+
+# convenience function specific for uk data
+# joins new prediction intervals for all alpha values with original predictions,
+# right now only works for cqr(), maybe generalizable for multiple methods
+collect_predictions <- function(df, method) {
+  new_predictions <- dplyr::tibble(alpha = unique(df$quantile) |> stats::na.omit()) |>
+    # TODO: generalize next line for any input method
+    purrr::map_dfr(.f = ~ cqr(alpha = .x, df = df) |> purrr::pluck(1)) |>
+    tidyr::pivot_longer(
+      cols = dplyr::everything(),
+      names_to = "quantile", values_to = method
+    ) |>
+    dplyr::mutate(quantile = as.numeric(.data$quantile))
+
+  df |>
+    dplyr::rename(original = .data$prediction) |>
+    dplyr::left_join(new_predictions) |>
+    # TODO: generalize next line for any input method
+    tidyr::pivot_longer(
+      cols = c(.data$original, .data$cqr),
+      names_to = "method", values_to = "prediction"
+    ) |>
+    dplyr::relocate(.data$method, .data$prediction, .after = .data$true_value)
 }

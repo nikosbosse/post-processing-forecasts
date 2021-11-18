@@ -96,17 +96,23 @@ cqr <- function(alpha, df = NULL, true_value = NULL,
 # Probably (?) leads to wrong result right now, since the rows are wrongly aligned
 # after back joining to original data frame!!
 collect_predictions <- function(df, method = c("cqr")) {
+  # relevant if more methods are implemented
   if (method == "cqr") {
     fun <- cqr
   }
   
+  # step 1: returns data frame with two columns (alpha value and new
+  # predictions) with same number of rows as the input dataframe
   new_predictions <- dplyr::tibble(alpha = unique(df$quantile) |> stats::na.omit()) |>
     dplyr::rowwise() |> 
     # TODO: generalize next two lines for any input method
-    dplyr::mutate(cqr = list(fun(alpha, df) |> purrr::pluck(1))) |> 
-    tidyr::unnest(cols = cqr) |> 
-    dplyr::rename(quantile = alpha)
+    dplyr::mutate(cqr = list(fun(.data$alpha, df) |> purrr::pluck(1))) |> 
+    tidyr::unnest(cols = .data$cqr) |> 
+    dplyr::rename(quantile = .data$alpha)
 
+  # step 2: add new predictions as new column to input dataframe (this is the
+  # problemtic step), then transform into long format to evaluate with
+  # eval_forecasts
   df |>
     dplyr::rename(original = .data$prediction) |>
     dplyr::left_join(new_predictions) |>

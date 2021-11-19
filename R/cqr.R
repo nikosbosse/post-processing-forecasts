@@ -123,3 +123,42 @@ collect_predictions <- function(df, method = c("cqr")) {
     ) |>
     dplyr::relocate(.data$method, .data$prediction, .after = .data$true_value)
 }
+
+
+
+
+# implementation much simpler for asymmetric procedure, 
+# combines cqr() and collect_predictions() functions,
+# gives the desired output format with maintaining row alignment,
+# takes data frame as input, returns data frame with doubled number of rows
+
+# df <- read.csv("data/full-data-uk-challenge.csv")
+# df |>
+#   dplyr::filter(model == "epiforecasts-EpiExpert") |>
+#   cqr_simplified()
+
+cqr_simplified <- function(df) {
+  
+  # cqr calculates scores by comparing true value with both lower and upper
+  # quantile,
+  # simplified version compares with only one of them
+  # => different score for 0.01 quantile prediction as for 0.99 quantile prediction
+  scores <- abs(df$true_value - df$prediction)
+  
+  df |>
+    dplyr::rowwise() |>
+    dplyr::mutate(margin = compute_margin(scores, .data$quantile)) |>
+    dplyr::mutate(cqr = dplyr::case_when(
+      .data$quantile < 0.5 ~ .data$prediction - .data$margin,
+      .data$quantile > 0.5 ~ .data$prediction + .data$margin,
+      # TODO: how to handle the median prediction?
+      .data$quantile == 0.5 ~ .data$prediction
+    )) |>
+    dplyr::ungroup() |>
+    dplyr::rename(original = .data$prediction) |>
+    tidyr::pivot_longer(
+      cols = c(.data$original, .data$cqr),
+      names_to = "method", values_to = "prediction"
+    ) |>
+    dplyr::relocate(.data$method, .data$prediction, .after = .data$true_value)
+}

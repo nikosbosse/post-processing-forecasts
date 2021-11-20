@@ -18,6 +18,7 @@ knitr::opts_chunk$set(echo = TRUE,
 
 library(dplyr)
 library(here)
+library(ggplot2)
 library(stringr)
 library(data.table)
 library(scoringutils)
@@ -260,4 +261,19 @@ scores <- eval_forecasts(uk_data,
 
 scores
 ```
+
+Example plot for empirical vs. nominal coverage
+
+```{r}
+scores <- eval_forecasts(uk_data, 
+                         summarise_by = c("model", "target_type", "range"))[]
+
+scores[model == "seb"] |>
+  ggplot(aes(y = coverage, x = range)) +
+  geom_point() + 
+  geom_line() + 
+  facet_wrap(~ target_type)
+
+```
+
 

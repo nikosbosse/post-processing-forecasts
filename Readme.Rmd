@@ -80,7 +80,7 @@ However, it is of particular interest to know
 
 These forecasts were submitted to the [European Forecast Hub](https://github.com/epiforecasts/covid19-forecast-hub-europe) by different research institutions. The file contains forecasts as well as true observations. 
 
-```{r}
+```{r, eval = TRUE}
 hub_data <- rbindlist(
   list(
     fread("data/full-data-european-forecast-hub-1.csv"), 

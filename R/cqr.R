@@ -32,6 +32,7 @@ compute_margin <- function(scores, alpha) {
 # cqr(alpha = 0.05, df)
 
 select_method <- function(method) {
+  # add all methods as named vector
   implemented_methods <- c(cqr = cqr)
   implemented_methods[method]
 }

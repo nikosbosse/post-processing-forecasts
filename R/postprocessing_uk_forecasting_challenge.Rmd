@@ -22,10 +22,12 @@ We have the following variable columns in the data determining a forecasting ser
 - quantiles: 11 quantile pairs, omitting the median estimate
 
 ```{r}
+# TODO: new folder for .Rmd documents, put to build ignore
 library(ggplot2)
 library(postforecasts)
 library(scoringutils)
 
+# TODO: Suggest here package
 setwd("/Users/maherp/Desktop/Universitaet/Goettingen/3_Semester/Statistisches_Praktikum/post-processing-forecasts")
 
 df <- read.csv("data/full-data-uk-challenge.csv")
@@ -61,8 +63,9 @@ quantiles_below_median <- unique(df$quantile)[unique(df$quantile) < 0.5][-1]
 
 df_updated <- df
 
-for (h in horizons){
-  for (q in quantiles_below_median){
+# TODO: Wrap Loop in new function that takes whole data frame as input and returns equally shaped data frame
+for (h in horizons) {
+  for (q in quantiles_below_median) {
     df_updated <- update_predicted_values(df = df_updated, example_model = example_model, t = target_type, h = h, q = q)
   }
 }
@@ -78,7 +81,12 @@ We evaluate the changes in the prediction intervals by using the "scoringutils" 
 scores_original <- eval_forecasts(df, summarise_by = c("model", "target_type"))
 scores_updated <- eval_forecasts(df_updated, summarise_by = c("model", "target_type"))
 
-scores_original[model==example_model & target_type=="Cases"]
-scores_updated[model==example_model & target_type=="Cases"]
-
+scores_original[model == example_model & target_type == "Cases"]
+scores_updated[model == example_model & target_type == "Cases"]
 ```
+
+```{r}
+collect_predictions(original = df, cqr = df_updated) |> 
+  plot_intervals(model = example_model, alpha = 0.05)
+```
+

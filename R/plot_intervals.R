@@ -4,6 +4,7 @@
 # df_new <- df |> dplyr::mutate(prediction = prediction * 2)
 # df_combined <- collect_predictions(original = df, new = df_new)
 # plot_intervals(df = df_combined, model = "epiforecasts-EpiExpert", alpha = 0.05)
+#' @importFrom rlang .data
 
 plot_intervals <- function(df, model = NULL, alpha = 0.05) {
   if (!is.null(model)) {
@@ -13,6 +14,7 @@ plot_intervals <- function(df, model = NULL, alpha = 0.05) {
   df |>
     filter_alpha_sym(alpha = alpha) |>
     mutate_horizon() |>
+    mutate_date() |> 
     tidyr::pivot_wider(names_from = .data$quantile, values_from = .data$prediction) |>
     ggplot2::ggplot(mapping = ggplot2::aes(x = .data$forecast_date)) +
     ggplot2::geom_point(ggplot2::aes(y = .data$true_value), size = 1) +

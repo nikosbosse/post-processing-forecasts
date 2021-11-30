@@ -1,3 +1,5 @@
+#' @importFrom rlang .data
+
 filter_model <- function(df, model) {
   df |> dplyr::filter(.data$model == !!model)
 }
@@ -20,9 +22,14 @@ filter_alpha_asym <- function(df, alphas) {
 }
 
 mutate_horizon <- function(df) {
-  df |> dplyr::mutate(horizon = ifelse(
+  df |> 
+    dplyr::mutate(horizon = ifelse(
     .data$horizon == 1,
     paste(.data$horizon, "week ahead"),
     paste(.data$horizon, "weeks ahead")
   ))
+}
+
+mutate_date <- function(df) {
+  df |> dplyr::mutate(forecast_date = as.Date(.data$forecast_date))
 }

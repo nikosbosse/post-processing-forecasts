@@ -65,7 +65,6 @@ collect_predictions <- function(...) {
 #'   cqr(alpha = 0.05)
 #' lower_bound <- corrected_quantiles$lower_bound
 #' upper_bound <- corrected_quantiles$upper_bound
-#' @export
 #'
 #' @importFrom rlang .data
 

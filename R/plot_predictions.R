@@ -5,6 +5,7 @@
 #   df = df, model = "epiforecasts-EpiExpert",
 #   alphas = c(0.01, seq(0.1, 0.9, 0.1), 0.99)
 # )
+#' @importFrom rlang .data
 
 plot_predictions <- function(df, model = NULL, alphas = c(0.05, 0.5, 0.95)) {
   if (!is.null(model)) {

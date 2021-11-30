@@ -21,7 +21,7 @@ filter_alpha_asym <- function(df, alphas) {
   df |> dplyr::filter(.data$quantile %in% alphas)
 }
 
-mutate_horizon <- function(df) {
+paste_horizon <- function(df) {
   df |> 
     dplyr::mutate(horizon = ifelse(
     .data$horizon == 1,
@@ -30,6 +30,6 @@ mutate_horizon <- function(df) {
   ))
 }
 
-mutate_date <- function(df) {
+change_to_date <- function(df) {
   df |> dplyr::mutate(forecast_date = as.Date(.data$forecast_date))
 }

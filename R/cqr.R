@@ -17,8 +17,39 @@ compute_scores <- function(y, quantiles_low, quantiles_high) {
 compute_margin <- function(scores, alpha) {
   candidate <- (1 - alpha) * (1 + 1 / length(scores))
   prob <- ifelse(candidate <= 0, 0, min(candidate, 1))
-  
+
   stats::quantile(scores, prob)
+}
+
+# internal function that can be used in other functions to select one of
+# multiple implemented methods, takes string of method name as input and returns
+# corresponding function
+
+# example:
+# df <- readr::read_csv(("data/full-data-uk-challenge.csv")) |>
+#   dplyr::filter(stringr::str_detect(model, "epi"))
+# cqr <- select_method("cqr")
+# cqr(alpha = 0.05, df)
+
+select_method <- function(method) {
+  # add all methods as named vector
+  implemented_methods <- c(cqr = cqr)
+  implemented_methods[method]
+}
+
+
+
+# takes any number of data frames of the same size as input and returns combined
+# data frame with added identifier column, each input data frame contains
+# prediction from a different post processing method or the original data
+
+# example:
+# df <- readr::read_csv(("data/full-data-uk-challenge.csv")) |>
+#   dplyr::filter(stringr::str_detect(model, "epi"))
+# collect_predictions(original = df, cqr = df)
+
+collect_predictions <- function(...) {
+  dplyr::bind_rows(..., .id = "method")
 }
 
 
@@ -79,86 +110,91 @@ cqr <- function(alpha, df = NULL, true_value = NULL,
 }
 
 
-#' @examples
-#' df <- read.csv("data/full-data-uk-challenge.csv")
-#' df |>
-#'   dplyr::filter(model == "epiforecasts-EpiExpert") |>
-#'   collect_predictions(method = "cqr")
-#' @export
+
+
+# commented out old functions for fresh start with new approach
 #'
-#' @importFrom rlang .data
-
-
-# convenience function specific for uk data
-# joins new prediction intervals for all alpha values with original predictions,
-# right now only works for cqr(), maybe generalizable for multiple methods
-
-# Probably (?) leads to wrong result right now, since the rows are wrongly aligned
-# after back joining to original data frame!!
-collect_predictions <- function(df, method = c("cqr")) {
-  # relevant if more methods are implemented
-  if (method == "cqr") {
-    fun <- cqr
-  }
-  
-  # step 1: returns data frame with two columns (alpha value and new
-  # predictions) with same number of rows as the input dataframe
-  new_predictions <- dplyr::tibble(alpha = unique(df$quantile) |> stats::na.omit()) |>
-    dplyr::rowwise() |> 
-    # TODO: generalize next two lines for any input method
-    dplyr::mutate(cqr = list(fun(.data$alpha, df) |> purrr::pluck(1))) |> 
-    tidyr::unnest(cols = .data$cqr) |> 
-    dplyr::rename(quantile = .data$alpha)
-
-  # step 2: add new predictions as new column to input dataframe (this is the
-  # problemtic step), then transform into long format to evaluate with
-  # eval_forecasts
-  df |>
-    dplyr::rename(original = .data$prediction) |>
-    dplyr::left_join(new_predictions) |>
-    # TODO: generalize next line for any input method
-    tidyr::pivot_longer(
-      cols = c(.data$original, .data$cqr),
-      names_to = "method", values_to = "prediction"
-    ) |>
-    dplyr::relocate(.data$method, .data$prediction, .after = .data$true_value)
-}
-
-
-
-
-# implementation much simpler for asymmetric procedure, 
-# combines cqr() and collect_predictions() functions,
-# gives the desired output format with maintaining row alignment,
-# takes data frame as input, returns data frame with doubled number of rows
-
-# df <- read.csv("data/full-data-uk-challenge.csv")
-# df |>
-#   dplyr::filter(model == "epiforecasts-EpiExpert") |>
-#   cqr_simplified()
-
-cqr_simplified <- function(df) {
-  
-  # cqr calculates scores by comparing true value with both lower and upper
-  # quantile,
-  # simplified version compares with only one of them
-  # => different score for 0.01 quantile prediction as for 0.99 quantile prediction
-  scores <- abs(df$true_value - df$prediction)
-  
-  df |>
-    dplyr::rowwise() |>
-    dplyr::mutate(margin = compute_margin(scores, .data$quantile)) |>
-    dplyr::mutate(cqr = dplyr::case_when(
-      .data$quantile < 0.5 ~ .data$prediction - .data$margin,
-      .data$quantile > 0.5 ~ .data$prediction + .data$margin,
-      # TODO: how to handle the median prediction?
-      .data$quantile == 0.5 ~ .data$prediction
-    )) |>
-    dplyr::ungroup() |>
-    dplyr::rename(original = .data$prediction) |>
-    tidyr::pivot_longer(
-      cols = c(.data$original, .data$cqr),
-      names_to = "method", values_to = "prediction"
-    ) |>
-    dplyr::relocate(.data$method, .data$prediction, .after = .data$true_value)
-}
+#' #' @examples
+#' #' df <- read.csv("data/full-data-uk-challenge.csv")
+#' #' df |>
+#' #'   dplyr::filter(model == "epiforecasts-EpiExpert") |>
+#' #'   collect_predictions(method = "cqr")
+#' #' @export
+#' #'
+#' #' @importFrom rlang .data
+#'
+#'
+#' # convenience function specific for uk data
+#' # joins new prediction intervals for all alpha values with original predictions,
+#' # right now only works for cqr(), maybe generalizable for multiple methods
+#'
+#' # Probably (?) leads to wrong result right now, since the rows are wrongly aligned
+#' # after back joining to original data frame!!
+#' collect_predictions <- function(df, method = c("cqr")) {
+#'   # relevant if more methods are implemented
+#'   if (method == "cqr") {
+#'     fun <- cqr
+#'   }
+#'
+#'   # step 1: returns data frame with two columns (alpha value and new
+#'   # predictions) with same number of rows as the input dataframe
+#'   new_predictions <- dplyr::tibble(alpha = unique(df$quantile) |> stats::na.omit()) |>
+#'     dplyr::rowwise() |>
+#'     # TODO: generalize next two lines for any input method
+#'     dplyr::mutate(cqr = list(fun(.data$alpha, df) |> purrr::pluck(1))) |>
+#'     tidyr::unnest(cols = .data$cqr) |>
+#'     dplyr::rename(quantile = .data$alpha)
+#'
+#'   # step 2: add new predictions as new column to input dataframe (this is the
+#'   # problemtic step), then transform into long format to evaluate with
+#'   # eval_forecasts
+#'   df |>
+#'     dplyr::rename(original = .data$prediction) |>
+#'     dplyr::left_join(new_predictions) |>
+#'     # TODO: generalize next line for any input method
+#'     tidyr::pivot_longer(
+#'       cols = c(.data$original, .data$cqr),
+#'       names_to = "method", values_to = "prediction"
+#'     ) |>
+#'     dplyr::relocate(.data$method, .data$prediction, .after = .data$true_value)
+#' }
+#'
+#'
+#'
+#'
+#' # implementation much simpler for asymmetric procedure,
+#' # combines cqr() and collect_predictions() functions,
+#' # gives the desired output format with maintaining row alignment,
+#' # takes data frame as input, returns data frame with doubled number of rows
+#'
+#' # df <- read.csv("data/full-data-uk-challenge.csv")
+#' # df |>
+#' #   dplyr::filter(model == "epiforecasts-EpiExpert") |>
+#' #   cqr_simplified()
+#'
+#' cqr_simplified <- function(df) {
+#'
+#'   # cqr calculates scores by comparing true value with both lower and upper
+#'   # quantile,
+#'   # simplified version compares with only one of them
+#'   # => different score for 0.01 quantile prediction as for 0.99 quantile prediction
+#'   scores <- abs(df$true_value - df$prediction)
+#'
+#'   df |>
+#'     dplyr::rowwise() |>
+#'     dplyr::mutate(margin = compute_margin(scores, .data$quantile)) |>
+#'     dplyr::mutate(cqr = dplyr::case_when(
+#'       .data$quantile < 0.5 ~ .data$prediction - .data$margin,
+#'       .data$quantile > 0.5 ~ .data$prediction + .data$margin,
+#'       # TODO: how to handle the median prediction?
+#'       .data$quantile == 0.5 ~ .data$prediction
+#'     )) |>
+#'     dplyr::ungroup() |>
+#'     dplyr::rename(original = .data$prediction) |>
+#'     tidyr::pivot_longer(
+#'       cols = c(.data$original, .data$cqr),
+#'       names_to = "method", values_to = "prediction"
+#'     ) |>
+#'     dplyr::relocate(.data$method, .data$prediction, .after = .data$true_value)
+#' }
+#'

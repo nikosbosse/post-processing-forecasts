@@ -1,0 +1,84 @@
+---
+title: "postprocessing_uk_forecasting_challenge"
+author: "Matthias Herp"
+date: "11/30/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Post Processing UK Forecasting Challenge
+
+This document presents results of post processing forecasting data from the UK Forecasting Challenge. 
+
+#### Loading Packages and Data
+
+We have the following variable columns in the data determining a forecasting series:
+- models: all different forecasters
+- target_type: Cases or Deaths
+- horizons: 1,2,3,4 weeks ahead
+- quantiles: 11 quantile pairs, omitting the median estimate
+
+```{r}
+library(ggplot2)
+library(postforecasts)
+library(scoringutils)
+
+setwd("/Users/maherp/Desktop/Universitaet/Goettingen/3_Semester/Statistisches_Praktikum/post-processing-forecasts")
+
+df <- read.csv("data/full-data-uk-challenge.csv")
+```
+
+## CQR: Conformalized Quantile Regression
+
+The following code applies the cqr to the data. The helper functions "plot_cqr_results" and ""
+
+#### Exploring Results
+
+Our first step is to apply CQR to an example model and provide plots in order to illustrate the updates to the upper and lower boundaries. Note that below, we keep the model, target type and horizon constant and simply change the forecasted quantile. For our illustrated model we choose the ensembled model "epiforecasts-EpiExpert".
+
+```{r}
+example_model <- unique(df$model)[2]
+
+plot_cqr_results(df = df, example_model = example_model, t = "Cases", h = 1, q = 0.025)
+
+plot_cqr_results(df = df, example_model = example_model, t = "Cases", h = 1, q = 0.2)
+
+plot_cqr_results(df = df, example_model = example_model, t = "Cases", h = 1, q = 0.4)
+```
+
+#### Updating Forecasts
+
+As a next step we update all forecasts for one model, the ensembled model "epiforecasts-EpiExpert", regading the target type "Cases" and subsequently compare prediction intervall metrics before and after applying CQR. For the update we loop over all forecasting horizons as well as all quantile pairs. we define a prediction interval pair by its lower boundary quantile. Finally we run a short test at the end which returns us the intitial as well as the updated values by comparing the two dataframes. If the diffrence between the predictions is constant over all observations and changes sign between the upper and lower quantiles this indecates that CQR was applied adequatly.
+
+```{r}
+example_model <- unique(df$model)[2]
+target_type <- "Cases"
+horizons <- unique(df$horizon)[-1]
+quantiles_below_median <- unique(df$quantile)[unique(df$quantile) < 0.5][-1]
+
+df_updated <- df
+
+for (h in horizons){
+  for (q in quantiles_below_median){
+    df_updated <- update_predicted_values(df = df_updated, example_model = example_model, t = target_type, h = h, q = q)
+  }
+}
+
+test_df_updated(df = df, df_updated = df_updated, example_model = example_model, t = "Cases", h = 1, q = 0.025)
+```
+
+#### Evaluating Forecasting Updates
+
+We evaluate the changes in the prediction intervals by using the "scoringutils" package. The main metric we look at is the interval_score. It is defined as: sharpness + underprediction + overprediction. We can see a clear inprovement as the score drops.
+
+```{r}
+scores_original <- eval_forecasts(df, summarise_by = c("model", "target_type"))
+scores_updated <- eval_forecasts(df_updated, summarise_by = c("model", "target_type"))
+
+scores_original[model==example_model & target_type=="Cases"]
+scores_updated[model==example_model & target_type=="Cases"]
+
+```

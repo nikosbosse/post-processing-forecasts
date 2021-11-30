@@ -13,8 +13,8 @@ plot_intervals <- function(df, model = NULL, alpha = 0.05) {
 
   df |>
     filter_alpha_sym(alpha = alpha) |>
-    mutate_horizon() |>
-    mutate_date() |> 
+    paste_horizon() |>
+    change_to_date() |> 
     tidyr::pivot_wider(names_from = .data$quantile, values_from = .data$prediction) |>
     ggplot2::ggplot(mapping = ggplot2::aes(x = .data$forecast_date)) +
     ggplot2::geom_point(ggplot2::aes(y = .data$true_value), size = 1) +

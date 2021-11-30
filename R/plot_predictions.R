@@ -15,7 +15,8 @@ plot_predictions <- function(df, model = NULL, alphas = c(0.05, 0.5, 0.95)) {
 
   df |>
     filter_alpha_asym(alphas) |>
-    mutate_horizon() |>
+    paste_horizon() |>
+    change_to_date() |> 
     ggplot2::ggplot(mapping = ggplot2::aes(x = .data$forecast_date)) +
     ggplot2::geom_line(
       mapping = ggplot2::aes(y = .data$prediction, color = factor(.data$quantile))

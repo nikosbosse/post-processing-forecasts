@@ -79,6 +79,8 @@ cqr <- function(alpha, df = NULL, true_value = NULL,
   # case 1: dataframe and alpha value are given
   # requires columns named 'true_value', 'prediction' and 'quantile', long format
   # and restrictions for alpha value, convenient e.g. for given uk_data
+  
+  # TODO: remove first unnecessary part
   if (!is.null(df)) {
     df <- df |>
       dplyr::filter(.data$quantile %in% c(alpha, 1 - alpha)) |>

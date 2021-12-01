@@ -29,61 +29,55 @@ collect_predictions <- function(...) {
 }
 
 
-# TODO: consistent input name for model
-update_subset <- function(df, method, mod, t, h, q) {
-  ql <- dplyr::filter(
-    df,
-    model == mod & target_type == t & horizon == h & quantile == q
+update_subset <- function(df, method, model, target_type, horizon, quantile) {
+  # for nicer function input names,
+  # input names equal to column names are a little painful with tidyverse functions
+  # => temporary variables with different names
+  mod <- model
+  t <- target_type
+  h <- horizon
+  q <- quantile
+
+  quantiles_low <- dplyr::filter(
+    df, model == mod & target_type == t & horizon == h & quantile == q
   )$prediction
-  qh <- dplyr::filter(
-    df,
-    model == mod & target_type == t & horizon == h & quantile == 1 - q
+  
+  quantiles_high <- dplyr::filter(
+    df, model == mod & target_type == t & horizon == h & quantile == 1 - q
   )$prediction
-  tv <- dplyr::filter(
-    df,
-    model == mod & target_type == t & horizon == h & quantile == q
+  
+  true_values <- dplyr::filter(
+    df, model == mod & target_type == t & horizon == h & quantile == q
   )$true_value
-
-  res <- method(
-    alpha = q * 2, true_values = tv, quantiles_low = ql, quantiles_high = qh
-  )
-
-  ql_updated <- res$lower_bound
-  qh_updated <- res$upper_bound
+  
+  date <- dplyr::filter(
+    df, model == mod & target_type == t & horizon == h & quantile == q
+  )$forecast_date
+  
+  date <- as.Date(date)
+  
+  result <- cqr(quantile * 2, true_values, quantiles_low, quantiles_high)
+  
+  quantiles_low_updated <- result$lower_bound
+  quantiles_high_updated <- result$upper_bound
   
   # TODO: add .data$ in each select of tidyverse stuff. its from rlang. Check how joel did it
   df_updated <- df |>
     dplyr::mutate(prediction = replace(
-<<<<<<< HEAD
       prediction,
       model == mod & target_type == t & horizon == h & quantile == q,
-=======
-      .data$prediction,
-      .data$model == example_model & target_type == t & horizon == h & quantile == q,
->>>>>>> b6bdf581fcb0eae158c61b70fd58a355da47a2da
-      ql_updated
+      values = quantiles_low_updated
     )) |>
     dplyr::mutate(prediction = replace(
       prediction,
       model == mod & target_type == t & horizon == h & quantile == 1 - q,
-      qh_updated
+      values = quantiles_high_updated
     ))
 
   return(df_updated)
 }
 
-# TODO: Joel
-# df <- read.csv("data/full-data-uk-challenge.csv")
-# method <- "cqr"
-# models <- c("epiforecasts-EpiExpert", "ryan")
-#
-# cqr_df <- update_predictions(df, method = method, models = models)
-#
-# # WHY DOESN'T THIS WORK??
-# collect_predictions(original = df, cqr = cqr_df) |>
-#   plot_intervals(model = "epiforecasts-EpiExpert", alpha = 0.05)
 
-# returns updated data frame for vector of input models
 update_predictions <- function(df, method, models) {
   method <- select_method(method = method)
   # make function work for single model
@@ -95,11 +89,11 @@ update_predictions <- function(df, method, models) {
 
   df_updated <- df
 
-  for (mod in models) {
-    for (t in target_types) {
-      for (h in horizons) {
-        for (q in quantiles_below_median) {
-          df_updated <- update_subset(df_updated, method, mod, t, h, q)
+  for (model in models) {
+    for (target_type in target_types) {
+      for (horizon in horizons) {
+        for (quantile in quantiles_below_median) {
+          df_updated <- update_subset(df_updated, method, model, target_type, horizon, quantile)
         }
       }
     }

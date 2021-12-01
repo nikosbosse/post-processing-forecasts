@@ -7,11 +7,11 @@ compute_scores <- function(y, quantiles_low, quantiles_high) {
 }
 
 
-# margin = Q_{1-alpha} values
+# margin = Q_{1-quantile} values
 # scores is output vector of compute_scores()
-# alpha is quantile value between 0 and 1
-compute_margin <- function(scores, alpha) {
-  candidate <- (1 - alpha) * (1 + 1 / length(scores))
+# quantile is quantile value between 0 and 1
+compute_margin <- function(scores, quantile) {
+  candidate <- (1 - quantile) * (1 + 1 / length(scores))
   prob <- ifelse(candidate <= 0, 0, min(candidate, 1))
 
   stats::quantile(scores, prob)
@@ -23,20 +23,20 @@ compute_margin <- function(scores, alpha) {
 #' df <- read.csv("data/full-data-uk-challenge.csv")
 #' corrected_quantiles <- df |>
 #'   dplyr::filter(model == "epiforecasts-EpiExpert") |>
-#'   cqr(alpha = 0.05)
+#'   cqr(quantile = 0.05)
 #' lower_bound <- corrected_quantiles$lower_bound
 #' upper_bound <- corrected_quantiles$upper_bound
 #' @importFrom rlang .data
 
 
 # returns corrected lower quantile and upper quantile predictions for a single
-# alpha value,
-# initializes inputs with NULL such that only alpha is a mandatory argument,
-# alpha value is required for compute_margin() independent of input type
-cqr <- function(alpha, true_values = NULL, quantiles_low = NULL,
+# quantile value,
+# initializes inputs with NULL such that only quantile is a mandatory argument,
+# quantile value is required for compute_margin() independent of input type
+cqr <- function(quantile, true_values = NULL, quantiles_low = NULL,
                 quantiles_high = NULL) {
   scores <- compute_scores(true_values, quantiles_low, quantiles_high)
-  margin <- compute_margin(scores, alpha)
+  margin <- compute_margin(scores, quantile)
 
   list(
     lower_bound = quantiles_low - margin,

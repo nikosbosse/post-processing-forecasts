@@ -4,9 +4,9 @@ filter_model <- function(df, model) {
   df |> dplyr::filter(.data$model == !!model)
 }
 
-filter_alpha_sym <- function(df, alpha) {
-  lower_quantile <- alpha
-  upper_quantile <- 1 - alpha
+filter_alpha_sym <- function(df, quantile) {
+  lower_quantile <- quantile
+  upper_quantile <- 1 - quantile
 
   df |>
     dplyr::filter(.data$quantile %in% c(lower_quantile, upper_quantile)) |>
@@ -17,8 +17,8 @@ filter_alpha_sym <- function(df, alpha) {
       ))
 }
 
-filter_alpha_asym <- function(df, alphas) {
-  df |> dplyr::filter(.data$quantile %in% alphas)
+filter_alpha_asym <- function(df, quantiles) {
+  df |> dplyr::filter(.data$quantile %in% quantiles)
 }
 
 paste_horizon <- function(df) {

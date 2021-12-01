@@ -1,5 +1,3 @@
-# example:
-#
 # df <- readr::read_csv(file = "data/full-data-uk-challenge.csv")
 # plot_quantiles(
 #   df = df, model = "epiforecasts-EpiExpert",
@@ -8,10 +6,10 @@
 #' @importFrom rlang .data
 
 plot_quantiles <- function(df, model = NULL, quantiles = c(0.05, 0.5, 0.95)) {
-  if (!is.null(model)) {
-    df <- filter_model(df, model)
-  }
-
+  
+  l <- validate_model_input(df, model)
+  df <- l$df
+  model <- l$model
 
   df |>
     filter_alpha_asym(quantiles) |>
@@ -46,14 +44,14 @@ plot_quantiles <- function(df, model = NULL, quantiles = c(0.05, 0.5, 0.95)) {
 
 
 
-# TODO: restructure files, make functions pass RCMDCHECK, i.e. namespacing or import from
+# TODO: make functions pass RCMDCHECK, i.e. namespacing or import from
 
-# TODO: consistent theme for all plotting functions
-# TODO: rewrite the function so that inputs are: df, df_updated, example_model, t, h, q. Then add a helper fct for filter in out quantiles_low,quantiles_high,true_values
+# TODO: rewrite the function so that inputs are: df, df_updated, model, target_type, horizon, quantile. Then add a helper fct for filtering out quantiles_low, quantiles_high, true_values
 # This helper function can then also be used in update_subset and thus needs to go in a seperate helper file
-# TODO: change the theme to theme light or minimal, orient on Joels functions
+
+# TODO: change the theme to theme_light() or theme_minimal(), orient on Joels functions
 plot_cqr_results <- function(df, model, target_type, horizon, quantile) {
-  # same as in update_subset() function
+  # same reason as in update_subset() function
   mod <- model
   t <- target_type
   h <- horizon
@@ -82,9 +80,8 @@ plot_cqr_results <- function(df, model, target_type, horizon, quantile) {
   quantiles_low_updated <- result$lower_bound
   quantiles_high_updated <- result$upper_bound
 
-  # TODO: code duplication with update_predicted_values(), extract to own helper
-  # function and call this function in plot_cqr_results() and
-  # update_predicted_values() if plotting function is intended to stay
+  # TODO: code duplication with update_subset(), extract to own helper
+  # function and call this function in plot_cqr_results() and update_subset() 
 
   ggplot2::ggplot() +
     ggplot2::geom_line(
@@ -115,22 +112,19 @@ plot_cqr_results <- function(df, model, target_type, horizon, quantile) {
 
 
 
-# example:
-#
+
 # df <- readr::read_csv(file = "data/full-data-uk-challenge.csv")
 # df_new <- df |> dplyr::mutate(prediction = prediction * 2)
 # df_combined <- collect_predictions(original = df, new = df_new)
 # plot_intervals(df = df_combined, model = "epiforecasts-EpiExpert", quantile = 0.05)
 #' @importFrom rlang .data
 
+# TODO Joel: add option to display horizons or quantiles in columns 
 plot_intervals <- function(df, model = NULL, quantile = 0.05) {
-  # if input "model" is specified
-  if (!is.null(model)) {
-    df <- filter_model(df, model)
-  } else {
-    # input df is already filtered, take only existing model
-    model <- df$model[1]
-  }
+
+  l <- validate_model_input(df, model)
+  df <- l$df
+  model <- l$model
 
   df |>
     filter_alpha_sym(quantile) |>

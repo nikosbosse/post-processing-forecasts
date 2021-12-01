@@ -1,8 +1,3 @@
-# internal function that can be used in other functions to select one of
-# multiple implemented methods, takes string of method name as input and returns
-# corresponding function
-
-# example:
 # df <- readr::read_csv(("data/full-data-uk-challenge.csv")) |>
 #   dplyr::filter(stringr::str_detect(model, "epi"))
 # cqr <- select_method("cqr")
@@ -15,11 +10,7 @@ select_method <- function(method) {
 }
 
 
-# takes any number of data frames of the same size as input and returns combined
-# data frame with added identifier column, each input data frame contains
-# prediction from a different post processing method or the original data
 
-# example:
 # df <- readr::read_csv(("data/full-data-uk-challenge.csv")) |>
 #   dplyr::filter(stringr::str_detect(model, "epi"))
 # collect_predictions(original = df, cqr = df)
@@ -27,6 +18,7 @@ select_method <- function(method) {
 collect_predictions <- function(...) {
   dplyr::bind_rows(..., .id = "method")
 }
+
 
 
 update_subset <- function(df, method, model, target_type, horizon, quantile) {

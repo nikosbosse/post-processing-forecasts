@@ -47,6 +47,7 @@ plot_cqr_results(df = df, example_model = example_model, t = "Cases", h = 1, q =
 plot_cqr_results(df = df, example_model = example_model, t = "Cases", h = 1, q = 0.2)
 
 plot_cqr_results(df = df, example_model = example_model, t = "Cases", h = 1, q = 0.4)
+#TODO: geom_point um beobachtungen zu sehen, legende verbessern
 ```
 
 #### Updating Forecasts
@@ -67,7 +68,7 @@ for (h in horizons) {
     df_updated <- update_subset(df = df_updated, example_model = example_model, t = target_type, h = h, q = q)
   }
 }
-
+# TODO: Rewrite the testfunction as a unittest function
 test_df_updated(df = df, df_updated = df_updated, example_model = example_model, t = "Cases", h = 1, q = 0.025)
 ```
 

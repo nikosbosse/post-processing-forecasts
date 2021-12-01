@@ -7,8 +7,12 @@
 #' @importFrom rlang .data
 
 plot_intervals <- function(df, model = NULL, alpha = 0.05) {
+  # if input "model" is specified
   if (!is.null(model)) {
     df <- filter_model(df, model)
+  } else {
+    # input df is already filtered, take only existing model
+    model <- df$model[1]
   }
 
   df |>

@@ -34,7 +34,7 @@ compute_margin <- function(scores, alpha) {
 select_method <- function(method) {
   # add all methods as named vector
   implemented_methods <- c(cqr = cqr)
-  implemented_methods[method]
+  implemented_methods[[method]]
 }
 
 
@@ -108,92 +108,68 @@ cqr <- function(alpha, df = NULL, true_value = NULL,
   )
 }
 
+# TODO: consistent input name for model 
+update_predicted_values <- function(df, method, example_model, t, h, q) {
+  ql <- dplyr::filter(df, model == example_model & target_type == t & horizon == h & quantile == q)$prediction
+  qh <- dplyr::filter(df, model == example_model & target_type == t & horizon == h & quantile == 1 - q)$prediction
+  tv <- dplyr::filter(df, model == example_model & target_type == t & horizon == h & quantile == q)$true_value
+  
+  # TODO: where are the following two lines used?
+  date <- dplyr::filter(df, model == example_model & target_type == t & horizon == h & quantile == q)$forecast_date
+  date <- as.Date(date)
+  
+  # TODO: replace cqr with general method
+  # res <- method(alpha = q * 2, true_values = tv, quantiles_low = ql, quantiles_high = qh)
+  res <- cqr(alpha = q * 2, true_values = tv, quantiles_low = ql, quantiles_high = qh)
+  
+  ql_updated <- res$lower_bound
+  qh_updated <- res$upper_bound
+  
+  df_updated <- df |>
+    dplyr::mutate(prediction = replace(prediction, model == example_model & target_type == t & horizon == h & quantile == q, ql_updated)) |>
+    dplyr::mutate(prediction = replace(prediction, model == example_model & target_type == t & horizon == h & quantile == 1 - q, qh_updated))
+  
+  # print(cat("Values before for ql: ",ql))
+  # print(cat("Values before for qh: ",qh))
+  #
+  # print(cat("Values after for ql_updated: ",ql_updated))
+  # print(cat("Values after for qh_updated: ",qh_updated))
+  #
+  # print(cat("Difference ql: ",ql_updated-ql))
+  # print(cat("Difference qh: ",qh_updated-qh))
+  
+  return(df_updated)
+}
 
 
+# TODO: Joel
+# df <- read.csv("data/full-data-uk-challenge.csv")
+# method <- "cqr"
+# model <- "epiforecasts-EpiExpert"
+# 
+# cqr_df <- update_predictions(df, method = method, model = model)
+# 
+# # WHY DOESN'T THIS WORK??
+# collect_predictions(original = df, cqr = cqr_df) |> 
+#   plot_intervals(model = model, alpha = 0.05)
 
-# commented out old functions for fresh start with new approach
-#'
-#' #' @examples
-#' #' df <- read.csv("data/full-data-uk-challenge.csv")
-#' #' df |>
-#' #'   dplyr::filter(model == "epiforecasts-EpiExpert") |>
-#' #'   collect_predictions(method = "cqr")
-#' #' @export
-#' #'
-#' #' @importFrom rlang .data
-#'
-#'
-#' # convenience function specific for uk data
-#' # joins new prediction intervals for all alpha values with original predictions,
-#' # right now only works for cqr(), maybe generalizable for multiple methods
-#'
-#' # Probably (?) leads to wrong result right now, since the rows are wrongly aligned
-#' # after back joining to original data frame!!
-#' collect_predictions <- function(df, method = c("cqr")) {
-#'   # relevant if more methods are implemented
-#'   if (method == "cqr") {
-#'     fun <- cqr
-#'   }
-#'
-#'   # step 1: returns data frame with two columns (alpha value and new
-#'   # predictions) with same number of rows as the input dataframe
-#'   new_predictions <- dplyr::tibble(alpha = unique(df$quantile) |> stats::na.omit()) |>
-#'     dplyr::rowwise() |>
-#'     # TODO: generalize next two lines for any input method
-#'     dplyr::mutate(cqr = list(fun(.data$alpha, df) |> purrr::pluck(1))) |>
-#'     tidyr::unnest(cols = .data$cqr) |>
-#'     dplyr::rename(quantile = .data$alpha)
-#'
-#'   # step 2: add new predictions as new column to input dataframe (this is the
-#'   # problemtic step), then transform into long format to evaluate with
-#'   # eval_forecasts
-#'   df |>
-#'     dplyr::rename(original = .data$prediction) |>
-#'     dplyr::left_join(new_predictions) |>
-#'     # TODO: generalize next line for any input method
-#'     tidyr::pivot_longer(
-#'       cols = c(.data$original, .data$cqr),
-#'       names_to = "method", values_to = "prediction"
-#'     ) |>
-#'     dplyr::relocate(.data$method, .data$prediction, .after = .data$true_value)
-#' }
-#'
-#'
-#'
-#'
-#' # implementation much simpler for asymmetric procedure,
-#' # combines cqr() and collect_predictions() functions,
-#' # gives the desired output format with maintaining row alignment,
-#' # takes data frame as input, returns data frame with doubled number of rows
-#'
-#' # df <- read.csv("data/full-data-uk-challenge.csv")
-#' # df |>
-#' #   dplyr::filter(model == "epiforecasts-EpiExpert") |>
-#' #   cqr_simplified()
-#'
-#' cqr_simplified <- function(df) {
-#'
-#'   # cqr calculates scores by comparing true value with both lower and upper
-#'   # quantile,
-#'   # simplified version compares with only one of them
-#'   # => different score for 0.01 quantile prediction as for 0.99 quantile prediction
-#'   scores <- abs(df$true_value - df$prediction)
-#'
-#'   df |>
-#'     dplyr::rowwise() |>
-#'     dplyr::mutate(margin = compute_margin(scores, .data$quantile)) |>
-#'     dplyr::mutate(cqr = dplyr::case_when(
-#'       .data$quantile < 0.5 ~ .data$prediction - .data$margin,
-#'       .data$quantile > 0.5 ~ .data$prediction + .data$margin,
-#'       # TODO: how to handle the median prediction?
-#'       .data$quantile == 0.5 ~ .data$prediction
-#'     )) |>
-#'     dplyr::ungroup() |>
-#'     dplyr::rename(original = .data$prediction) |>
-#'     tidyr::pivot_longer(
-#'       cols = c(.data$original, .data$cqr),
-#'       names_to = "method", values_to = "prediction"
-#'     ) |>
-#'     dplyr::relocate(.data$method, .data$prediction, .after = .data$true_value)
-#' }
-#'
+# returns updated data frame for one specific model
+update_predictions <- function(df, method, model) {
+  method <- select_method(method = method)
+  horizons <- unique(df$horizon)[-1]
+  quantiles_below_median <- unique(df$quantile)[unique(df$quantile) < 0.5][-1]
+  target_types <- unique(df$target_type)
+  
+  # necessary?
+  df_updated <- df
+  
+  for (h in horizons) {
+    for (q in quantiles_below_median) {
+      for (t in target_types) {
+        df_updated <- update_predicted_values(df, method, model, t, h, q)
+      }
+    }
+  }
+  
+  return(df_updated)
+}

@@ -26,11 +26,9 @@ We have the following variable columns in the data determining a forecasting ser
 library(ggplot2)
 library(postforecasts)
 library(scoringutils)
+library(here)
 
-# TODO: Suggest here package
-setwd("/Users/maherp/Desktop/Universitaet/Goettingen/3_Semester/Statistisches_Praktikum/post-processing-forecasts")
-
-df <- read.csv("data/full-data-uk-challenge.csv")
+df <- read.csv(here::here("data","full-data-uk-challenge.csv"))
 ```
 
 ## CQR: Conformalized Quantile Regression

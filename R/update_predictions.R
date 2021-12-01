@@ -35,10 +35,6 @@ update_subset <- function(df, method, example_model, t, h, q) {
   qh <- dplyr::filter(df, model == example_model & target_type == t & horizon == h & quantile == 1 - q)$prediction
   tv <- dplyr::filter(df, model == example_model & target_type == t & horizon == h & quantile == q)$true_value
 
-  # TODO: where are the following two lines used?
-  date <- dplyr::filter(df, model == example_model & target_type == t & horizon == h & quantile == q)$forecast_date
-  date <- as.Date(date)
-
   # TODO: replace cqr with general method
   # res <- method(alpha = q * 2, true_values = tv, quantiles_low = ql, quantiles_high = qh)
   res <- cqr(alpha = q * 2, true_values = tv, quantiles_low = ql, quantiles_high = qh)
@@ -57,15 +53,6 @@ update_subset <- function(df, method, example_model, t, h, q) {
       model == example_model & target_type == t & horizon == h & quantile == 1 - q,
       qh_updated
     ))
-
-  # print(cat("Values before for ql: ",ql))
-  # print(cat("Values before for qh: ",qh))
-  #
-  # print(cat("Values after for ql_updated: ",ql_updated))
-  # print(cat("Values after for qh_updated: ",qh_updated))
-  #
-  # print(cat("Difference ql: ",ql_updated-ql))
-  # print(cat("Difference qh: ",qh_updated-qh))
 
   return(df_updated)
 }

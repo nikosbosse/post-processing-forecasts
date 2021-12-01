@@ -41,11 +41,12 @@ update_subset <- function(df, method, example_model, t, h, q) {
 
   ql_updated <- res$lower_bound
   qh_updated <- res$upper_bound
-
+  
+  # TODO: add .data$ in each select of tidyverse stuff. its from rlang. Check how joel did it
   df_updated <- df |>
     dplyr::mutate(prediction = replace(
-      prediction,
-      model == example_model & target_type == t & horizon == h & quantile == q,
+      .data$prediction,
+      .data$model == example_model & target_type == t & horizon == h & quantile == q,
       ql_updated
     )) |>
     dplyr::mutate(prediction = replace(

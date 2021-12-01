@@ -4,6 +4,18 @@ filter_model <- function(df, model) {
   df |> dplyr::filter(.data$model == !!model)
 }
 
+validate_model_input <- function(df, model) {
+  # if input "model" is specified
+  if (!is.null(model)) {
+    df <- filter_model(df, model)
+  } else {
+    # input df is already filtered, take only existing model
+    model <- df$model[1]
+  }
+  
+  return(list(df = df, model = model))
+}
+
 filter_alpha_sym <- function(df, quantile) {
   lower_quantile <- quantile
   upper_quantile <- 1 - quantile

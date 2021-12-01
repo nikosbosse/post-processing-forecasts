@@ -19,13 +19,12 @@ compute_margin <- function(scores, quantile) {
 
 
 
-#' @examples
-#' df <- read.csv("data/full-data-uk-challenge.csv")
-#' corrected_quantiles <- df |>
-#'   dplyr::filter(model == "epiforecasts-EpiExpert") |>
-#'   cqr(quantile = 0.05)
-#' lower_bound <- corrected_quantiles$lower_bound
-#' upper_bound <- corrected_quantiles$upper_bound
+# df <- read.csv("data/full-data-uk-challenge.csv")
+# corrected_quantiles <- df |>
+#   dplyr::filter(model == "epiforecasts-EpiExpert") |>
+#   cqr(quantile = 0.05)
+# lower_bound <- corrected_quantiles$lower_bound
+# upper_bound <- corrected_quantiles$upper_bound
 #' @importFrom rlang .data
 
 

@@ -30,14 +30,23 @@ collect_predictions <- function(...) {
 
 
 # TODO: consistent input name for model
-update_subset <- function(df, method, example_model, t, h, q) {
-  ql <- dplyr::filter(df, model == example_model & target_type == t & horizon == h & quantile == q)$prediction
-  qh <- dplyr::filter(df, model == example_model & target_type == t & horizon == h & quantile == 1 - q)$prediction
-  tv <- dplyr::filter(df, model == example_model & target_type == t & horizon == h & quantile == q)$true_value
+update_subset <- function(df, method, mod, t, h, q) {
+  ql <- dplyr::filter(
+    df,
+    model == mod & target_type == t & horizon == h & quantile == q
+  )$prediction
+  qh <- dplyr::filter(
+    df,
+    model == mod & target_type == t & horizon == h & quantile == 1 - q
+  )$prediction
+  tv <- dplyr::filter(
+    df,
+    model == mod & target_type == t & horizon == h & quantile == q
+  )$true_value
 
-  # TODO: replace cqr with general method
-  # res <- method(alpha = q * 2, true_values = tv, quantiles_low = ql, quantiles_high = qh)
-  res <- cqr(alpha = q * 2, true_values = tv, quantiles_low = ql, quantiles_high = qh)
+  res <- method(
+    alpha = q * 2, true_values = tv, quantiles_low = ql, quantiles_high = qh
+  )
 
   ql_updated <- res$lower_bound
   qh_updated <- res$upper_bound
@@ -45,12 +54,12 @@ update_subset <- function(df, method, example_model, t, h, q) {
   df_updated <- df |>
     dplyr::mutate(prediction = replace(
       prediction,
-      model == example_model & target_type == t & horizon == h & quantile == q,
+      model == mod & target_type == t & horizon == h & quantile == q,
       ql_updated
     )) |>
     dplyr::mutate(prediction = replace(
       prediction,
-      model == example_model & target_type == t & horizon == h & quantile == 1 - q,
+      model == mod & target_type == t & horizon == h & quantile == 1 - q,
       qh_updated
     ))
 
@@ -61,9 +70,9 @@ update_subset <- function(df, method, example_model, t, h, q) {
 # df <- read.csv("data/full-data-uk-challenge.csv")
 # method <- "cqr"
 # models <- c("epiforecasts-EpiExpert", "ryan")
-# 
+#
 # cqr_df <- update_predictions(df, method = method, models = models)
-# 
+#
 # # WHY DOESN'T THIS WORK??
 # collect_predictions(original = df, cqr = cqr_df) |>
 #   plot_intervals(model = "epiforecasts-EpiExpert", alpha = 0.05)
@@ -78,14 +87,13 @@ update_predictions <- function(df, method, models) {
   quantiles_below_median <- unique(df$quantile)[unique(df$quantile) < 0.5][-1]
   target_types <- unique(df$target_type)
 
-  # necessary?
   df_updated <- df
 
-  for (model in models) {
+  for (mod in models) {
     for (t in target_types) {
       for (h in horizons) {
         for (q in quantiles_below_median) {
-          df_updated <- update_subset(df, method, model, t, h, q)
+          df_updated <- update_subset(df_updated, method, mod, t, h, q)
         }
       }
     }

@@ -26,9 +26,8 @@ We have the following variable columns in the data determining a forecasting ser
 library(ggplot2)
 library(postforecasts)
 library(scoringutils)
-library(here)
 
-df <- read.csv(here::here("data","full-data-uk-challenge.csv"))
+df <- read.csv(here::here("data", "full-data-uk-challenge.csv"))
 ```
 
 ## CQR: Conformalized Quantile Regression
@@ -40,7 +39,7 @@ The following code applies the cqr to the data. The helper functions "plot_cqr_r
 Our first step is to apply CQR to an example model and provide plots in order to illustrate the updates to the upper and lower boundaries. Note that below, we keep the model, target type and horizon constant and simply change the forecasted quantile. For our illustrated model we choose the ensembled model "epiforecasts-EpiExpert".
 
 ```{r}
-example_model <- unique(df$model)[2]
+example_model <-  <- <- <- <- <- <- 
 
 plot_cqr_results(df = df, example_model = example_model, t = "Cases", h = 1, q = 0.025)
 
@@ -55,20 +54,11 @@ As a next step we update all forecasts for one model, the ensembled model "epifo
 
 ```{r}
 example_model <- unique(df$model)[2]
-target_type <- "Cases"
-horizons <- unique(df$horizon)[-1]
-quantiles_below_median <- unique(df$quantile)[unique(df$quantile) < 0.5][-1]
+df_updated <- update_predictions(df, method = "cqr", models = example_model)
 
-df_updated <- df
-
-# TODO: Wrap Loop in new function that takes whole data frame as input and returns equally shaped data frame
-for (h in horizons) {
-  for (q in quantiles_below_median) {
-    df_updated <- update_subset(df = df_updated, example_model = example_model, t = target_type, h = h, q = q)
-  }
-}
-
-test_df_updated(df = df, df_updated = df_updated, example_model = example_model, t = "Cases", h = 1, q = 0.025)
+test_df_updated(
+  df = df, df_updated = df_updated, example_model = example_model, t = "Cases", h = 1, q = 0.025
+  )
 ```
 
 #### Evaluating Forecasting Updates
@@ -76,15 +66,21 @@ test_df_updated(df = df, df_updated = df_updated, example_model = example_model,
 We evaluate the changes in the prediction intervals by using the "scoringutils" package. The main metric we look at is the interval_score. It is defined as: sharpness + underprediction + overprediction. We can see a clear inprovement as the score drops.
 
 ```{r}
-scores_original <- eval_forecasts(df, summarise_by = c("model", "target_type"))
-scores_updated <- eval_forecasts(df_updated, summarise_by = c("model", "target_type"))
+scores_original <- eval_forecasts(data = df, summarise_by = c("model", "target_type"))
+scores_updated <- eval_forecasts(data = df_updated, summarise_by = c("model", "target_type"))
 
 scores_original[model == example_model & target_type == "Cases"]
 scores_updated[model == example_model & target_type == "Cases"]
 ```
 
 ```{r}
-collect_predictions(original = df, cqr = df_updated) |> 
-  plot_intervals(model = example_model, alpha = 0.05)
+combined_df <- collect_predictions(original = df, cqr = df_updated)
+
+scores_combined <- combined_df |>
+  dplyr::filter(model == example_model) |>
+  eval_forecasts(summarise_by = c("method", "model", "target_type"))
+
+scores_combined |> 
+  dplyr::arrange(desc(method))
 ```
 

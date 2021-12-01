@@ -66,7 +66,7 @@ df_updated <- df
 # TODO: Wrap Loop in new function that takes whole data frame as input and returns equally shaped data frame
 for (h in horizons) {
   for (q in quantiles_below_median) {
-    df_updated <- update_predicted_values(df = df_updated, example_model = example_model, t = target_type, h = h, q = q)
+    df_updated <- update_subset(df = df_updated, example_model = example_model, t = target_type, h = h, q = q)
   }
 }
 

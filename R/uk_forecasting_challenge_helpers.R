@@ -1,6 +1,9 @@
 # TODO: restructure files, make functions pass RCMDCHECK, i.e. namespacing or import from
 
 # TODO: consistent theme for all plotting functions
+# TODO: rewrite the function so that inputs are: df, df_updated, example_model, t, h, q. Then add a helper fct for filter in out ql,qh,tv
+# This helper function can then also be used in update_subset and thus needs to go in a seperate helper file
+# TODO: change the theme to theme light or minimal, orient on Joels functions
 plot_cqr_results <- function(df, example_model, t, h, q) {
   ql <- dplyr::filter(df, model == example_model & target_type == t & horizon == h & quantile == q)$prediction
   qh <- dplyr::filter(df, model == example_model & target_type == t & horizon == h & quantile == 1 - q)$prediction

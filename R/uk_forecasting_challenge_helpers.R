@@ -18,15 +18,15 @@ plot_cqr_results <- function(df, example_model, t, h, q) {
   # function and call this function in plot_cqr_results() and
   # update_predicted_values() if plotting function is intended to stay
 
-  ggplot() +
-    geom_line(aes(x = date, y = qh, colour = "qh")) +
-    geom_line(aes(x = date, y = qh_updated, colour = "qh_updated"), linetype = "dashed") +
-    geom_line(aes(x = date, y = tv, colour = "tv")) +
-    geom_line(aes(x = date, y = ql, colour = "ql")) +
-    geom_line(aes(x = date, y = ql_updated, colour = "ql_updated"), linetype = "dashed") +
-    ylab("Values") +
-    xlab("date") +
-    scale_colour_manual("",
+  ggplot2::ggplot() +
+    ggplot2::geom_line(ggplot2::aes(x = date, y = qh, colour = "qh")) +
+    ggplot2::geom_line(ggplot2::aes(x = date, y = qh_updated, colour = "qh_updated"), linetype = "dashed") +
+    ggplot2::geom_line(ggplot2::aes(x = date, y = tv, colour = "tv")) +
+    ggplot2::geom_line(ggplot2::aes(x = date, y = ql, colour = "ql")) +
+    ggplot2::geom_line(ggplot2::aes(x = date, y = ql_updated, colour = "ql_updated"), linetype = "dashed") +
+    ggplot2::ylab("Values") +
+    ggplot2::xlab("date") +
+    ggplot2::scale_colour_manual("",
       breaks = c("qh", "qh_updated", "tv", "ql", "ql_updated"),
       values = c("red", "red", "green", "blue", "blue")
     )

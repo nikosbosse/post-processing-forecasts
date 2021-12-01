@@ -1,0 +1,86 @@
+---
+title: "UK Data Exploration"
+author: "Joel Beck"
+output:
+  bookdown::html_document2:
+    theme: flatly
+    highlight: pygments  # kate
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 2
+    number_sections: FALSE
+    df_print: tibble
+  bookdown::pdf_document2:
+    highlight: tango  # pygments
+    toc: FALSE
+    number_sections: FALSE
+    df_print: tibble
+    latex_engine: pdflatex
+    keep_tex: FALSE
+urlcolor: blue
+---
+
+```{r knitr-opts, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center",
+  out.width = "100%", dpi = 300, fig.asp = 0.618, collapse = TRUE
+)
+```
+
+```{r libraries}
+# temporary and not recommended way, library(postforecasts) imports only functions with @export tag 
+# => requires more complete documentation
+devtools::load_all(".")
+
+library(scoringutils)
+library(dplyr)
+```
+
+# Original Dataframe
+
+```{r}
+df <- read.csv(here::here("data", "full-data-uk-challenge.csv"))
+```
+
+# Plot Original Predictions
+
+```{r}
+model <- "epiforecasts-EpiExpert"
+
+plot_predictions(df, model, alphas = c(0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99))
+```
+
+# Update Predictions
+
+```{r}
+df_updated <- update_predictions(df, method = "cqr", models = model)
+```
+
+# Numerical Analysis
+
+```{r}
+combined_df <- collect_predictions(original = df, cqr = df_updated)
+
+scores_combined <- combined_df |>
+  filter(model == !!model) |>
+  eval_forecasts(summarise_by = c("method", "model", "target_type"))
+
+scores_combined |> 
+  arrange(target_type, desc(method))
+```
+
+# Graphical Analysis
+
+## for given `model`, `target_type`, `horizon` and `quantile`
+
+```{r}
+# interface will change soon
+plot_cqr_results(df, model, t = "Cases", h = 1, q = 0.05)
+```
+
+## for given `model` and `quantile`
+
+```{r}
+plot_intervals(combined_df, model, alpha = 0.05)
+```
+

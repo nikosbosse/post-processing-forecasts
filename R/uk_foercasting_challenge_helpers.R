@@ -33,37 +33,6 @@ plot_cqr_results <- function(df, example_model, t, h, q) {
 }
 
 
-update_predicted_values <- function(df, example_model, t, h, q) {
-  ql <- dplyr::filter(df, model == example_model & target_type == t & horizon == h & quantile == q)$prediction
-  qh <- dplyr::filter(df, model == example_model & target_type == t & horizon == h & quantile == 1 - q)$prediction
-  tv <- dplyr::filter(df, model == example_model & target_type == t & horizon == h & quantile == q)$true_value
-
-  # TODO: where are the following two lines used?
-  date <- dplyr::filter(df, model == example_model & target_type == t & horizon == h & quantile == q)$forecast_date
-  date <- as.Date(date)
-
-  res <- cqr(alpha = q * 2, true_values = tv, quantiles_low = ql, quantiles_high = qh)
-
-  ql_updated <- res$lower_bound
-  qh_updated <- res$upper_bound
-
-  df_updated <- df |>
-    dplyr::mutate(prediction = replace(prediction, model == example_model & target_type == t & horizon == h & quantile == q, ql_updated)) |>
-    dplyr::mutate(prediction = replace(prediction, model == example_model & target_type == t & horizon == h & quantile == 1 - q, qh_updated))
-
-  # print(cat("Values before for ql: ",ql))
-  # print(cat("Values before for qh: ",qh))
-  #
-  # print(cat("Values after for ql_updated: ",ql_updated))
-  # print(cat("Values after for qh_updated: ",qh_updated))
-  #
-  # print(cat("Difference ql: ",ql_updated-ql))
-  # print(cat("Difference qh: ",qh_updated-qh))
-
-  return(df_updated)
-}
-
-
 test_df_updated <- function(df, df_updated, example_model, t, h, q) {
   ql <- dplyr::filter(df, model == example_model & target_type == t & horizon == h & quantile == q)$prediction
   qh <- dplyr::filter(df, model == example_model & target_type == t & horizon == h & quantile == 1 - q)$prediction

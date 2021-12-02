@@ -1,4 +1,4 @@
-df <- read.csv(here::here("data", "full-data-uk-challenge.csv"))
+df <- read.csv("test-data/full-data-uk-challenge.csv")
 model <- "epiforecasts-EpiExpert"
 
 

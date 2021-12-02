@@ -6,6 +6,11 @@
 select_method <- function(method) {
   # add all methods as named vector
   implemented_methods <- c(cqr = cqr)
+  
+  if (!(method %in% names(implemented_methods))) {
+    stop(stringr::str_glue("{method} is not an implemented post processing method."))
+  }
+  
   implemented_methods[[method]]
 }
 
@@ -71,6 +76,11 @@ update_subset <- function(df, method, model, target_type, horizon, quantile) {
 
 
 update_predictions <- function(df, method, models) {
+  
+  if (!all(models %in% unique(df$model))) {
+    stop("At least one of the input models is not contained in the input data frame.")
+  }
+  
   method <- select_method(method = method)
   # make function work for single model
   models <- c(models)

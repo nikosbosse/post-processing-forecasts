@@ -58,9 +58,9 @@ df_updated <- update_predictions(df, method = "cqr", models = model)
 # Numerical Analysis
 
 ```{r}
-combined_df <- collect_predictions(original = df, cqr = df_updated)
+df_combined <- collect_predictions(original = df, cqr = df_updated)
 
-scores_combined <- combined_df |>
+scores_combined <- df_combined |>
   filter(model == !!model) |>
   eval_forecasts(summarise_by = c("method", "model", "target_type"))
 
@@ -80,6 +80,6 @@ plot_cqr_results(df, model, target_type = "Cases", horizon = 1, quantile = 0.05)
 ## for given `model` and `quantile`
 
 ```{r}
-plot_intervals(combined_df, model, quantile = 0.05)
+plot_intervals(df_combined, model, quantile = 0.05)
 ```
 

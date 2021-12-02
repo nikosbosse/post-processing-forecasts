@@ -122,7 +122,7 @@ plot_cqr_results <- function(df, model, target_type, horizon, quantile) {
 # TODO Joel: add option to display horizons or quantiles in columns 
 plot_intervals <- function(df, model = NULL, quantile = 0.05) {
 
-  l <- validate_model_input(df, model)
+  l <- process_model_input(df, model)
   df <- l$df
   model <- l$model
 

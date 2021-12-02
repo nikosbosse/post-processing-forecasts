@@ -1,9 +1,9 @@
 # scores = E_i values
-# y is vector of true values
+# true_values is vector of true values
 # quantiles_low is vector of predicted lower quantiles
 # quantiles_high is vector of predicted upper quantiles
-compute_scores <- function(y, quantiles_low, quantiles_high) {
-  pmax(quantiles_low - y, y - quantiles_high)
+compute_scores <- function(true_values, quantiles_low, quantiles_high) {
+  pmax(quantiles_low - true_values, true_values - quantiles_high)
 }
 
 
@@ -15,7 +15,7 @@ compute_margin <- function(scores, quantile) {
   prob <- ifelse(candidate <= 0, 0, min(candidate, 1))
 
   stats::quantile(scores, prob)
-}                                                      ####
+}
 
 
 
@@ -29,11 +29,8 @@ compute_margin <- function(scores, quantile) {
 
 
 # returns corrected lower quantile and upper quantile predictions for a single
-# quantile value,
-# initializes inputs with NULL such that only quantile is a mandatory argument,
-# quantile value is required for compute_margin() independent of input type
-cqr <- function(quantile, true_values = NULL, quantiles_low = NULL,
-                quantiles_high = NULL) {
+# quantile value
+cqr <- function(quantile, true_values, quantiles_low, quantiles_high) {
   scores <- compute_scores(true_values, quantiles_low, quantiles_high)
   margin <- compute_margin(scores, quantile)
 
@@ -42,5 +39,3 @@ cqr <- function(quantile, true_values = NULL, quantiles_low = NULL,
     upper_bound = quantiles_high + margin
   )
 }
-
-

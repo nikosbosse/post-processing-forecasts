@@ -4,7 +4,7 @@ filter_model <- function(df, model) {
   df |> dplyr::filter(.data$model == !!model)
 }
 
-validate_model_input <- function(df, model) {
+process_model_input <- function(df, model) {
   # if input "model" is specified
   if (!is.null(model)) {
     df <- filter_model(df, model)

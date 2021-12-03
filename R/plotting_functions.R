@@ -118,7 +118,6 @@ plot_cqr_results <- function(df, model, target_type, horizon, quantile) {
 # plot_intervals(df = df_combined, model = "epiforecasts-EpiExpert", quantile = 0.05)
 #' @importFrom rlang .data
 
-# TODO Joel: add option to display horizons or quantiles in columns
 plot_intervals <- function(df, model = NULL, facet_by = c("horizon", "quantile"), quantiles = NULL, horizon = NULL) {
   facet_by <- rlang::arg_match(arg = facet_by, values = c("horizon", "quantile"))
 
@@ -127,29 +126,26 @@ plot_intervals <- function(df, model = NULL, facet_by = c("horizon", "quantile")
   model <- l$model
 
   if (facet_by == "horizon") {
-    default_quantiles <- 0.05
     
     if (is.null(quantiles)) {
-      quantiles <- default_quantiles
+      quantiles <- 0.05
     }
-    
+
     q <- quantiles
     df <- facet_horizon(df, quantiles, horizon)
   } else if (facet_by == "quantile") {
-    default_horizon = 1
-    default_quantiles <- c(0.01, 0.05, 0.1, 0.25)
     
     if (is.null(horizon)) {
-      horizon <- default_horizon
+      horizon <- 1
     }
-    
+
     if (is.null(quantiles)) {
-      quantiles <- default_quantiles
+      quantiles <- c(0.01, 0.05, 0.1, 0.25)
     }
-    
+
     h <- paste_horizon(horizon)
     df <- facet_quantile(df, quantiles, horizon)
-  } 
+  }
 
   p <- df |>
     change_to_date() |>

@@ -1,5 +1,9 @@
 #' @importFrom rlang .data
 
+
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### model column                                                            ####
+
 filter_model <- function(df, model) {
   df |> dplyr::filter(.data$model == !!model)
 }
@@ -17,6 +21,9 @@ process_model_input <- function(df, model) {
 }
 
 
+
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### quantile column                                                         ####
 
 filter_quantiles <- function(df, quantiles) {
   df |> dplyr::filter(.data$quantile %in% quantiles)
@@ -53,6 +60,10 @@ add_quantile_group <- function(df, quantiles) {
 
 
 
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### horizon column                                                          ####
+
+
 filter_horizon <- function(df, horizon) {
   df |> dplyr::filter(.data$horizon == !!horizon)
 }
@@ -71,11 +82,18 @@ mutate_horizon <- function(df) {
 }
 
 
+
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### date column                                                             ####
+
 change_to_date <- function(df) {
   df |> dplyr::mutate(forecast_date = as.Date(.data$forecast_date))
 }
 
 
+
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### facet helpers                                                           ####
 
 facet_horizon <- function(df, quantile, horizon) {
   df |>

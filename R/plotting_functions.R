@@ -6,14 +6,13 @@
 #' @importFrom rlang .data
 
 plot_quantiles <- function(df, model = NULL, quantiles = c(0.05, 0.5, 0.95)) {
-  
-  l <- validate_model_input(df, model)
+  l <- process_model_input(df, model)
   df <- l$df
   model <- l$model
 
   df |>
-    filter_alpha_asym(quantiles) |>
-    paste_horizon() |>
+    filter_quantiles(quantiles) |>
+    mutate_horizon() |>
     change_to_date() |>
     ggplot2::ggplot(mapping = ggplot2::aes(x = .data$forecast_date)) +
     ggplot2::geom_line(
@@ -56,32 +55,32 @@ plot_cqr_results <- function(df, model, target_type, horizon, quantile) {
   t <- target_type
   h <- horizon
   q <- quantile
-  
+
   quantiles_low <- dplyr::filter(
     df, model == mod & target_type == t & horizon == h & quantile == q
   )$prediction
-  
+
   quantiles_high <- dplyr::filter(
     df, model == mod & target_type == t & horizon == h & quantile == 1 - q
   )$prediction
-  
+
   true_values <- dplyr::filter(
     df, model == mod & target_type == t & horizon == h & quantile == q
   )$true_value
-  
+
   date <- dplyr::filter(
     df, model == mod & target_type == t & horizon == h & quantile == q
   )$forecast_date
-  
+
   date <- as.Date(date)
-  
+
   result <- cqr(quantile * 2, true_values, quantiles_low, quantiles_high)
-  
+
   quantiles_low_updated <- result$lower_bound
   quantiles_high_updated <- result$upper_bound
 
   # TODO: code duplication with update_subset(), extract to own helper
-  # function and call this function in plot_cqr_results() and update_subset() 
+  # function and call this function in plot_cqr_results() and update_subset()
 
   ggplot2::ggplot() +
     ggplot2::geom_line(
@@ -119,16 +118,40 @@ plot_cqr_results <- function(df, model, target_type, horizon, quantile) {
 # plot_intervals(df = df_combined, model = "epiforecasts-EpiExpert", quantile = 0.05)
 #' @importFrom rlang .data
 
-# TODO Joel: add option to display horizons or quantiles in columns 
-plot_intervals <- function(df, model = NULL, quantile = 0.05) {
+# TODO Joel: add option to display horizons or quantiles in columns
+plot_intervals <- function(df, model = NULL, facet_by = c("horizon", "quantile"), quantiles = NULL, horizon = NULL) {
+  facet_by <- rlang::arg_match(arg = facet_by, values = c("horizon", "quantile"))
 
   l <- process_model_input(df, model)
   df <- l$df
   model <- l$model
 
-  df |>
-    filter_alpha_sym(quantile) |>
-    paste_horizon() |>
+  if (facet_by == "horizon") {
+    default_quantiles <- 0.05
+    
+    if (is.null(quantiles)) {
+      quantiles <- default_quantiles
+    }
+    
+    q <- quantiles
+    df <- facet_horizon(df, quantiles, horizon)
+  } else if (facet_by == "quantile") {
+    default_horizon = 1
+    default_quantiles <- c(0.01, 0.05, 0.1, 0.25)
+    
+    if (is.null(horizon)) {
+      horizon <- default_horizon
+    }
+    
+    if (is.null(quantiles)) {
+      quantiles <- default_quantiles
+    }
+    
+    h <- paste_horizon(horizon)
+    df <- facet_quantile(df, quantiles, horizon)
+  } 
+
+  p <- df |>
     change_to_date() |>
     tidyr::pivot_wider(names_from = .data$quantile, values_from = .data$prediction) |>
     ggplot2::ggplot(mapping = ggplot2::aes(x = .data$forecast_date)) +
@@ -138,15 +161,9 @@ plot_intervals <- function(df, model = NULL, quantile = 0.05) {
       ggplot2::aes(ymin = .data$lower, ymax = .data$upper, color = .data$method),
       position = ggplot2::position_dodge2(padding = 0.01)
     ) +
-    ggplot2::facet_grid(
-      rows = ggplot2::vars(.data$target_type),
-      cols = ggplot2::vars(.data$horizon),
-      scales = "free_y"
-    ) +
     ggplot2::scale_color_brewer(palette = "Set1") +
     ggplot2::labs(
       x = NULL, y = NULL, color = NULL,
-      title = stringr::str_glue("Prediction Intervals for {model} model at level {quantile}"),
       subtitle = "Prediction methods separated by color"
     ) +
     ggplot2::theme_light() +
@@ -155,4 +172,27 @@ plot_intervals <- function(df, model = NULL, quantile = 0.05) {
       plot.subtitle = ggplot2::element_text(hjust = 0.5),
       legend.position = "top"
     )
+
+  if (facet_by == "horizon") {
+    p <- p +
+      ggplot2::facet_grid(
+        rows = ggplot2::vars(.data$target_type),
+        cols = ggplot2::vars(.data$horizon),
+        scales = "free_y"
+      ) +
+      ggplot2::ggtitle(
+        stringr::str_glue("Prediction Intervals for {model} model at level {q}")
+      )
+  } else if (facet_by == "quantile") {
+    p <- p +
+      ggplot2::facet_grid(
+        rows = ggplot2::vars(.data$target_type),
+        cols = ggplot2::vars(.data$quantile_group),
+        scales = "free_y"
+      ) +
+      ggplot2::ggtitle(
+        stringr::str_glue("Prediction Intervals for {model} model {h}")
+      )
+  }
+  return(p)
 }

@@ -1,11 +1,13 @@
 df <- read.csv("test-data/full-data-uk-challenge.csv")
+tbl <- readr::read_csv("test-data/full-data-uk-challenge.csv")
 model <- "epiforecasts-EpiExpert"
 
 
 #   ____________________________________________________________________________
 #   Tests for update_subset()                                               ####
 
-df_subset <- update_subset(df,
+df_subset <- update_subset(
+  df,
   method = "cqr", model = model,
   target_type = "Cases", horizon = 1, quantile = 0.01
 )
@@ -17,6 +19,17 @@ test_that("dimensions of updated data frame are correct", {
 test_that("prediction column is updated", {
   expect_false(all(df$prediction == df_subset$prediction))
 })
+
+test_that("works for tibble object", {
+  tbl_subset <- update_subset(
+    tbl,
+    method = "cqr", model = model,
+    target_type = "Cases", horizon = 1, quantile = 0.01
+  )
+
+  expect_equal(dim(tbl), dim(tbl_subset))
+})
+
 
 
 

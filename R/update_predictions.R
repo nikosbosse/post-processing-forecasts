@@ -25,7 +25,7 @@ collect_predictions <- function(...) {
 }
 
 
-
+# TODO: fails unit test when data is imported with tidyverse readr::read_csv()
 update_subset <- function(df, method, model, target_type, horizon, quantile) {
   # for nicer function input names,
   # input names equal to column names are a little painful with tidyverse functions

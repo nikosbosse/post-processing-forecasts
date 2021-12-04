@@ -150,6 +150,10 @@ plot_intervals <- function(df, model = NULL, facet_by = c("horizon", "quantile")
   p <- df |>
     change_to_date() |>
     tidyr::pivot_wider(names_from = .data$quantile, values_from = .data$prediction) |>
+    # TODO: Consider target_end_date column instead of forecast column in functions,
+    # more consistent with European Forecast Hub Data
+    # target_end_date same for all models, but different forecast dates for each
+    # target_end_date
     ggplot2::ggplot(mapping = ggplot2::aes(x = .data$forecast_date)) +
     ggplot2::geom_point(ggplot2::aes(y = .data$true_value), size = 1) +
     ggplot2::geom_line(ggplot2::aes(y = .data$true_value)) +

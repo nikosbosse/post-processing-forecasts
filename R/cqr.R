@@ -36,6 +36,7 @@ cqr <- function(quantile, true_values, quantiles_low, quantiles_high) {
 
   list(
     lower_bound = quantiles_low - margin,
-    upper_bound = quantiles_high + margin
+    upper_bound = quantiles_high + margin,
+    margin = margin
   )
 }

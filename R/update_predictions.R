@@ -85,9 +85,9 @@ update_predictions <- function(df, method, models) {
   # make function work for single model
   models <- c(models)
 
-  horizons <- unique(df$horizon)[-1]
-  quantiles_below_median <- unique(df$quantile)[unique(df$quantile) < 0.5][-1]
-  target_types <- unique(df$target_type)
+  horizons <- na.omit(unique(df$horizon))
+  quantiles_below_median <- na.omit(unique(df$quantile)[unique(df$quantile) < 0.5])
+  target_types <- na.omit(unique(df$target_type))
 
   df_updated <- df
 

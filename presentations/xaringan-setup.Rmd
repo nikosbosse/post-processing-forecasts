@@ -1,0 +1,380 @@
+<!-- General Layout & Workflow -->
+<!-- ----------------------------------------------------------------------- -->
+
+<!-- 
+build pdf slides with the xaringanBuilder package 
+use e.g. xaringanBuilder::build_pdf(input = "file-path", partial_slides = TRUE, complex_slides = FALSE, keep_intermediates = TRUE) 
+-->
+
+<!-- 
+Slide Classes:
+
+- top, middle, bottom
+- left, center, right
+- inverse
+
+- background-image: url(link)
+- background-size: cover | contain
+- background-position: center
+
+- name
+- template
+- layout: true | false
+- count: false
+- seal: true | false (create title slide from YAML header)
+
+
+Content Classes:
+
+- .left[], .center[], .right[] (alignment)
+- .left-column[], .right-column[] (positioning, unequal width)
+- .pull-left[], .pull-right[] (positioning, equal width)
+- .footnote[]
+- .color[]
+- custom classes defined in CSS code chunks, 
+e.g. .tiny[], .small[], .medium[], .large[], .huge[]
+
+
+Colors:
+- Color Scheme Generator: https://coolors.co/
+- Google Color Picker
+
+Images:
+- Background Images: https://unsplash.com/
+
+Fonts:
+- Google Fonts: https://fonts.google.com/
+
+Emojis:
+- Find Emoji Name: https://emojipedia.org/
+- Use Ermoji Addin to get Unicode Symbol or R Code for emo package
+- emo Package: https://github.com/hadley/emo 
+
+Icons:
+- icon Package: https://pkg.mitchelloharawild.com/icons/
+
+Embedding:
+- Images and Gifs: usual Markdown Syntax ![]() or html syntax <iframe></iframe>
+- Youtube Videos: Click 'Teilen => Einbetten' below the video, can also control the starting time of the video
+- Example: <iframe width="800" height="400" src="link" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+-->
+
+
+<!-- Settings for xaringanthemer & xaringanExtra -->
+<!-- ----------------------------------------------------------------------- -->
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### xaringanthemer                                                          ####
+
+library(xaringanthemer)
+
+style_mono_accent(
+  # colors
+  base_color = "#374785",
+  text_color = darken_color("#8E8D8A", 0.5),
+  white_color = lighten_color("#C2CAD0", 0.95),
+  code_inline_color = "#969ca3",
+  code_inline_background_color = "#f0f2f0",
+  link_color = "black",
+  footnote_color = "black",
+  code_highlight_color = "#EEEE00",
+
+  # font style
+  header_font_google = google_font("Noto Sans"),
+  text_font_google = google_font("Karla", "300", "300i"),
+  code_font_google = google_font("Cascadia Code"),
+
+  # font size
+  base_font_size = "20px",
+  text_font_size = "1.2em",
+  code_font_size = "0.6em",
+  footnote_font_size = "0.6em",
+
+  # footnotes
+  footnote_position_bottom = "20px",
+  link_decoration = "underline",
+
+  # custom color classes
+  # use with e.g. .blue[text]
+  colors = c(
+    blue = "#23395b",
+    red = "#f34213",
+    purple = "#3e2f5b",
+    orange = "#ff8811",
+    green = "#00EE00",
+    white = "#FFFFFF"
+  )
+)
+
+
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### xaringanExtra                                                           ####
+
+library(xaringanExtra)
+
+# press 'o' to activate and exit tile view
+use_tile_view()
+
+use_panelset()
+
+# set slide class 'hide_logo' to hide logo on particular slides
+# Does NOT work right now :(, alternative solution with additional html file
+# see comments in YAML Header
+
+# use_logo(
+#   image_url = "uni-logo.png",
+#   position = xaringanExtra::css_position(top = "1em", right = "1em")
+# )
+
+use_search(
+  position = "bottom-left", case_sensitive = FALSE,
+  show_icon = FALSE, auto_search = FALSE
+)
+# style_search()
+
+use_tachyons()
+
+use_fit_screen()
+
+use_extra_styles(
+  hover_code_line = TRUE,
+  mute_unhighlighted_code = FALSE
+)
+
+use_progress_bar(color = "#0051BA", location = "bottom", height = "10%")
+```
+
+
+<!-- CSS Classes taken from Garrick Aiden-Buie's Blog -->
+<!-- ----------------------------------------------------------------------- -->
+
+```{css, echo=FALSE}
+/* 
+This code highlights the last item in an incremental list 
+Add 'class: highlight-last-item' or 'class: bold-last-item' to slide 
+*/
+
+.highlight-last-item > ul > li, 
+.highlight-last-item > ol > li {
+  opacity: 0.5;
+}
+
+.highlight-last-item > ul > li:last-of-type,
+.highlight-last-item > ol > li:last-of-type {
+  opacity: 1;
+}
+
+.bold-last-item > ul > li:last-of-type,
+.bold-last-item > ol > li:last-of-type {
+  font-weight: bold;
+}
+
+/* fixes positioning of double .pull-left[] on same slide */
+.pull-right ~ * { clear: unset; }
+.pull-right + * { clear: both; }
+```
+
+<!-- 
+CSS Changes in CSS code chunks **and** inside of <style> tags apply to the **entire** document, indpendent of their location.
+To apply changes only to the current slide, create new CSS class and put text into enclosing brackets.
+
+Thus, <style> tags are NOT necessary for xaringan !!
+-->
+
+
+<!-- CSS Classes taken from Thomas Mock -->
+<!-- https://github.com/jthomasmock/tidymodels-workshops/blob/master/tidymodels-intro-phil.Rmd -->
+<!-- ----------------------------------------------------------------------- -->
+
+```{css, echo=FALSE}
+.hljs-github .hjls {
+  background: black;
+}
+
+/* font size categories for text and code */
+.size-60 {
+  font-size: 60%;
+}
+.size-60 pre .remark-code {
+  font-size: 60%;
+}
+.size-60 .remark-code {
+  font-size: 60%;
+}
+
+.size-70 {
+  font-size: 70%;
+}
+.size-70 pre .remark-code {
+  font-size: 70%;
+}
+.size-70 .remark-code {
+  font-size: 70%;
+}
+
+.size-80 {
+  font-size: 80%;
+}
+.size-80 pre .remark-code {
+  font-size: 80%;
+}
+.size-80 .remark-code {
+  font-size: 80%;
+}
+
+.size-90 {
+  font-size: 90%;
+}
+.size-90 pre .remark-code {
+  font-size: 90%;
+}
+.size-90 .remark-code {
+  font-size: 90%;
+}
+
+.size-100 {
+  font-size: 100%;
+}
+.size-100 pre .remark-code {
+  font-size: 100%;
+}
+.size-100 .remark-code {
+  font-size: 100%;
+}
+
+.size-110 {
+  font-size: 110%;
+}
+.size-110 pre .remark-code {
+  font-size: 110%;
+}
+.size-110 .remark-code {
+  font-size: 110%;
+}
+
+.size-120 {
+  font-size: 120%;
+}
+.size-120 pre .remark-code {
+  font-size: 120%;
+}
+.size-120 .remark-code {
+  font-size: 120%;
+}
+
+.size-130 {
+  font-size: 130%;
+}
+.size-130 pre .remark-code {
+  font-size: 130%;
+}
+.size-130 .remark-code {
+  font-size: 130%;
+}
+
+.size-140 {
+  font-size: 140%;
+}
+.size-140 pre .remark-code {
+  font-size: 140%;
+}
+.size-140 .remark-code {
+  font-size: 140%;
+}
+
+.size-150 {
+  font-size: 150%;
+}
+.size-150 pre .remark-code {
+  font-size: 150%;
+}
+.size-150 .remark-code {
+  font-size: 150%;
+}
+
+.remark-slide thead, .remark-slide tr:nth-child(2n) {
+  background-color: white;
+}
+.remark-slide thead, .remark-slide tr:nth-child(2n) {
+  background-color: white;
+}
+
+/* footer specifications */
+div.my-footer {
+    background-color: #1a1917;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    height: 20px;
+    width: 100%;
+}
+div.my-footer span {
+    font-size: 10pt;
+    color: #F7F8FA;
+    position: absolute;
+    left: 15px;
+    bottom: 2px;
+}
+```
+
+
+<!-- Custom CSS Classes -->
+<!-- ----------------------------------------------------------------------- -->
+
+```{css, echo=FALSE}
+.bold {
+  font-weight: bold;
+}
+
+.underline {
+  text-decoration: underline;  
+}
+
+.mono {
+  font-family: 'Fira Mono', monospace;
+}
+
+/* make left and right column horizontally aligned */
+.right-column {
+  padding-top: 0;
+}
+
+/* 
+The first two commands change the background of the input code block,
+the repeated commands with the star change the background of the output code block
+
+With special name .remark-code this is set as the new default, add custom prefix ( e.g. .grey-code-bg .remark-code) to leave the default unchanged
+*/
+.remark-code, .remark-code * {
+    background-color: #f0f2f0;
+}
+```
+
+
+<!-- Code Chunk Options -->
+<!-- ----------------------------------------------------------------------- -->
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+
+knitr::opts_chunk$set(
+  fig.width = 9, fig.height = 3.5, fig.retina = 3, out.width = "100%",
+  cache = FALSE, echo = TRUE, message = FALSE, warning = FALSE, 
+  hiline = TRUE, dpi = 300
+)
+```
+
+
+<!-- Example First Slide for Link Footer -->
+<!-- ----------------------------------------------------------------------- -->
+
+<!-- layout: true -->
+
+<!-- <div class="my-footer"><span>text</span></div> -->
+
+<!-- this adds the link footer to all slides, depends on my-footer class in css-->
+
+<!-- --- -->

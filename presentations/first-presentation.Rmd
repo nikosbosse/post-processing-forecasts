@@ -50,8 +50,6 @@ https://www.crowdforecastr.org/2021/05/11/uk-challenge/ <br>
 https://epiforecasts.io/uk-challenge/
 ]
 
---
-
 - Predict Number of Covid-19 Cases and Deaths for the next 4 weeks in the United Kingdom
 
 --
@@ -65,6 +63,11 @@ https://epiforecasts.io/uk-challenge/
 ---
 
 ## Motivation:<br>UK Covid-19 Crowd Forecasting Challenge
+
+.footnote[ 
+https://www.crowdforecastr.org/2021/05/11/uk-challenge/ <br>
+https://epiforecasts.io/uk-challenge/
+]
 
 - Idea: Compare forecasts from humans with model-based predictions
 
@@ -108,8 +111,6 @@ df_subset |>
 ## European Forecast Hub
 
 .footnote[https://covid19forecasthub.eu/index.html]
-
---
 
 .left-column.size-80[
 
@@ -303,7 +304,7 @@ class: center, middle, inverse
 --
 
 - Analysis of which methods perform best. 
-Is this dependent on characteristics of the data such as sample size or forecast horizon
+Is this dependent on characteristics of the data such as sample size or forecast horizon?
 
 --
 
@@ -343,13 +344,4 @@ Tibshirani R. (2019). Advances and Challenges in Conformal Inference. *Carnegie 
 - Website: https://covid19forecasthub.eu/index.html
 
 - GitHub: https://github.com/epiforecasts/covid19-forecast-hub-europe
-
-
-
-
-
-
-
-
-
 

@@ -62,17 +62,17 @@ update_subset <- function(df, method, model, target_type, horizon, quantile, tra
   }
   
   # Splitting into the case of training and validation set or only a training set
-  # The reason is that if training_length == len(true_values) then we dont issues in the quantiles_low[training_length+1:len(quantiles_low)]
+  # The reason is that if training_length == lenngth(true_values) then we dont issues in the quantiles_low[training_length+1:len(quantiles_low)]
   # functionality. e.g. c(1,2,3,4)[5:4] returns  NA  4
-  if (training_length < len(true_values)){
+  if (training_length < length(true_values)){
     result <- cqr(quantile * 2, 
                   true_values[1:training_length], 
                   quantiles_low[1:training_length], 
                   quantiles_high[1:training_length])
     
-    margin <- results$margin
-    quantiles_low_updated <- c(result$lower_bound, quantiles_low[training_length+1:len(quantiles_low)] - margin)
-    quantiles_high_updated <- c(result$upper_bound, quantiles_high[training_length+1:len(quantiles_high)] + margin)
+    margin <- result$margin
+    quantiles_low_updated <- c(result$lower_bound, (quantiles_low[(training_length+1):length(quantiles_low)] - margin))
+    quantiles_high_updated <- c(result$upper_bound, (quantiles_high[(training_length+1):length(quantiles_high)] + margin))
     
   } else{
     result <- cqr(quantile * 2, 
@@ -80,7 +80,7 @@ update_subset <- function(df, method, model, target_type, horizon, quantile, tra
                   quantiles_low, 
                   quantiles_high)
     
-    margin <- results$margin
+    margin <- result$margin
     quantiles_low_updated <- result$lower_bound
     quantiles_high_updated <- result$upper_bound
     

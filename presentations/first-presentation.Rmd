@@ -1,0 +1,347 @@
+---
+title: "Post-Processing COVID-19 Forecasts"
+subtitle: "- First Presentation -<br><br>"
+author: "Matthias Herp & Joel Beck"
+date: "10.12.2021"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    nature:
+      slideNumberFormat: "%current% / %total%"
+      beforeInit: "https://platform.twitter.com/widgets.js"
+      # List of highlighting styles: https://highlightjs.org/static/demo/
+      # not all of them work with xaringan
+      highlightStyle: github
+      highlightLines: true
+      highlightSpans: true
+      ratio: 16:9
+      countIncrementalSlides: false
+    # Adds logo to all slides except title slide
+    # set slide class 'hide_logo' to hide logo on particular slides
+    # modify insert-logo.html file with correct file path to logo and desired 
+    # logo position 
+    # https://www.garrickadenbuie.com/blog/xaringan-tip-logo-all-slides/
+    # includes:
+    #   after_body: insert-logo.html
+---
+<!-- here classes for second slide -->
+
+```{r, child="xaringan-setup.Rmd", echo=FALSE}
+
+```
+
+```{r, include=FALSE}
+devtools::load_all(".")
+
+library(scoringutils)
+library(dplyr)
+library(DT)
+
+df <- read.csv(here::here("data", "full-data-uk-challenge.csv"))
+df_subset <- slice_sample(df, n = 50)
+```
+
+<!-- here content of second slide -->
+
+## Motivation:<br>UK Covid-19 Crowd Forecasting Challenge
+
+.footnote[ 
+https://www.crowdforecastr.org/2021/05/11/uk-challenge/ <br>
+https://epiforecasts.io/uk-challenge/
+]
+
+- Predict Number of Covid-19 Cases and Deaths for the next 4 weeks in the United Kingdom
+
+--
+
+- Submission of weekly predictions via an interactive web application
+
+--
+
+- Part of ongoing research project by the **epiforecasts** group of the London School of Hygiene & Tropical Medicine that our project partner Nikos Bosse is actively part of due to his PHD in Epidemiology
+
+---
+
+## Motivation:<br>UK Covid-19 Crowd Forecasting Challenge
+
+.footnote[ 
+https://www.crowdforecastr.org/2021/05/11/uk-challenge/ <br>
+https://epiforecasts.io/uk-challenge/
+]
+
+- Idea: Compare forecasts from humans with model-based predictions
+
+--
+
+- Empirically human forecasts are surprisingly competitive and in some cases even better than statistical models 
+
+--
+
+- This is mostly true for **point** forecasts, prediction **intervals** are often chosen too narrow, i.e. humans tend to be too confident in their own predictions
+
+--
+
+- Goal: Use valuable information from point forecasts and adjust prediction intervals / quantile forecasts with an appropriate correction procedure  
+
+---
+
+## Motivation:<br>UK Covid-19 Crowd Forecasting Challenge
+
+.size-80[
+
+```{r, echo=FALSE}
+df_subset |> 
+  select(-target) |> 
+  datatable(
+    rownames = FALSE,
+    filter = "top",
+    fillContainer = FALSE,
+    options = list(
+      scrollX = TRUE,
+      pageLength = 4,
+      autoWidth = TRUE
+      )
+  )
+```
+
+]
+
+---
+
+## European Forecast Hub
+
+.footnote[https://covid19forecasthub.eu/index.html]
+
+.left-column.size-80[
+
+<br>
+<br>
+
+- UK Data only contains few observations over time span of 13 weeks
+
+- European Forecast Hub provides data with forecasts from international research groups for many European Countries over a longer time horizon
+
+] 
+
+.right-column[
+![](Images/european-forecast-hub.png) 
+<!-- <img src="Images/european-forecast-hub.png" alt="" width="1000" height="500">   -->
+]
+
+
+---
+class: inverse, center, middle
+
+# Post Processing 
+
+---
+
+## Idea
+
+- Adjust Forecasts based on performance metrics on out-of-sample data
+
+--
+
+-  Split in 3 separate data sets:
+
+    - **Training:** Build Forecast Model to make quantile predictions
+    - **Validation:** Use predictions to determine potential hyperparameters of post-processing method
+    - **Test:** Evaluate Adjusted Predictions compared to original predictions
+  
+--
+    
+- In our case the data already contains quantile predictions such that step 1 is not required
+
+--
+
+- **Important:** We do **not** build a prediction model ourselves. <br>
+Instead we take existing predictions as input and output adjusted / processed forecasts.
+
+---
+
+## Methods
+
+Many post-processing methods available, including
+
+--
+
+- **Conformalized Quantile Regression**: 
+
+    Focus of Today
+
+--
+
+- **Quantile Regression Averaging**: 
+
+    For given quantile level $\alpha$, new prediction is a weighted average of multiple existing predictions from different models. 
+    The individual contributions, i.e. the weights, are chosen to minimize a chosen loss function.
+
+---
+
+## Methods
+
+- **Quantile Spread Adjustment**: 
+
+    Assumes multiplicative relationship between quantile levels, e.g. $q_{0.9} = \lambda_{0.9} \cdot q_{0.8} = \lambda_{0.8} \cdot q_{0.8}$ with potentially different factors $\lambda_{\alpha}$. <br>
+    Too conservative quantile predictions can thus be corrected by choosing larger multiplicative factors in the tails of the predictive distribution. 
+
+--
+
+- More detailed overview given in **README** Page of Project's GitHub Repository: <br> https://github.com/nikosbosse/post-processing-forecasts
+
+---
+
+
+## Evaluation
+
+- Based on **Weighted Interval Score** 
+
+.center.bold[WIS = Sharpness + Overprediction + Underprediction]
+
+--
+
+- For a given quantile level $\alpha$ and observed value $y$, the score is computed as
+
+$$
+Score_\alpha(y) = (u-l) + \frac{2}{\alpha} \cdot (l-y) \cdot \mathbf{1} (y \leq l) + \frac{2}{\alpha} \cdot (y-u) \cdot \mathbf{1}(y \geq u)
+$$
+
+--
+
+- The Score of the entire model can be obtained from a weighted average over all (included) quantile levels $\alpha$  
+
+--
+
+- Implemented in the .mono[**eval_forecasts()**] function of the .mono[**scoringutils**] R package written by Nikos
+
+---
+class: inverse, middle, center
+
+# Conformalized Quantile Regression
+
+---
+
+# The .mono[postforecasts] package `r emo::ji("package")`
+
+- Structured and unifying framework for implementing various post-processing techniques
+
+--
+
+- Aims to establish consistent workflow for a collection of processing methods 
+
+--
+
+- Convenient comparison between methods and choice of the best method for the data of interest
+
+---
+
+## Overview of original Data
+
+```{r echo=FALSE, fig.height=4}
+model <- "epiforecasts-EpiExpert"
+plot_quantiles(df, model, quantiles = c(0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99))
+```
+
+---
+
+## Adjust Predictions with Conformalized Quantile Regression
+
+.size-90[
+
+```{r}
+model <- "epiforecasts-EpiExpert"
+
+df_updated <- update_predictions(
+  df, 
+  method = "cqr",   # ideally same interface for alternative methods
+  models = model    # can be used for collection of different models
+)
+
+df_combined <- collect_predictions(original = df, cqr = df_updated)
+```
+
+]
+
+---
+
+## Evaluate Predictions
+
+.size-90[
+
+```{r}
+df_combined |>
+  filter(model == !!model) |>
+  eval_forecasts(summarise_by = c("method", "model", "target_type")) |> 
+  select(method, target_type:overprediction) |> 
+  arrange(target_type, desc(method))
+```
+
+]
+
+---
+
+## Compare Predictions Visually
+
+```{r fig.height=4, echo=FALSE}
+plot_intervals(df_combined, model, facet_by = "quantile", quantiles = c(0.05, 0.1, 0.25))
+```
+
+---
+class: center, middle, inverse
+
+# What's next?
+
+---
+
+## Many possible directions 
+
+- Extension / Refinement of QCR Method with asymmetric and/or multiplicative approach
+
+--
+
+- Implementation of further Post-Processing methods
+
+--
+
+- Analysis of which methods perform best. 
+Is this dependent on characteristics of the data such as sample size or forecast horizon?
+
+--
+
+- Construct new Post-Processing method as Ensemble Model of individual processing techniques
+
+---
+
+## References
+
+**Traditional CQR Method**
+
+Romano Y., Patterson E., and Candès E. (2019). Conformalized Quantile Regression. *NeurIPS Annual Conference on Neural Information Processing Systems*.
+  - Paper: https://proceedings.neurips.cc/paper/2019/file/5103c3584b063c431bd1268e9b5e76fb-Paper.pdf
+  
+  - Poster: https://github.com/yromano/cqr/blob/master/poster/CQR_Poster.pdf
+
+<br>
+
+**Variations and Extensions of CQR**
+
+Tibshirani R. (2019). Advances and Challenges in Conformal Inference. *Carnegie Mellon University*.
+  - Slides: .underline[www.stat.cmu.edu/~ryantibs/talks/conformal-2019.pdf]
+
+---
+
+## References
+
+**More Information about UK Covid-19 Forecasting Challenge**
+
+- Website: https://www.crowdforecastr.org/2021/05/11/uk-challenge/
+
+- Evaluation & Ranking: https://epiforecasts.io/uk-challenge/
+
+
+**More Information about European Forecasting Hub**
+
+- Website: https://covid19forecasthub.eu/index.html
+
+- GitHub: https://github.com/epiforecasts/covid19-forecast-hub-europe
+

@@ -1,0 +1,98 @@
+---
+title: "EU Forecasting Hub Exploration"
+author: "Joel Beck"
+output:
+  bookdown::html_document2:
+    theme: flatly
+    highlight: pygments  # kate
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 2
+    number_sections: FALSE
+    df_print: tibble
+  bookdown::pdf_document2:
+    highlight: tango  # pygments
+    toc: FALSE
+    number_sections: FALSE
+    df_print: tibble
+    latex_engine: pdflatex
+    keep_tex: FALSE
+urlcolor: blue
+---
+
+```{r knitr-opts, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center",
+  out.width = "100%", dpi = 300, fig.asp = 0.618, collapse = TRUE
+)
+```
+
+```{r libraries}
+# temporary and not recommended way, library(postforecasts) imports only functions with @export tag 
+# => requires more complete documentation
+devtools::load_all(".")
+
+library(scoringutils)
+library(dplyr)
+```
+
+# Original Dataframe
+
+We use the updated Dataframe.
+
+```{r}
+df <- read.csv(here::here("data", "full-data-european-forecast-hub-2.csv"))
+```
+
+# Plot Original Predictions
+
+```{r}
+model <- "epiforecasts-EpiExpert"
+plot_quantiles(df, model, quantiles = c(0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99))
+```
+
+# Update Predictions
+
+We update the prediction values over a set of different train and validation sets and store the results in a new dataframe for later analysis.
+
+```{r}
+# unique(df$model)
+df_save <- cross_validation(df=df, models=c("epiforecasts-EpiExpert"),
+                            method="cqr", training_lengths=seq(40,73,1))
+
+write.csv(df_save,here::here("data", "full-data-european-forecast-hub-2-updated-epiforecasts-EpiExpert.csv"), row.names = FALSE)
+```
+ 
+# Numerical Analysis
+
+```{r}
+
+scores_combined <- df_save |>
+  filter(model == !!model) |>
+  eval_forecasts(summarise_by = c("method", "model", "target_type"))
+
+scores_combined |> 
+  arrange(target_type, desc(method))
+```
+
+# Graphical Analysis
+
+## for given `model`, `target_type`, `horizon` and `quantile`
+
+```{r}
+# interface will change soon
+plot_cqr_results(df, model, target_type = "Cases", horizon = 1, quantile = 0.05)
+```
+
+## for given `model` and `quantile` and different `horizons`
+
+```{r}
+plot_intervals(df_combined, model, facet_by = "horizon")
+```
+
+## for given `model` and `horizon` and different `quantiles`
+
+```{r}
+plot_intervals(df_combined, model, facet_by = "quantile")
+```
+

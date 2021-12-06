@@ -24,28 +24,28 @@ test_that("custom quantiles input works", {
 
 
 #   ____________________________________________________________________________
-#   Tests for plot_intervals()                                              ####
+#   Tests for plot_intervals_grid()                                              ####
 
 test_that("default arguments work", {
-  expect_error(plot_intervals(df_combined, model), NA)
-  expect_error(plot_intervals(df_combined, model, facet_by = "horizon"), NA)
-  expect_error(plot_intervals(df_combined, model, facet_by = "quantile"), NA)
+  expect_error(plot_intervals_grid(df_combined, model), NA)
+  expect_error(plot_intervals_grid(df_combined, model, facet_by = "horizon"), NA)
+  expect_error(plot_intervals_grid(df_combined, model, facet_by = "quantile"), NA)
 })
 
 test_that("inputs for faceting by horizon work", {
   expect_error(
-    plot_intervals(df_combined, model, facet_by = "horizon", quantiles = 0.25),
+    plot_intervals_grid(df_combined, model, facet_by = "horizon", quantiles = 0.25),
     NA
   )
 })
 
 test_that("inputs for faceting by quantile work", {
   expect_error(
-    plot_intervals(df_combined, model, facet_by = "quantile", horizon = 3),
+    plot_intervals_grid(df_combined, model, facet_by = "quantile", horizon = 3),
     NA
   )
   expect_error(
-    plot_intervals(
+    plot_intervals_grid(
       df_combined, model,
       facet_by = "quantile", quantiles = c(0.01, 0.1, 0.25), horizon = 4
     ),

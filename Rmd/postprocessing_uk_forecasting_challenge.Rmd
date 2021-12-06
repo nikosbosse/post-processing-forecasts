@@ -22,7 +22,7 @@ We have the following variable columns in the data determining a forecasting ser
 - quantiles: 11 quantile pairs, omitting the median estimate
 
 ```{r}
-# temporary and not recommended way, library(postforecasts) imports only functions with @export tag 
+# temporary and not recommended way, library(postforecasts) imports only functions with @export tag
 # => requires more complete documentation
 devtools::load_all(".")
 library(scoringutils)
@@ -46,7 +46,7 @@ plot_cqr_results(df = df, model = model, target_type = "Cases", horizon = 1, qua
 plot_cqr_results(df = df, model = model, target_type = "Cases", horizon = 1, quantile = 0.2)
 
 plot_cqr_results(df = df, model = model, target_type = "Cases", horizon = 1, quantile = 0.4)
-#TODO: geom_point um beobachtungen zu sehen, legende verbessern
+# TODO: geom_point um beobachtungen zu sehen, legende verbessern
 ```
 
 #### Updating Forecasts
@@ -57,9 +57,9 @@ As a next step we update all forecasts for one model, the ensembled model "epifo
 df_updated <- update_predictions(df, method = "cqr", models = model)
 
 test_df_updated(
-  df = df, df_updated = df_updated, example_model = model, 
+  df = df, df_updated = df_updated, example_model = model,
   t = "Cases", h = 1, q = 0.025
-  )
+)
 ```
 
 #### Evaluating Forecasting Updates
@@ -73,4 +73,3 @@ scores_updated <- eval_forecasts(data = df_updated, summarise_by = c("model", "t
 scores_original[model == model & target_type == "Cases"]
 scores_updated[model == model & target_type == "Cases"]
 ```
-

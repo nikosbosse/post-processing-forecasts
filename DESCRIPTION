@@ -35,6 +35,7 @@ Imports:
     tidyr,
     stringr,
     forcats,
+    lubridate,
     scales,
     rlang
 Suggests: 

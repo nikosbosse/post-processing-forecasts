@@ -20,7 +20,7 @@ filter_models <- function(df, model) {
 process_model_input <- function(df, model) {
   # if input "model" is specified
   if (!is.null(model)) {
-    df <- filter_model(df, model)
+    df <- filter_models(df, model)
   } else {
     # input df is already filtered, take only existing model
     model <- df$model[1]

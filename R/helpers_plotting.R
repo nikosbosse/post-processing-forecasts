@@ -8,7 +8,7 @@ facet_horizon <- function(df, quantile, horizon) {
 
 facet_quantile <- function(df, quantiles, horizon) {
   df |> 
-    filter_horizon(horizon) |> 
+    filter_horizons(horizon) |> 
     filter_quantile_pairs(quantiles) |> 
     add_quantile_group(quantiles)
 }

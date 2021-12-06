@@ -36,6 +36,7 @@ update_subset <- function(df, method, model, target_type, horizon, quantile, tra
   q <- quantile
   
   # To make sure that the predictions and true_values are in the correct order we also arrange by the target_end_date
+  #TODO: quantiles_low and true_values into one function as we basically do the same just pic a different variable
   quantiles_low <- dplyr::filter(
     df, model == mod & target_type == t & horizon == h & quantile == q 
   ) |> dplyr::arrange(target_end_date) |> dplyr::pull(prediction)
@@ -48,13 +49,6 @@ update_subset <- function(df, method, model, target_type, horizon, quantile, tra
     df, model == mod & target_type == t & horizon == h & quantile == q
   ) |> dplyr::arrange(target_end_date) |> dplyr::pull(true_value)
   
-  #TODO: discuss if date is not required and thus can be deleted here.
-  #date <- dplyr::filter(
-  #  df, model == mod & target_type == t & horizon == h & quantile == q
-  #)$forecast_date
-  
-  #date <- as.Date(date)
-  
   # By default the training length is equal to this string and therefor equal to the complete data.
   # e.g. by default not training and validation set
   if (training_length =="complete_data"){
@@ -65,7 +59,7 @@ update_subset <- function(df, method, model, target_type, horizon, quantile, tra
   # The reason is that if training_length == lenngth(true_values) then we dont issues in the quantiles_low[training_length+1:len(quantiles_low)]
   # functionality. e.g. c(1,2,3,4)[5:4] returns  NA  4
   if (training_length < length(true_values)){
-    result <- cqr(quantile * 2, 
+    result <- method(quantile * 2, #method was cqr in prior version
                   true_values[1:training_length], 
                   quantiles_low[1:training_length], 
                   quantiles_high[1:training_length])
@@ -75,7 +69,7 @@ update_subset <- function(df, method, model, target_type, horizon, quantile, tra
     quantiles_high_updated <- c(result$upper_bound, (quantiles_high[(training_length+1):length(quantiles_high)] + margin))
     
   } else{
-    result <- cqr(quantile * 2, 
+    result <- method(quantile * 2, #method was cqr in prior version
                   true_values, 
                   quantiles_low, 
                   quantiles_high)
@@ -109,12 +103,6 @@ update_predictions <- function(df, method, models, training_length = "complete_d
   if (!all(models %in% unique(df$model))) {
     stop("At least one of the input models is not contained in the input data frame.")
   }
-  
-  # We make sure the target_end_date used to sort the df is a date.
-  # This is required so that the observations are in the correct order so that training and validation set
-  # can be correctly identified in the update_subset
-  df <- df |> dplyr::mutate(target_end_date = as.Date(target_end_date, "%d-%m-%Y")) 
-  
   
   method <- select_method(method = method)
   # make function work for single model

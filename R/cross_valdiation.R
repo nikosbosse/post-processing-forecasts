@@ -2,7 +2,6 @@
 
 #TODO: Decide how to name the method and where to store the info about the length of the training set: additional column for the training length
 #TODO: Decide how to handle location variable. we will handle location like we handle models, it is passed as list from crossval to update_predictions where we loop over locations
-#TODO: Fix the issue that the updated dataframe has NA in target_end_date for all cqr methods
 #TODO: Decide in which format to store the information as the file gets very large very fast: we keep this format but we filter the df passed so that we only consider models and locations that are looped over. this makes each of the df smaller. the filtering in a small helper function 
 
 

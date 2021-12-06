@@ -160,18 +160,17 @@ Instead we take existing predictions as input and output adjusted / processed fo
 ---
 
 ## Methods
-<!-- All methods on one slide TODO -->
  
 Many post-processing methods available, including
 
 --
 
-- **Conformalized Quantile Regression**: 
+- **Conformalized Quantile Regression**: <br>
     Focus of Today
 
 --
 
-- **Quantile Regression Averaging**: 
+- **Quantile Regression Averaging**: <br>
     For given quantile level $\alpha$, new prediction is a weighted average of multiple existing predictions from different models. 
     The individual contributions, i.e. the weights, are chosen to minimize a chosen loss function.
 
@@ -179,9 +178,9 @@ Many post-processing methods available, including
 
 ## Methods
 
-- **Quantile Spread Adjustment**: 
-  Assumes multiplicative relationship between quantile levels, e.g. $q_{0.9} = \lambda_{0.9} \cdot q_{0.8} = \lambda_{0.8} \cdot q_{0.8}$ with potentially different factors $\lambda_{\alpha}$. <br>
-  Too conservative quantile predictions can thus be corrected by choosing larger multiplicative factors in the tails of the predictive distribution. 
+- **Quantile Spread Adjustment**: <br>
+    Assumes multiplicative relationship between quantile levels, e.g. $q_{0.9} = \lambda_{0.9} \cdot q_{0.8} = \lambda_{0.8} \cdot q_{0.8}$ with potentially different factors $\lambda_{\alpha}$. <br>
+    Too conservative quantile predictions can thus be corrected by choosing larger multiplicative factors in the tails of the predictive distribution. 
 
 --
 
@@ -268,7 +267,7 @@ df_combined <- collect_predictions(original = df, cqr = df_updated)
 
 ```{r}
 df_combined |>
-  filter(model == !!model) |>
+  filter_models(model) |>
   eval_forecasts(summarise_by = c("method", "model", "target_type")) |> 
   select(method, target_type:overprediction) |> 
   arrange(target_type, desc(method))

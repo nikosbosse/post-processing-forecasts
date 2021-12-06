@@ -160,19 +160,18 @@ Instead we take existing predictions as input and output adjusted / processed fo
 ---
 
 ## Methods
-
+<!-- All methods on one slide TODO -->
+ 
 Many post-processing methods available, including
 
 --
 
 - **Conformalized Quantile Regression**: 
-
     Focus of Today
 
 --
 
 - **Quantile Regression Averaging**: 
-
     For given quantile level $\alpha$, new prediction is a weighted average of multiple existing predictions from different models. 
     The individual contributions, i.e. the weights, are chosen to minimize a chosen loss function.
 
@@ -181,9 +180,8 @@ Many post-processing methods available, including
 ## Methods
 
 - **Quantile Spread Adjustment**: 
-
-    Assumes multiplicative relationship between quantile levels, e.g. $q_{0.9} = \lambda_{0.9} \cdot q_{0.8} = \lambda_{0.8} \cdot q_{0.8}$ with potentially different factors $\lambda_{\alpha}$. <br>
-    Too conservative quantile predictions can thus be corrected by choosing larger multiplicative factors in the tails of the predictive distribution. 
+  Assumes multiplicative relationship between quantile levels, e.g. $q_{0.9} = \lambda_{0.9} \cdot q_{0.8} = \lambda_{0.8} \cdot q_{0.8}$ with potentially different factors $\lambda_{\alpha}$. <br>
+  Too conservative quantile predictions can thus be corrected by choosing larger multiplicative factors in the tails of the predictive distribution. 
 
 --
 
@@ -196,7 +194,7 @@ Many post-processing methods available, including
 
 - Based on **Weighted Interval Score** 
 
-.center.bold[WIS = Sharpness + Overprediction + Underprediction]
+.center.bold[WIS = Sharpness + Underprediction + Overprediction]
 
 --
 
@@ -304,7 +302,7 @@ class: center, middle, inverse
 --
 
 - Analysis of which methods perform best. 
-Is this dependent on characteristics of the data such as sample size or forecast horizon?
+Is this dependent on characteristics of the data such as sample size, forecast horizon or prediction model?
 
 --
 

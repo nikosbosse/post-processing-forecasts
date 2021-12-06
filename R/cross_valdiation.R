@@ -2,17 +2,21 @@
 
 #TODO: Decide how to name the method and where to store the info about the length of the training set: additional column for the training length
 #TODO: Decide how to handle location variable. we will handle location like we handle models, it is passed as list from crossval to update_predictions where we loop over locations
-#TODO: Decide in which format to store the information as the file gets very large very fast: we keep this format but we filter the df passed so that we only consider models and locations that are looped over. this makes each of the df smaller. the filtering in a small helper function 
 
+cross_validation <- function(df, models, locations, method, training_lengths){
 
-cross_validation <- function(df, models, method, training_lengths){
+  # Filtering out all models and locations that are not updated
+  df <- df |> 
+    filter_models(models) |> 
+    filter_locations(locations)
+    
   
   # We make sure the target_end_date used to sort the df is a date.
   # This is required so that the observations are in the correct order so that training and validation set
   # can be correctly identified in the update_subset
   df <- df |> dplyr::mutate(target_end_date = lubridate::ymd(target_end_date)) 
   
-  # Defining a new dataframe holding the original vlaues which is marked by the method column.
+  # Defining a new dataframe holding the original values which is marked by the method column.
   # The following loop appends to this dataframe.
   df_save <- df
   df_save["method"] <- "original"
@@ -33,4 +37,3 @@ cross_validation <- function(df, models, method, training_lengths){
   }
   return(df_save)
 }
-

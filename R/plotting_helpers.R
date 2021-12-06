@@ -63,7 +63,6 @@ add_quantile_group <- function(df, quantiles) {
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### horizon column                                                          ####
 
-
 filter_horizon <- function(df, horizon) {
   df |> dplyr::filter(.data$horizon == !!horizon)
 }
@@ -84,10 +83,19 @@ mutate_horizon <- function(df) {
 
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### target_type column                                                      ####
+
+filter_target_type <- function(df, target_type) {
+  df |> dplyr::filter(.data$target_type == !!target_type)
+}
+
+
+
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### date column                                                             ####
 
 change_to_date <- function(df) {
-  df |> dplyr::mutate(forecast_date = as.Date(.data$forecast_date))
+  df |> dplyr::mutate(target_end_date = as.Date(.data$target_end_date))
 }
 
 

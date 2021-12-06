@@ -105,7 +105,49 @@ plot_cqr_results <- function(df, model, target_type, horizon, quantile) {
 
 #' @importFrom rlang .data
 
-plot_intervals_grid <- function(df, model = NULL, facet_by = c("horizon", "quantile"), quantiles = NULL, horizon = NULL) {
+plot_intervals <- function(df, model = NULL, target_type = c("Cases", "Deaths"),
+                           quantile = 0.05, horizon = 1) {
+  target <- rlang::arg_match(arg = target_type, values = c("Cases", "Deaths"))
+  h <- paste_horizon(horizon)
+
+  l <- process_model_input(df, model)
+  df <- l$df
+  model <- l$model
+
+  df |>
+    process_quantile_pair(quantile) |>
+    filter_target_type(target) |>
+    filter_horizon(horizon) |>
+    change_to_date() |>
+    tidyr::pivot_wider(names_from = .data$quantile, values_from = .data$prediction) |>
+    ggplot2::ggplot(mapping = ggplot2::aes(x = .data$target_end_date)) +
+    ggplot2::geom_point(ggplot2::aes(y = .data$true_value), size = 1) +
+    ggplot2::geom_line(ggplot2::aes(y = .data$true_value)) +
+    ggplot2::geom_errorbar(
+      ggplot2::aes(ymin = .data$lower, ymax = .data$upper, color = .data$method),
+      position = ggplot2::position_dodge2(padding = 0.01)
+    ) +
+    ggplot2::scale_color_brewer(palette = "Set1") +
+    ggplot2::labs(
+      x = NULL, y = NULL, color = NULL,
+      subtitle = "Prediction methods separated by color",
+      title = stringr::str_glue(
+        "Predicted {target} for {model} model at level {quantile} {h}"
+      )
+    ) +
+    ggplot2::theme_light() +
+    ggplot2::theme(
+      plot.title = ggplot2::element_text(hjust = 0.5),
+      plot.subtitle = ggplot2::element_text(hjust = 0.5),
+      legend.position = "top"
+    )
+}
+
+
+#' @importFrom rlang .data
+
+plot_intervals_grid <- function(df, model = NULL, facet_by = c("horizon", "quantile"),
+                                quantiles = NULL, horizon = NULL) {
   facet_by <- rlang::arg_match(arg = facet_by, values = c("horizon", "quantile"))
 
   l <- process_model_input(df, model)

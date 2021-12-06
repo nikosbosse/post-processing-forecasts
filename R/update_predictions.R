@@ -1,8 +1,3 @@
-# df <- readr::read_csv(("data/full-data-uk-challenge.csv")) |>
-#   dplyr::filter(stringr::str_detect(model, "epi"))
-# cqr <- select_method("cqr")
-# cqr(alpha = 0.05, df)
-
 select_method <- function(method) {
   # add all methods as named vector
   implemented_methods <- c(cqr = cqr)
@@ -14,11 +9,6 @@ select_method <- function(method) {
   implemented_methods[[method]]
 }
 
-
-
-# df <- readr::read_csv(("data/full-data-uk-challenge.csv")) |>
-#   dplyr::filter(stringr::str_detect(model, "epi"))
-# collect_predictions(original = df, cqr = df)
 
 collect_predictions <- function(...) {
   dplyr::bind_rows(..., .id = "method")
@@ -56,22 +46,22 @@ update_subset <- function(df, method, model, target_type, horizon, quantile, tra
     dplyr::pull(true_value)
 
   if (is.null(training_length)) {
-  # By default the training length is equal to NULL and therefore equal to the complete data.
-  # e.g. by default not training and validation set
+    # By default the training length is equal to NULL and therefore equal to the complete data.
+    # e.g. by default not training and validation set
     result <- method(
       quantile * 2, # method was cqr in prior version
       true_values,
       quantiles_low,
       quantiles_high
     )
-    
+
     margin <- result$margin
     quantiles_low_updated <- result$lower_bound
     quantiles_high_updated <- result$upper_bound
   } else {
-  # Splitting into the case of training and validation set or only a training set
-  # The reason is that if training_length == lenngth(true_values) then we dont issues in the quantiles_low[training_length+1:len(quantiles_low)]
-  # functionality. e.g. c(1,2,3,4)[5:4] returns  NA  4
+    # Splitting into the case of training and validation set or only a training set
+    # The reason is that if training_length == lenngth(true_values) then we dont issues in the quantiles_low[training_length+1:len(quantiles_low)]
+    # functionality. e.g. c(1,2,3,4)[5:4] returns  NA  4
     result <- method(
       quantile * 2, # method was cqr in prior version
       true_values[1:training_length],

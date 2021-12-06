@@ -66,6 +66,22 @@ unique(df_save$target_end_date)
 sum(is.na(df_save$target_end_date))
 ```
  
+```{r}
+# unique(df$model)
+df_forecast <- cross_validation_forecasting(df=df, models=c("epiforecasts-EpiExpert"),
+                            locations = c("iT"),
+                            method="cqr", 
+                            training_lengths=c(10,11)) #seq(40,73,1)
+df_forecast
+
+#TODO: in .ads speichern, mit datentyp. tidyverse ads reader.
+#write.csv(df_save,here::here("data", "full-data-european-forecast-hub-2-updated-epiforecasts-EpiExpert.csv"), row.names = FALSE)
+
+unique(df$model)
+#sum(is.na(df_save$target_end_date))
+```
+ 
+ 
 # Numerical Analysis
 
 ```{r}

@@ -4,14 +4,16 @@
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### model column                                                            ####
 
-filter_model <- function(df, model) {
-  df |> dplyr::filter(.data$model == !!model)
+filter_models <- function(df, models) {
+  models <- c(models)
+  df |> dplyr::filter(.data$model %in% models)
 }
+
 
 process_model_input <- function(df, model) {
   # if input "model" is specified
   if (!is.null(model)) {
-    df <- filter_model(df, model)
+    df <- filter_models(df, model)
   } else {
     # input df is already filtered, take only existing model
     model <- df$model[1]

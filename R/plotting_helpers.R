@@ -2,10 +2,19 @@
 
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### location column                                                         ####
+
+filter_locations <- function(df, locations) {
+  df |> dplyr::filter(.data$location %in% locations)
+}
+
+
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### model column                                                            ####
 
-filter_model <- function(df, model) {
-  df |> dplyr::filter(.data$model == !!model)
+filter_models <- function(df, model) {
+  models <- c(models)
+  df |> dplyr::filter(.data$model %in% models)
 }
 
 process_model_input <- function(df, model) {
@@ -26,7 +35,7 @@ process_model_input <- function(df, model) {
 ### quantile column                                                         ####
 
 filter_quantiles <- function(df, quantiles) {
-  df |> dplyr::filter(.yata$quantile %in% quantiles)
+  df |> dplyr::filter(.data$quantile %in% quantiles)
 }
 
 filter_quantile_pairs <- function(df, quantiles) {
@@ -63,8 +72,9 @@ add_quantile_group <- function(df, quantiles) {
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### horizon column                                                          ####
 
-filter_horizon <- function(df, horizon) {
-  df |> dplyr::filter(.data$horizon == !!horizon)
+filter_horizons <- function(df, horizons) {
+  horizons <- c(horizons)
+  df |> dplyr::filter(.data$horizon %in% horizons)
 }
 
 paste_horizon <- function(horizon) {
@@ -76,8 +86,7 @@ paste_horizon <- function(horizon) {
 }
 
 mutate_horizon <- function(df) {
-  df |>
-    dplyr::mutate(horizon = paste_horizon(horizon))
+  df |> dplyr::mutate(horizon = paste_horizon(horizon))
 }
 
 
@@ -85,23 +94,33 @@ mutate_horizon <- function(df) {
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### target_type column                                                      ####
 
-filter_target_type <- function(df, target_type) {
-  df |> dplyr::filter(.data$target_type == !!target_type)
+filter_target_types <- function(df, target_types) {
+  target_types <- c(target_types)
+  df |> dplyr::filter(.data$target_type %in% target_types)
 }
-
 
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### date column                                                             ####
 
 change_to_date <- function(df) {
-  df |> dplyr::mutate(target_end_date = as.Date(.data$target_end_date))
+  df |> dplyr::mutate(target_end_date = lubridate::ymd(target_end_date)) 
 }
 
 
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
-### facet helpers                                                           ####
+### new method column                                                       ####
+
+filter_methods <- function(df, methods) {
+  df |> dplyr::filter(.data$method %in% methods)
+}
+
+
+
+# TODO: move all above code to own file preprocessing_helpers.R
+# these are needed for functions across many files
+# keep only helpers exclusively used for plotting in this file (as below)
 
 facet_horizon <- function(df, quantile, horizon) {
   df |>
@@ -137,20 +156,4 @@ setup_intervals_plot <- function(df) {
       plot.subtitle = ggplot2::element_text(hjust = 0.5),
       legend.position = "top"
     )
-}
-
-
-### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
-### further filter helpers                                                  ####
-
-filter_methods <- function(df, methods) {
-  df |> dplyr::filter(.data$method %in% methods)
-}
-
-filter_target_types <- function(df, target_types) {
-  df |> dplyr::filter(.data$target_type %in% target_types)
-}
-
-filter_locations <- function(df, locations) {
-  df |> dplyr::filter(.data$location %in% locations)
 }

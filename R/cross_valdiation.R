@@ -10,7 +10,7 @@ cross_validation <- function(df, models, method, training_lengths){
   # We make sure the target_end_date used to sort the df is a date.
   # This is required so that the observations are in the correct order so that training and validation set
   # can be correctly identified in the update_subset
-  df <- df |> dplyr::mutate(target_end_date = lubridate::ymd(target_end_date)) 
+  df <- change_to_date(df)
   
   # Defining a new dataframe holding the original vlaues which is marked by the method column.
   # The following loop appends to this dataframe.

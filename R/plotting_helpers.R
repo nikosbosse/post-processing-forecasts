@@ -26,7 +26,7 @@ process_model_input <- function(df, model) {
 ### quantile column                                                         ####
 
 filter_quantiles <- function(df, quantiles) {
-  df |> dplyr::filter(.data$quantile %in% quantiles)
+  df |> dplyr::filter(.yata$quantile %in% quantiles)
 }
 
 filter_quantile_pairs <- function(df, quantiles) {
@@ -106,4 +106,21 @@ facet_quantile <- function(df, quantiles, horizon) {
     filter_horizon(horizon) |> 
     filter_quantile_pairs(quantiles) |> 
     add_quantile_group(quantiles)
+}
+
+
+
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### further filter helpers                                                  ####
+
+filter_methods <- function(df, methods) {
+  df |> dplyr::filter(.data$method %in% methods)
+}
+
+filter_target_types <- function(df, target_types) {
+  df |> dplyr::filter(.data$target_type %in% target_types)
+}
+
+filter_locations <- function(df, locations) {
+  df |> dplyr::filter(.data$location %in% locations)
 }

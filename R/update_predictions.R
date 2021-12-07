@@ -1,24 +1,14 @@
-# df <- readr::read_csv(("data/full-data-uk-challenge.csv")) |>
-#   dplyr::filter(stringr::str_detect(model, "epi"))
-# cqr <- select_method("cqr")
-# cqr(alpha = 0.05, df)
-
 select_method <- function(method) {
   # add all methods as named vector
   implemented_methods <- c(cqr = cqr)
-  
+
   if (!(method %in% names(implemented_methods))) {
     stop(stringr::str_glue("{method} is not an implemented post processing method."))
   }
-  
+
   implemented_methods[[method]]
 }
 
-
-
-# df <- readr::read_csv(("data/full-data-uk-challenge.csv")) |>
-#   dplyr::filter(stringr::str_detect(model, "epi"))
-# collect_predictions(original = df, cqr = df)
 
 collect_predictions <- function(...) {
   dplyr::bind_rows(..., .id = "method")
@@ -26,7 +16,7 @@ collect_predictions <- function(...) {
 
 
 # TODO: fails unit test when data is imported with tidyverse readr::read_csv()
-update_subset <- function(df, method, model, target_type, horizon, quantile, training_length) {
+update_subset <- function(df, method, model, target_type, horizon, quantile, cv_init_training) {
   # for nicer function input names,
   # input names equal to column names are a little painful with tidyverse functions
   # => temporary variables with different names
@@ -34,53 +24,76 @@ update_subset <- function(df, method, model, target_type, horizon, quantile, tra
   t <- target_type
   h <- horizon
   q <- quantile
-  
+
   # To make sure that the predictions and true_values are in the correct order we also arrange by the target_end_date
-  #TODO: quantiles_low and true_values into one function as we basically do the same just pic a different variable
-  quantiles_low <- dplyr::filter(
-    df, model == mod & target_type == t & horizon == h & quantile == q 
-  ) |> dplyr::arrange(target_end_date) |> dplyr::pull(prediction)
-  
-  quantiles_high <- dplyr::filter(
+  # TODO: quantiles_low and true_values into one function as we basically do the same just pic a different variable
+  quantiles_low_df <- dplyr::filter(
+    df, model == mod & target_type == t & horizon == h & quantile == q
+  ) |>
+    dplyr::arrange(target_end_date) |>
+    dplyr::pull(prediction)
+
+  quantiles_high_df <- dplyr::filter(
     df, model == mod & target_type == t & horizon == h & quantile == 1 - q
-  ) |> dplyr::arrange(target_end_date) |> dplyr::pull(prediction)
-  
+  ) |>
+    dplyr::arrange(target_end_date) |>
+    dplyr::pull(prediction)
+
   true_values <- dplyr::filter(
     df, model == mod & target_type == t & horizon == h & quantile == q
-  ) |> dplyr::arrange(target_end_date) |> dplyr::pull(true_value)
-  
-  # By default the training length is equal to this string and therefor equal to the complete data.
-  # e.g. by default not training and validation set
-  if (training_length =="complete_data"){
-    training_length <- length(true_values)
-  }
-  
-  # Splitting into the case of training and validation set or only a training set
-  # The reason is that if training_length == lenngth(true_values) then we dont issues in the quantiles_low[training_length+1:len(quantiles_low)]
-  # functionality. e.g. c(1,2,3,4)[5:4] returns  NA  4
-  if (training_length < length(true_values)){
-    result <- method(quantile * 2, #method was cqr in prior version
-                  true_values[1:training_length], 
-                  quantiles_low[1:training_length], 
-                  quantiles_high[1:training_length])
-    
-    margin <- result$margin
-    quantiles_low_updated <- c(result$lower_bound, (quantiles_low[(training_length+1):length(quantiles_low)] - margin))
-    quantiles_high_updated <- c(result$upper_bound, (quantiles_high[(training_length+1):length(quantiles_high)] + margin))
-    
-  } else{
-    result <- method(quantile * 2, #method was cqr in prior version
-                  true_values, 
-                  quantiles_low, 
-                  quantiles_high)
-    
+  ) |>
+    dplyr::arrange(target_end_date) |>
+    dplyr::pull(true_value)
+
+  if (is.null(cv_init_training)) {
+    # By default the training length is equal to NULL and therefore equal to the complete data.
+    # e.g. by default not training and validation set
+    result <- method(
+      quantile * 2, # method was cqr in prior version
+      true_values,
+      quantiles_low,
+      quantiles_high
+    )
+
     margin <- result$margin
     quantiles_low_updated <- result$lower_bound
     quantiles_high_updated <- result$upper_bound
+  } else {
+    # This Section runs the Time Series Cross validation.
+    # 1. It runs the method on the training set and updates all values of the training set. 
+    #    Then by using the margin it makes the first prediction in the validation set.
+    #    The training values and the first adjusted validation set valued are stored in the lists
+    #    quantiles_low_updated and quantiles_high_updated. The following section appends to these vectors.
+    results <- method(q * 2,
+                      true_values[0:cv_init_training], 
+                      quantiles_low_df[0:cv_init_training], 
+                      quantiles_high_df[0:cv_init_training])
     
-  }
-  
-  
+    lower_bound_updated <- results$lower_bound
+    upper_bound_updated <- results$upper_bound
+    
+    margin <- results$margin
+    quantiles_low_updated <- c(lower_bound_updated,(quantiles_low_df[cv_init_training+1]-margin))
+    quantiles_high_updated <- c(upper_bound_updated,(quantiles_high_df[cv_init_training+1]+margin))
+    
+    # 2. The loop goes increases the training set by one observation each step and computes the next validation set
+    #    prediction. This is done by rerunning cqr with the new observations set and extracting the margin.
+    #    Then with the new margin the one horizon step ahead prediction is updated.
+    for (training_length in seq((cv_init_training+1),(length(true_values)-1),1)){
+      
+      results <- method(q * 2,
+                        true_values[1:training_length], 
+                        quantiles_low_df[1:training_length], 
+                        quantiles_high_df[1:training_length])
+      
+      margin <- results$margin
+      
+      quantiles_low_updated <- c(quantiles_low_updated,(quantiles_low_df[training_length+1]-margin))
+      quantiles_high_updated <- c(quantiles_high_updated,(quantiles_high_df[training_length+1]+margin))
+      
+    }}
+
+
   # TODO: add .data$ in each select of tidyverse stuff. its from rlang. Check how joel did it
   df_updated <- df |>
     dplyr::mutate(prediction = replace(
@@ -98,15 +111,21 @@ update_subset <- function(df, method, model, target_type, horizon, quantile, tra
 }
 
 
-update_predictions <- function(df, method, models, training_length = "complete_data") {
-  
+update_predictions <- function(df, method, models, locations, cv_init_training = NULL) {
   if (!all(models %in% unique(df$model))) {
     stop("At least one of the input models is not contained in the input data frame.")
   }
   
-  method <- select_method(method = method)
-  # make function work for single model
+  # make function work for single model and signle locations
   models <- c(models)
+  locations <- c(locations)
+  
+  # Filtering out all models and locations that are not updated
+  df <- df |> 
+    filter_models(models) |> 
+    filter_locations(locations)
+
+  method <- select_method(method = method)
 
   horizons <- na.omit(unique(df$horizon))
   quantiles_below_median <- na.omit(unique(df$quantile)[unique(df$quantile) < 0.5])
@@ -118,7 +137,7 @@ update_predictions <- function(df, method, models, training_length = "complete_d
     for (target_type in target_types) {
       for (horizon in horizons) {
         for (quantile in quantiles_below_median) {
-          df_updated <- update_subset(df_updated, method, model, target_type, horizon, quantile, training_length)
+          df_updated <- update_subset(df_updated, method, model, target_type, horizon, quantile, cv_init_training)
         }
       }
     }

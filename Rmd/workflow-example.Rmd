@@ -80,12 +80,12 @@ plot_cqr_results(df, model, target_type = "Cases", horizon = 1, quantile = 0.05)
 ## for given `model` and `quantile` and different `horizons`
 
 ```{r}
-plot_intervals(df_combined, model, facet_by = "horizon")
+plot_intervals_grid(df_combined, model, facet_by = "horizon")
 ```
 
 ## for given `model` and `horizon` and different `quantiles`
 
 ```{r}
-plot_intervals(df_combined, model, facet_by = "quantile")
+plot_intervals_grid(df_combined, model, facet_by = "quantile")
 ```
 

@@ -2,6 +2,14 @@
 
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### location column                                                         ####
+
+filter_locations <- function(df, locations) {
+  df |> dplyr::filter(.data$location %in% locations)
+}
+
+
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### model column                                                            ####
 
 filter_models <- function(df, models) {
@@ -28,7 +36,7 @@ process_model_input <- function(df, model) {
 ### quantile column                                                         ####
 
 filter_quantiles <- function(df, quantiles) {
-  df |> dplyr::filter(.yata$quantile %in% quantiles)
+  df |> dplyr::filter(.data$quantile %in% quantiles)
 }
 
 filter_quantile_pairs <- function(df, quantiles) {
@@ -65,9 +73,9 @@ add_quantile_group <- function(df, quantiles) {
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### horizon column                                                          ####
 
-
-filter_horizon <- function(df, horizon) {
-  df |> dplyr::filter(.data$horizon == !!horizon)
+filter_horizons <- function(df, horizons) {
+  horizons <- c(horizons)
+  df |> dplyr::filter(.data$horizon %in% horizons)
 }
 
 paste_horizon <- function(horizon) {
@@ -79,23 +87,41 @@ paste_horizon <- function(horizon) {
 }
 
 mutate_horizon <- function(df) {
-  df |>
-    dplyr::mutate(horizon = paste_horizon(horizon))
+  df |> dplyr::mutate(horizon = paste_horizon(horizon))
 }
 
+
+
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### target_type column                                                      ####
+
+filter_target_types <- function(df, target_types) {
+  target_types <- c(target_types)
+  df |> dplyr::filter(.data$target_type %in% target_types)
+}
 
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### date column                                                             ####
 
 change_to_date <- function(df) {
-  df |> dplyr::mutate(forecast_date = as.Date(.data$forecast_date))
+  df |> dplyr::mutate(target_end_date = lubridate::ymd(target_end_date)) 
 }
 
 
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
-### facet helpers                                                           ####
+### new method column                                                       ####
+
+filter_methods <- function(df, methods) {
+  df |> dplyr::filter(.data$method %in% methods)
+}
+
+
+
+# TODO: move all above code to own file preprocessing_helpers.R
+# these are needed for functions across many files
+# keep only helpers exclusively used for plotting in this file (as below)
 
 facet_horizon <- function(df, quantile, horizon) {
   df |>
@@ -110,19 +136,25 @@ facet_quantile <- function(df, quantiles, horizon) {
     add_quantile_group(quantiles)
 }
 
-
-
-### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
-### further filter helpers                                                  ####
-
-filter_methods <- function(df, methods) {
-  df |> dplyr::filter(.data$method %in% methods)
-}
-
-filter_target_types <- function(df, target_types) {
-  df |> dplyr::filter(.data$target_type %in% target_types)
-}
-
-filter_locations <- function(df, locations) {
-  df |> dplyr::filter(.data$location %in% locations)
+setup_intervals_plot <- function(df) {
+  df |> 
+    tidyr::pivot_wider(names_from = .data$quantile, values_from = .data$prediction) |>
+    ggplot2::ggplot(mapping = ggplot2::aes(x = .data$target_end_date)) +
+    ggplot2::geom_point(ggplot2::aes(y = .data$true_value), size = 1) +
+    ggplot2::geom_line(ggplot2::aes(y = .data$true_value)) +
+    ggplot2::geom_errorbar(
+      ggplot2::aes(ymin = .data$lower, ymax = .data$upper, color = .data$method),
+      position = ggplot2::position_dodge2(padding = 0.01)
+    ) +
+    ggplot2::scale_color_brewer(palette = "Set1") +
+    ggplot2::labs(
+      x = NULL, y = NULL, color = NULL,
+      subtitle = "Prediction methods separated by color"
+    ) +
+    ggplot2::theme_light() +
+    ggplot2::theme(
+      plot.title = ggplot2::element_text(hjust = 0.5),
+      plot.subtitle = ggplot2::element_text(hjust = 0.5),
+      legend.position = "top"
+    )
 }

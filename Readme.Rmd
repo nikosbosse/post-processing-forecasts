@@ -87,7 +87,9 @@ hub_data <- rbindlist(
     fread("data/full-data-european-forecast-hub-2.csv")
   )
 )
-  
+
+hub_data |> 
+  merge(covidHubUtils::hub_locations_ecdc)
 ```
 
 Optionally, the Hub data can be filtered to obtain a complete set of forecasts, as the current data set has missing forecasts: 

@@ -139,7 +139,7 @@ filter_combination <- function(df, model, target_type, horizon, quantile) {
     dplyr::arrange(target_end_date)
 
   quantiles_low <- quantiles_low_df$prediction
-  true_values <- quantiles_low_df$true_values
+  true_values <- quantiles_low_df$true_value
 
   quantiles_high <- df |>
     dplyr::filter(
@@ -149,8 +149,8 @@ filter_combination <- function(df, model, target_type, horizon, quantile) {
     dplyr::pull(prediction)
 
   return(list(
-    quantiles_low = quantiles_low, quantiles_high = quantiles_high,
-    true_values = true_values
+    true_values = true_values, quantiles_low = quantiles_low, 
+    quantiles_high = quantiles_high
   ))
 }
 

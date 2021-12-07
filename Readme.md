@@ -38,7 +38,7 @@ uk_data <- fread("data/full-data-uk-challenge.csv")
 
 The data has the following columns:
 
-| location        | Country code                                                                |
+| Column name     | Column description                                                          |
 |-----------------|-----------------------------------------------------------------------------|
 | location_name   | Name of the country                                                         |
 | target_end_date | Date for which a forecast was made. This is always a Saturday               |
@@ -82,6 +82,116 @@ hub_data <- rbindlist(
 )
 ```
 
+Optionally, the Hub data can be filtered to obtain a complete set of
+forecasts, as the current data set has missing forecasts:
+
+``` r
+# helper functions for visualisation
+plot_models_per_loc <- function(data) {
+  data |>
+    group_by(location, forecast_date) |>
+    mutate(n = length(unique(model))) |>
+    ggplot(aes(y = reorder(location, n), x = as.Date(forecast_date), fill = n)) + 
+    geom_tile() + 
+    facet_wrap(~ target_type) + 
+    labs(y = "Location", x = "Forecast date")
+} 
+
+plot_locs_per_model <- function(data) {
+  data |>
+    group_by(model, forecast_date) |>
+    mutate(n = length(unique(location))) |>
+    ggplot(aes(y = reorder(model, n), x = as.Date(forecast_date), fill = n)) + 
+    geom_tile() + 
+    facet_wrap(~ target_type) + 
+    labs(y = "Location", x = "Forecast date")
+} 
+```
+
+``` r
+plot_locs_per_model(hub_data)
+```
+
+![](Readme_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+``` r
+plot_models_per_loc(hub_data)
+```
+
+![](Readme_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+
+``` r
+# helper function to make a complete set. The data can be either complete
+# per location (meaning that different locations will have different numbers of
+# models) or it can be complete overall (removing models and locations)
+make_complete_set <- function(hub_data, 
+                              forecast_dates = c("2021-03-15", 
+                                                 "2021-09-27"), 
+                              min_locations = 19, 
+                              per_location = FALSE) {
+  
+  # define the unit of a single forecast
+  unit_observation <- c("location", "forecast_date", "horizon", 
+                        "model", "target_type")
+  
+  h <- hub_data |>
+    # filter out models that don't have all forecast dates 
+    filter(forecast_date >= forecast_dates[1], 
+           forecast_date <= forecast_dates[2]) |>
+    group_by_at(c(unit_observation)) |>
+    ungroup(forecast_date) |>
+    mutate(n = length(unique(forecast_date))) |>
+    ungroup() |>
+    filter(n == max(n)) 
+  
+  # per_location means a complete set per location, meaning that every location
+  # has a complete set, but the numbers of models per location may be different
+  # if this is not desired, we need to restrict the models and locations
+  
+  if (!per_location) {
+    h <- h|>
+      # filter out models that don't have at least min_locations
+      group_by_at(unit_observation) |>
+      ungroup(location) |>
+      mutate(n = length(unique(location))) |>
+      ungroup() |>
+      filter(n >= min_locations) |> 
+      # filter out locations that don't have a full set of forecasts
+      group_by(location, target_type) |>
+      mutate(n = n()) |>
+      ungroup() |>
+      filter(n == max(n))
+  }
+  return(h)
+}
+
+hub_complete <- make_complete_set(hub_data)
+print(plot_locs_per_model(hub_complete))
+```
+
+![](Readme_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
+``` r
+print(plot_models_per_loc(hub_complete))
+```
+
+![](Readme_files/figure-gfm/unnamed-chunk-6-2.png)<!-- -->
+
+Or allowing different numbers of models per location:
+
+``` r
+hub_complete_loc <- make_complete_set(hub_data, per_location = TRUE)
+print(plot_locs_per_model(hub_complete_loc))
+```
+
+![](Readme_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+``` r
+plot_models_per_loc(hub_complete_loc)
+```
+
+![](Readme_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
 #### Updating the European Forecast Hub data (probably not necessary)
 
 To update the data, clone the whole repository or use subversion (svn)
@@ -101,7 +211,8 @@ To load the forecasts and truth data and to update the csv files, run
 
 ``` r
 # load truth data using the covidHubutils package ------------------------------
-library(covidHubUtils) # devtools::install_github("reichlab/covidHubUtils")
+devtools::install_github("reichlab/covidHubUtils")
+library(covidHubUtils)
 
 truth <- covidHubUtils::load_truth(hub = "ECDC") |>
   filter(target_variable %in% c("inc case", "inc death")) |>
@@ -166,6 +277,37 @@ hub_data <- merge_pred_and_obs(prediction_data, truth,
   
 # split forecast data into two to reduce file size
 split <- floor(nrow(hub_data) / 2)
+
+# harmonise forecast dates to be the date a submission was made
+hub_data <- mutate(hub_data, 
+                   forecast_date = calc_submission_due_date(forecast_date))
+
+# function that performs some basic filtering to clean the data
+filter_hub_data <- function(hub_data) {
+  
+  # define the unit of a single forecast
+  unit_observation <- c("location", "forecast_date", "horizon", "model", "target_type")
+  
+  h <- hub_data |>
+    # filter out unnecessary horizons and dates
+    filter(horizon <= 4, 
+           forecast_date > "2021-03-08") |>
+    # filter out all models that don't have all quantiles
+    group_by_at(unit_observation) |>
+    mutate(n = n()) |>
+    ungroup() |>
+    filter(n == max(n)) |>
+    # filter out models that don't have all horizons
+    group_by_at(unit_observation) |>
+    ungroup(horizon) |>
+    mutate(n = length(unique(horizon))) |>
+    ungroup() |>
+    filter(n == max(n)) 
+  
+  return(h)
+}
+
+hub_data <- filter_hub_data(hub_data)
 
 fwrite(hub_data[1:split, ], 
        file = "data/full-data-european-forecast-hub-1.csv")
@@ -300,4 +442,17 @@ scores <- eval_forecasts(uk_data,
                          summarise_by = c("model", "target_type"))
 
 scores
+```
+
+Example plot for empirical vs. nominal coverage
+
+``` r
+scores <- eval_forecasts(uk_data, 
+                         summarise_by = c("model", "target_type", "range"))[]
+
+scores[model == "seb"] |>
+  ggplot(aes(y = coverage, x = range)) +
+  geom_point() + 
+  geom_line() + 
+  facet_wrap(~ target_type)
 ```

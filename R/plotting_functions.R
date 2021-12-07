@@ -1,8 +1,3 @@
-# df <- readr::read_csv(file = "data/full-data-uk-challenge.csv")
-# plot_quantiles(
-#   df = df, model = "epiforecasts-EpiExpert",
-#   quantiles = c(0.01, seq(0.1, 0.9, 0.1), 0.99)
-# )
 #' @importFrom rlang .data
 
 plot_quantiles <- function(df, model = NULL, quantiles = c(0.05, 0.5, 0.95)) {
@@ -14,7 +9,7 @@ plot_quantiles <- function(df, model = NULL, quantiles = c(0.05, 0.5, 0.95)) {
     filter_quantiles(quantiles) |>
     mutate_horizon() |>
     change_to_date() |>
-    ggplot2::ggplot(mapping = ggplot2::aes(x = .data$forecast_date)) +
+    ggplot2::ggplot(mapping = ggplot2::aes(x = .data$target_end_date)) +
     ggplot2::geom_line(
       mapping = ggplot2::aes(y = .data$prediction, color = factor(.data$quantile))
     ) +
@@ -70,7 +65,7 @@ plot_cqr_results <- function(df, model, target_type, horizon, quantile) {
 
   date <- dplyr::filter(
     df, model == mod & target_type == t & horizon == h & quantile == q
-  )$forecast_date
+  )$target_end_date
 
   date <- as.Date(date)
 
@@ -108,17 +103,33 @@ plot_cqr_results <- function(df, model, target_type, horizon, quantile) {
 }
 
 
-
-
-
-
-# df <- readr::read_csv(file = "data/full-data-uk-challenge.csv")
-# df_new <- df |> dplyr::mutate(prediction = prediction * 2)
-# df_combined <- collect_predictions(original = df, new = df_new)
-# plot_intervals(df = df_combined, model = "epiforecasts-EpiExpert", quantile = 0.05)
 #' @importFrom rlang .data
 
-plot_intervals <- function(df, model = NULL, facet_by = c("horizon", "quantile"), quantiles = NULL, horizon = NULL) {
+plot_intervals <- function(df, model = NULL, target_type = c("Cases", "Deaths"),
+                           quantile = 0.05, horizon = 1) {
+  target <- rlang::arg_match(arg = target_type, values = c("Cases", "Deaths"))
+  h <- paste_horizon(horizon)
+
+  l <- process_model_input(df, model)
+  df <- l$df
+  model <- l$model
+
+  df |>
+    process_quantile_pair(quantile) |>
+    filter_target_type(target) |>
+    filter_horizon(horizon) |>
+    change_to_date() |>
+    setup_intervals_plot() +
+    ggplot2::ggtitle(stringr::str_glue(
+      "Predicted {target} for {model} model at level {quantile} {h}"
+    ))
+}
+
+
+#' @importFrom rlang .data
+
+plot_intervals_grid <- function(df, model = NULL, facet_by = c("horizon", "quantile"),
+                                quantiles = NULL, horizon = NULL) {
   facet_by <- rlang::arg_match(arg = facet_by, values = c("horizon", "quantile"))
 
   l <- process_model_input(df, model)
@@ -126,7 +137,6 @@ plot_intervals <- function(df, model = NULL, facet_by = c("horizon", "quantile")
   model <- l$model
 
   if (facet_by == "horizon") {
-    
     if (is.null(quantiles)) {
       quantiles <- 0.05
     }
@@ -134,7 +144,6 @@ plot_intervals <- function(df, model = NULL, facet_by = c("horizon", "quantile")
     q <- quantiles
     df <- facet_horizon(df, quantiles, horizon)
   } else if (facet_by == "quantile") {
-    
     if (is.null(horizon)) {
       horizon <- 1
     }
@@ -149,29 +158,7 @@ plot_intervals <- function(df, model = NULL, facet_by = c("horizon", "quantile")
 
   p <- df |>
     change_to_date() |>
-    tidyr::pivot_wider(names_from = .data$quantile, values_from = .data$prediction) |>
-    # TODO: Consider target_end_date column instead of forecast column in functions,
-    # more consistent with European Forecast Hub Data
-    # target_end_date same for all models, but different forecast dates for each
-    # target_end_date
-    ggplot2::ggplot(mapping = ggplot2::aes(x = .data$forecast_date)) +
-    ggplot2::geom_point(ggplot2::aes(y = .data$true_value), size = 1) +
-    ggplot2::geom_line(ggplot2::aes(y = .data$true_value)) +
-    ggplot2::geom_errorbar(
-      ggplot2::aes(ymin = .data$lower, ymax = .data$upper, color = .data$method),
-      position = ggplot2::position_dodge2(padding = 0.01)
-    ) +
-    ggplot2::scale_color_brewer(palette = "Set1") +
-    ggplot2::labs(
-      x = NULL, y = NULL, color = NULL,
-      subtitle = "Prediction methods separated by color"
-    ) +
-    ggplot2::theme_light() +
-    ggplot2::theme(
-      plot.title = ggplot2::element_text(hjust = 0.5),
-      plot.subtitle = ggplot2::element_text(hjust = 0.5),
-      legend.position = "top"
-    )
+    setup_intervals_plot()
 
   if (facet_by == "horizon") {
     p <- p +

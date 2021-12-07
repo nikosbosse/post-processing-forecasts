@@ -28,7 +28,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r libraries}
-# temporary and not recommended way, library(postforecasts) imports only functions with @export tag 
+# temporary and not recommended way, library(postforecasts) imports only functions with @export tag
 # => requires more complete documentation
 devtools::load_all(".")
 
@@ -41,7 +41,7 @@ library(dplyr)
 We use the updated Dataframe.
 
 ```{r}
-df <- read.csv(here::here("data", "full-data-european-forecast-hub-2.csv"))
+df <- read.csv(here::here("data", "full-data-european-forecast-hub-1.csv"))
 ```
 
 # Plot Original Predictions
@@ -57,10 +57,13 @@ We update the prediction values over a set of different train and validation set
 
 ```{r}
 # unique(df$model)
-df_save <- cross_validation(df=df, models=c("epiforecasts-EpiExpert"),
-                            method="cqr", training_lengths=c(40)) #seq(40,73,1)
-#TODO: in .ads speichern, mit datentyp. tidyverse ads reader.
-#write.csv(df_save,here::here("data", "full-data-european-forecast-hub-2-updated-epiforecasts-EpiExpert.csv"), row.names = FALSE)
+df_save <- cross_validation(
+  df = df, models = c("epiforecasts-EpiExpert"),
+  method = "cqr", training_lengths = c(40)
+) # seq(40,73,1)
+
+# TODO: in .rds speichern, mit datentyp. tidyverse ads reader.
+# write.csv(df_save,here::here("data", "full-data-european-forecast-hub-2-updated-epiforecasts-EpiExpert.csv"), row.names = FALSE)
 
 unique(df_save$target_end_date)
 sum(is.na(df_save$target_end_date))
@@ -68,11 +71,28 @@ sum(is.na(df_save$target_end_date))
  
 ```{r}
 # unique(df$model)
-df_forecast <- cross_validation_forecasting(df=df, models=c("epiforecasts-EpiExpert"),
-                            locations = c("iT"),
-                            method="cqr", 
-                            training_lengths=c(10,11)) #seq(40,73,1)
-df_forecast
+df_forecast <- update_predictions(df=df, 
+                                  method="cqr",
+                                  models="epiforecasts-EpiExpert",
+                                  locations = "GB",
+                                  cv_init_training=4) #seq(40,73,1)
+
+
+pred_new <- df_forecast$prediction 
+
+pred_old <- df |> 
+  filter_models(c("epiforecasts-EpiExpert")) |> 
+  filter_locations(c("GB")) |> dplyr::pull(prediction)
+
+print(sum(abs(pred_old - pred_new)))
+
+pred_old - pred_new # zeros could be the extremest quantiles that are not adjusted?
+
+old <- dplyr::filter(df, location == "GB" & model == "epiforecasts-EpiExpert" & target_type == "Cases" & horizon == 1 & quantile == 1 - 0.05) |> dplyr::arrange(target_end_date) |> dplyr::pull(prediction)
+
+new <- dplyr::filter(df_forecast, location == "GB" & model == "epiforecasts-EpiExpert" & target_type == "Cases" & horizon == 1 & quantile == 1 - 0.05) |> dplyr::arrange(target_end_date) |> dplyr::pull(prediction)
+
+old - new
 
 #TODO: in .ads speichern, mit datentyp. tidyverse ads reader.
 #write.csv(df_save,here::here("data", "full-data-european-forecast-hub-2-updated-epiforecasts-EpiExpert.csv"), row.names = FALSE)
@@ -85,12 +105,12 @@ unique(df$model)
 # Numerical Analysis
 
 ```{r}
-#TODO: Score table for the train and validation set are reported. We want to separate them
+# TODO: Score table for the train and validation set are reported. We want to separate them
 scores_combined <- df_save |>
   filter(model == !!model) |>
   eval_forecasts(summarise_by = c("method", "model", "target_type"))
 
-scores_combined |> 
+scores_combined |>
   arrange(target_type, desc(method))
 ```
 
@@ -105,32 +125,31 @@ class(unique(df_save$target_end_date))
 ```{r}
 score <- "Interval Score"
 
-scores_table <- scores_combined |> 
+scores_table <- scores_combined |>
   arrange(target_type, desc(method))
 
 interval_scores <- scores_table$interval_score[0:35]
-training <- c(0,seq(73,40,-1))
+training <- c(0, seq(73, 40, -1))
 
-ggplot2::ggplot() + 
+ggplot2::ggplot() +
   ggplot2::geom_point(ggplot2::aes(x = training, y = interval_scores)) +
   ggplot2::labs(
-      title = stringr::str_glue("{score} for different training set sizes {model} model"),
-      #subtitle = "True Values indicated by black line",
-      color = NULL, x = "Training Set Size", y = "{score}",
-    ) +
-    ggplot2::guides(color = ggplot2::guide_legend(nrow = 1)) +
-    ggplot2::theme_light() +
-    ggplot2::theme(
-      plot.title = ggplot2::element_text(hjust = 0.5),
-      plot.subtitle = ggplot2::element_text(hjust = 0.5),
-      legend.position = "top"
-    )
-
+    title = stringr::str_glue("{score} for different training set sizes {model} model"),
+    # subtitle = "True Values indicated by black line",
+    color = NULL, x = "Training Set Size", y = "{score}",
+  ) +
+  ggplot2::guides(color = ggplot2::guide_legend(nrow = 1)) +
+  ggplot2::theme_light() +
+  ggplot2::theme(
+    plot.title = ggplot2::element_text(hjust = 0.5),
+    plot.subtitle = ggplot2::element_text(hjust = 0.5),
+    legend.position = "top"
+  )
 ```
 
 ```{r}
 # interface will change soon
-plot_quantiles(df_save, model=model, quantiles = c(0.05, 0.5, 0.95))
+plot_quantiles(df_save, model = model, quantiles = c(0.05, 0.5, 0.95))
 ```
 
 
@@ -142,12 +161,11 @@ plot_cqr_results(df, model, target_type = "Cases", horizon = 1, quantile = 0.05)
 ## for given `model` and `quantile` and different `horizons`
 
 ```{r}
-plot_intervals(df_combined, model, facet_by = "horizon")
+plot_intervals_grid(df_combined, model, facet_by = "horizon")
 ```
 
 ## for given `model` and `horizon` and different `quantiles`
 
 ```{r}
-plot_intervals(df_combined, model, facet_by = "quantile")
+plot_intervals_grid(df_combined, model, facet_by = "quantile")
 ```
-

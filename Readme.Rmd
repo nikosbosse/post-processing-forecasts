@@ -88,8 +88,11 @@ hub_data <- rbindlist(
   )
 )
 
-hub_data |> 
-  merge(covidHubUtils::hub_locations_ecdc)
+# calculate incidences per 100,000
+hub_data <- hub_data |> 
+  merge(covidHubUtils::hub_locations_ecdc) |>
+  mutate(true_inc = (true_value / population) * 1e5, 
+         pred_inc = (prediction / population)  * 1e5)
 ```
 
 Optionally, the Hub data can be filtered to obtain a complete set of forecasts, as the current data set has missing forecasts: 

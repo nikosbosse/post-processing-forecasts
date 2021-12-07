@@ -12,7 +12,7 @@ filter_locations <- function(df, locations) {
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### model column                                                            ####
 
-filter_models <- function(df, model) {
+filter_models <- function(df, models) {
   models <- c(models)
   df |> dplyr::filter(.data$model %in% models)
 }

@@ -116,8 +116,8 @@ plot_intervals <- function(df, model = NULL, target_type = c("Cases", "Deaths"),
 
   df |>
     process_quantile_pair(quantile) |>
-    filter_target_type(target) |>
-    filter_horizon(horizon) |>
+    filter_target_types(target) |>
+    filter_horizons(horizon) |>
     change_to_date() |>
     setup_intervals_plot() +
     ggplot2::ggtitle(stringr::str_glue(

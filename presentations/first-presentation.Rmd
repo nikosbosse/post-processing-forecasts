@@ -90,8 +90,8 @@ https://epiforecasts.io/uk-challenge/
 .size-80[
 
 ```{r, echo=FALSE}
-df_subset |> 
-  select(-target) |> 
+df_subset |>
+  select(-target) |>
   datatable(
     rownames = FALSE,
     filter = "top",
@@ -100,7 +100,7 @@ df_subset |>
       scrollX = TRUE,
       pageLength = 4,
       autoWidth = TRUE
-      )
+    )
   )
 ```
 
@@ -160,32 +160,31 @@ Instead we take existing predictions as input and output adjusted / processed fo
 ---
 
 ## Methods
-<!-- All methods on one slide TODO -->
- 
+
 Many post-processing methods available, including
 
 --
 
-- **Conformalized Quantile Regression**: 
-    Focus of Today
+- **Conformalized Quantile Regression**: <br>
+  Focus of Today
 
 --
 
-- **Quantile Regression Averaging**: 
-    For given quantile level $\alpha$, new prediction is a weighted average of multiple existing predictions from different models. 
+- **Quantile Regression Averaging**: <br>
+  For given quantile level $\alpha$, new prediction is a weighted average of multiple existing predictions from different models. 
     The individual contributions, i.e. the weights, are chosen to minimize a chosen loss function.
+    
+--
 
----
-
-## Methods
-
-- **Quantile Spread Adjustment**: 
+- **Quantile Spread Adjustment**: <br>
   Assumes multiplicative relationship between quantile levels, e.g. $q_{0.9} = \lambda_{0.9} \cdot q_{0.8} = \lambda_{0.8} \cdot q_{0.8}$ with potentially different factors $\lambda_{\alpha}$. <br>
   Too conservative quantile predictions can thus be corrected by choosing larger multiplicative factors in the tails of the predictive distribution. 
 
 --
 
-- More detailed overview given in **README** Page of Project's GitHub Repository: <br> https://github.com/nikosbosse/post-processing-forecasts
+- More detailed overview given in **README** Page of Project's GitHub Repository <sup>1</sup>
+
+.footnote[[1] https://github.com/nikosbosse/post-processing-forecasts]
 
 ---
 
@@ -219,17 +218,102 @@ class: inverse, middle, center
 
 ---
 
+## Conformalized Quantile Regression
+
+Theory based on Paper Romano Y., Patterson E., and Candès E. (2019): *Conformalized Quantile Regression*
+
+**Central Theorem:** 
+
+If $(X_i, Y_i), i = 1, \ldots, n+1$ are exchangeable, then the prediction interval $C(X_{n+1})$ constructed by the CQR algorithm satisfies
+  
+$$
+\begin{aligned}
+P \left(Y_{n+1} \in C(X_{n+1}) \right) \geq 1 - \alpha \quad \text{(coverage)}.
+\end{aligned}
+$$
+Moreover, if the conformity scores $E_i$ are almost surely distinct, then the prediction interval is nearly perfectly calibrated:
+
+$$
+\begin{aligned}
+P \left( Y_{n+1} \in C(X_{n+1}) \right) \leq 1 - \alpha + \frac{ 1}{ \left| I_2 \right| + 1} \quad \text{(precision)}.
+\end{aligned}
+$$
+
+---
+
+## CQR Algorithm
+
+**Step 1:** <br>
+Split the data into a training and validation (here called *calibration*) set, indexed by $I_1$ and $I_2$, respectively
+
+--
+
+**Step 2:** <br>
+For a given quantile $\alpha$ and a given quantile regression algorithm $\mathcal{A}$, calculate lower and upper interval bounds on the training set:
+
+$$
+\begin{aligned}
+\left\{ \hat{ q}_{\alpha, \, low}, \; \hat{ q}_{\alpha, \, high} \right\} \leftarrow \mathcal{A} \left( \left\{ (X_i, Y_i): i \in I_1 \right\} \right) 
+\end{aligned}
+$$
+
+---
+
+## CQR Algorithm
+
+**Step 3:** <br>
+Compute **conformity scores** on the calibration set:
+
+$$
+\begin{aligned}
+E_i := \operatorname*{max} \left\{ \hat{ q}_{\alpha, \, low}(X_i) - Y_i, \; Y_i - \hat{ q}_{\alpha, \, high}(X_i) \right\} \quad \forall \; i \in I_2
+\end{aligned}
+$$
+
+For each $i$, the corresponding score $E_i$ is positive if $Y_i$ is *outside* the interval $\left[ \hat{ q}_{\alpha, \, low}(X_i), \; \hat{ q}_{\alpha, \, high}(X_i) \right]$ and negative if $Y_i$ is *inside* the interval.
+
+--
+
+**Step 4:** <br>
+Compute the **margin** $Q_{1 - \alpha}(E, I_2)$ given by the $(1 - \alpha)(1 + \frac{ 1}{ 1 + \left| I_2 \right| })$-th empirical quantile of the scores $E_i$ in the calibration set.
+
+---
+
+## CQR Algorithm
+
+**Step 5:** <br>
+On the basis of the original prediction interval bounds $\hat{ q}_{\alpha, \, low}(X_i)$ and $\hat{ q}_{\alpha, \, high}(X_i)$, the new *post-processed* prediction interval for $Y_i$ is given by
+
+$$
+\begin{aligned}
+C(X_{n+1}) = \left[ \hat{ q}_{\alpha, \, low}(X_i) - Q_{1 - \alpha}(E, I_2), \; \hat{ q}_{\alpha, \, high}(X_i) + Q_{1 - \alpha}(E, I_2) \right].
+\end{aligned}
+$$
+
+--
+
+Note that the **same** margin is subtracted/added for the lower and upper bound, which limits the flexibility of the classical CQR approach.
+
+Possible extensions of the CQR principle could use different margins and/or **multiplicative** instead of additive correction terms.
+
+---
+class: inverse, center, middle
+
 # The .mono[postforecasts] package `r emo::ji("package")`
+
+---
+
+## Core Idea
 
 - Structured and unifying framework for implementing various post-processing techniques
 
 --
 
-- Aims to establish consistent workflow for a collection of processing methods 
+- Aims to establish a consistent workflow for a collection of post-processing methods supported by an intuitive user interface 
 
 --
 
-- Convenient comparison between methods and choice of the best method for the data of interest
+- Allows for convenient comparisons between methods and the choice of the best method for the data of interest
 
 ---
 
@@ -244,15 +328,18 @@ plot_quantiles(df, model, quantiles = c(0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99)
 
 ## Adjust Predictions with Conformalized Quantile Regression
 
+<!-- Remove Chunk Option 'eval=FALSE' when code is compatible with updated functions -->
+
+
 .size-90[
 
-```{r}
+```{r, eval=FALSE}
 model <- "epiforecasts-EpiExpert"
 
 df_updated <- update_predictions(
-  df, 
-  method = "cqr",   # ideally same interface for alternative methods
-  models = model    # can be used for collection of different models
+  df,
+  method = "cqr",  # ideally same interface for alternative methods
+  models = model   # can be used for collection of different models
 )
 
 df_combined <- collect_predictions(original = df, cqr = df_updated)
@@ -266,11 +353,11 @@ df_combined <- collect_predictions(original = df, cqr = df_updated)
 
 .size-90[
 
-```{r}
+```{r, eval=FALSE}
 df_combined |>
-  filter(model == !!model) |>
-  eval_forecasts(summarise_by = c("method", "model", "target_type")) |> 
-  select(method, target_type:overprediction) |> 
+  filter_models(model) |>
+  eval_forecasts(summarise_by = c("method", "model", "target_type")) |>
+  select(method, target_type:overprediction) |>
   arrange(target_type, desc(method))
 ```
 
@@ -280,7 +367,7 @@ df_combined |>
 
 ## Compare Predictions Visually
 
-```{r fig.height=4, echo=FALSE}
+```{r fig.height=4, echo=FALSE, eval=FALSE}
 plot_intervals_grid(df_combined, model, facet_by = "quantile", quantiles = c(0.05, 0.1, 0.25))
 ```
 
@@ -330,16 +417,16 @@ Tibshirani R. (2019). Advances and Challenges in Conformal Inference. *Carnegie 
 
 ## References
 
-**More Information about UK Covid-19 Forecasting Challenge**
+**More Information about the UK Covid-19 Forecasting Challenge**
 
 - Website: https://www.crowdforecastr.org/2021/05/11/uk-challenge/
 
 - Evaluation & Ranking: https://epiforecasts.io/uk-challenge/
 
+<br>
 
-**More Information about European Forecasting Hub**
+**More Information about the European Forecasting Hub**
 
 - Website: https://covid19forecasthub.eu/index.html
 
 - GitHub: https://github.com/epiforecasts/covid19-forecast-hub-europe
-

@@ -48,7 +48,7 @@ update_subset <- function(df, method, model, target_type, horizon, quantile, cv_
 
     # TODO: Adjust indices (maybe in other places as well), R starts with index 1 :)
     results <- method(
-      q * 2,
+      quantile * 2,
       true_values[0:cv_init_training],
       quantiles_low[0:cv_init_training],
       quantiles_high[0:cv_init_training]
@@ -67,7 +67,7 @@ update_subset <- function(df, method, model, target_type, horizon, quantile, cv_
     #    Then with the new margin the one horizon step ahead prediction is updated.
     for (training_length in (cv_init_training + 1):(length(true_values) - 1)) {
       results <- method(
-        q * 2,
+        quantile * 2,
         true_values[1:training_length],
         quantiles_low[1:training_length],
         quantiles_high[1:training_length]

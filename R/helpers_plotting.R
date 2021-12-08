@@ -15,7 +15,7 @@ facet_quantile <- function(df, quantiles, horizon) {
 
 setup_intervals_plot <- function(df) {
   df |> 
-    tidyr::pivot_wider(names_from = .data$quantile, values_from = .data$prediction) |>
+    tidyr::pivot_wider(names_from = .data$quantile, values_from = .data$prediction) |> 
     ggplot2::ggplot(mapping = ggplot2::aes(x = .data$target_end_date)) +
     ggplot2::geom_point(ggplot2::aes(y = .data$true_value), size = 1) +
     ggplot2::geom_line(ggplot2::aes(y = .data$true_value)) +
@@ -24,10 +24,6 @@ setup_intervals_plot <- function(df) {
       position = ggplot2::position_dodge2(padding = 0.01)
     ) +
     ggplot2::scale_color_brewer(palette = "Set1") +
-    ggplot2::labs(
-      x = NULL, y = NULL, color = NULL,
-      subtitle = "Prediction methods separated by color"
-    ) +
     ggplot2::theme_light() +
     ggplot2::theme(
       plot.title = ggplot2::element_text(hjust = 0.5),

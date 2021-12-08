@@ -49,9 +49,9 @@ update_subset <- function(df, method, model, target_type, horizon, quantile, cv_
     # TODO: Adjust indices (maybe in other places as well), R starts with index 1 :)
     results <- method(
       quantile * 2,
-      true_values[0:cv_init_training],
-      quantiles_low[0:cv_init_training],
-      quantiles_high[0:cv_init_training]
+      true_values[1:cv_init_training],
+      quantiles_low[1:cv_init_training],
+      quantiles_high[1:cv_init_training]
     )
 
     lower_bound_updated <- results$lower_bound

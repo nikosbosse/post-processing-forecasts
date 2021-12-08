@@ -46,13 +46,14 @@ df <- read.csv(here::here("data", "full-data-uk-challenge.csv"))
 
 ```{r}
 model <- "epiforecasts-EpiExpert"
-plot_quantiles(df, model, quantiles = c(0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99))
+location <- "GB"
+plot_quantiles(df, model, location, quantiles = c(0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99))
 ```
 
 # Update Predictions
 
 ```{r}
-df_updated <- update_predictions(df, method = "cqr", models = model)
+df_updated <- update_predictions(df, method = "cqr", model, location)
 ```
 
 # Numerical Analysis
@@ -60,30 +61,27 @@ df_updated <- update_predictions(df, method = "cqr", models = model)
 ```{r}
 df_combined <- collect_predictions(original = df, cqr = df_updated)
 
-scores_combined <- df_combined |>
+df_combined |>
   filter_models(model) |>
-  eval_forecasts(summarise_by = c("method", "model", "target_type"))
-
-scores_combined |> 
+  eval_forecasts(summarise_by = c("method", "model", "target_type")) |> 
   arrange(target_type, desc(method))
 ```
 
 # Graphical Analysis
 
-## for given `model`, `target_type`, `horizon` and `quantile`
+## for given `model`, `location`, `target_type`, `quantile` and `horizon`
 
 ```{r}
-# interface will change soon
-plot_cqr_results(df, model, target_type = "Cases", horizon = 1, quantile = 0.05)
+plot_intervals(df_combined, model, location, target_type = "Cases", quantile = 0.05, horizon = 1)
 ```
 
-## for given `model` and `quantile` and different `horizons`
+## for given `model`, `location` and `quantile` and different `horizons`
 
 ```{r}
 plot_intervals_grid(df_combined, model, facet_by = "horizon")
 ```
 
-## for given `model` and `horizon` and different `quantiles`
+## for given `model`, `location` and `horizon` and different `quantiles`
 
 ```{r}
 plot_intervals_grid(df_combined, model, facet_by = "quantile")

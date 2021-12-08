@@ -97,39 +97,16 @@ update_predictions <- function(df, method,
   if (!all(models %in% unique(df$model))) {
     stop("At least one of the input models is not contained in the input data frame.")
   }
-
-  preprocess_inputs <- function(df,vec,string){
-    if (is.null(vec)) {
-      # Default is no filtering, so each variable is equal to its unique values
-      vec <- na.omit(unique(df[[string]]))
-    } else {
-      # make function work for single model and single locations
-      vec <- c(vec)
-    }
-    return(vec)
-  }
   
-  models <- preprocess_inputs(df,models,"model")
-  locations <- preprocess_inputs(df,locations,"location")
-  target_types <- preprocess_inputs(df,target_types,"target_type")
-  horizons <- preprocess_inputs(df,horizons,"horizon")
-  
-  if (is.null(quantiles_below_median)) {
-    quantiles_below_median <- na.omit(unique(df$quantile)[unique(df$quantile) < 0.5])
-  } else {
-    quantiles_below_median <- c(quantiles_below_median)
-  }
-  
-  #print("models:", models)
-  
-
-  # Filtering out all combinations that are not updated
-  df <- df |>
-    filter_models(models) |>
-    filter_locations(locations) |>
-    filter_target_types(target_types) |>
-    filter_horizons(horizons) |>
-    filter_quantile_pairs(quantiles_below_median)
+  # Preprocessing the df and inputs
+  preprocessed <- preprocess_df(df = df, models = models, locations = locations, target_types = target_types, 
+                      horizons = horizons, quantiles_below_median = quantiles_below_median)
+  df <- preprocessed$df
+  models<- preprocessed$models
+  locations <- preprocessed$locations
+  target_types <- preprocessed$target_types
+  horizons <- preprocessed$horizons
+  quantiles_below_median <- preprocessed$quantiles_below_median
 
   method <- select_method(method = method)
 

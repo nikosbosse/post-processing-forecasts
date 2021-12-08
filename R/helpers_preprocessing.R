@@ -122,7 +122,7 @@ filter_methods <- function(df, methods) {
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### combination of columns                                                  ####
 
-filter_combination <- function(df, model, target_type, horizon, quantile) {
+filter_combination <- function(df, model, location, target_type, horizon, quantile) {
   # for nicer function input names,
   # input names equal to column names are a little painful with tidyverse functions
   # => temporary variables with different names
@@ -130,11 +130,12 @@ filter_combination <- function(df, model, target_type, horizon, quantile) {
   t <- target_type
   h <- horizon
   q <- quantile
+  l <- location
 
   # To make sure that the predictions and true_values are in the correct order we also arrange by the target_end_date
   quantiles_low_df <- df |>
     dplyr::filter(
-      model == mod & target_type == t & horizon == h & quantile == q
+      .data$model == mod & .data$location == l & .data$target_type == t & .data$horizon == h & .data$quantile == q
     ) |>
     dplyr::arrange(target_end_date)
 
@@ -143,7 +144,7 @@ filter_combination <- function(df, model, target_type, horizon, quantile) {
 
   quantiles_high <- df |>
     dplyr::filter(
-      model == mod & target_type == t & horizon == h & quantile == 1 - q
+      .data$model == mod & .data$location == l & .data$target_type == t & .data$horizon == h & .data$quantile == 1 - q
     ) |>
     dplyr::arrange(target_end_date) |>
     dplyr::pull(prediction)
@@ -155,22 +156,23 @@ filter_combination <- function(df, model, target_type, horizon, quantile) {
 }
 
 
-replace_combination <- function(df, model, target_type, horizon, quantile,
+replace_combination <- function(df, model, location, target_type, horizon, quantile,
                                 quantiles_low_updated, quantiles_high_updated) {
   mod <- model
   t <- target_type
   h <- horizon
   q <- quantile
+  l <- location
 
   df |>
     dplyr::mutate(prediction = replace(
       .data$prediction,
-      .data$model == mod & .data$target_type == t & .data$horizon == h & .data$quantile == q,
+      .data$model == mod & .data$location == l & .data$target_type == t & .data$horizon == h & .data$quantile == q,
       values = quantiles_low_updated
     )) |>
     dplyr::mutate(prediction = replace(
       .data$prediction,
-      .data$model == mod & .data$target_type == t & .data$horizon == h & .data$quantile == 1 - q,
+      .data$model == mod & .data$location == l & .data$target_type == t & .data$horizon == h & .data$quantile == 1 - q,
       values = quantiles_high_updated
     ))
 }

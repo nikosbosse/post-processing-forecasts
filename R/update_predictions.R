@@ -19,8 +19,8 @@ collect_predictions <- function(...) {
 
 
 # TODO: fails unit test when data is imported with tidyverse readr::read_csv()
-update_subset <- function(df, method, model, target_type, horizon, quantile, cv_init_training) {
-  quantiles_list <- filter_combination(df, model, target_type, horizon, quantile)
+update_subset <- function(df, method, model, location, target_type, horizon, quantile, cv_init_training) {
+  quantiles_list <- filter_combination(df, model, location, target_type, horizon, quantile)
 
   true_values <- quantiles_list$true_values
   quantiles_low <- quantiles_list$quantiles_low
@@ -30,7 +30,7 @@ update_subset <- function(df, method, model, target_type, horizon, quantile, cv_
     # By default cv_init_training is equal to NULL and therefore equal to the complete data.
     # e.g. by default no split in training and validation set
     result <- method(
-      quantile * 2, # method was cqr in prior version
+      quantile * 2,
       true_values,
       quantiles_low,
       quantiles_high
@@ -45,8 +45,6 @@ update_subset <- function(df, method, model, target_type, horizon, quantile, cv_
     #    Then by using the margin it makes the first prediction in the validation set.
     #    The training values and the first adjusted validation set valued are stored in the lists
     #    quantiles_low_updated and quantiles_high_updated. The following section appends to these vectors.
-
-    # TODO: Adjust indices (maybe in other places as well), R starts with index 1 :)
     results <- method(
       quantile * 2,
       true_values[1:cv_init_training],
@@ -81,7 +79,7 @@ update_subset <- function(df, method, model, target_type, horizon, quantile, cv_
   }
 
   df_updated <- replace_combination(
-    df, model, target_type, horizon, quantile,
+    df, model, location, target_type, horizon, quantile,
     quantiles_low_updated, quantiles_high_updated
   )
   
@@ -93,37 +91,61 @@ update_subset <- function(df, method, model, target_type, horizon, quantile, cv_
 
 
 
-update_predictions <- function(df, method, models, locations, cv_init_training = NULL) {
+update_predictions <- function(df, method, 
+                               models = NULL, locations = NULL, target_types = NULL, horizons = NULL, quantiles_below_median = NULL,
+                               cv_init_training = NULL) {
   if (!all(models %in% unique(df$model))) {
     stop("At least one of the input models is not contained in the input data frame.")
   }
 
-  # make function work for single model and single locations
-  models <- c(models)
-  locations <- c(locations)
+  preprocess_inputs <- function(df,vec,string){
+    if (is.null(vec)) {
+      # Default is no filtering, so each variable is equal to its unique values
+      vec <- na.omit(unique(df[[string]]))
+    } else {
+      # make function work for single model and single locations
+      vec <- c(vec)
+    }
+    return(vec)
+  }
+  
+  models <- preprocess_inputs(df,models,"model")
+  locations <- preprocess_inputs(df,locations,"location")
+  target_types <- preprocess_inputs(df,target_types,"target_type")
+  horizons <- preprocess_inputs(df,horizons,"horizon")
+  
+  if (is.null(quantiles_below_median)) {
+    quantiles_below_median <- na.omit(unique(df$quantile)[unique(df$quantile) < 0.5])
+  } else {
+    quantiles_below_median <- c(quantiles_below_median)
+  }
+  
+  #print("models:", models)
+  
 
-  # Filtering out all models and locations that are not updated
+  # Filtering out all combinations that are not updated
   df <- df |>
     filter_models(models) |>
-    filter_locations(locations)
+    filter_locations(locations) |>
+    filter_target_types(target_types) |>
+    filter_horizons(horizons) |>
+    filter_quantile_pairs(quantiles_below_median)
 
   method <- select_method(method = method)
-
-  horizons <- na.omit(unique(df$horizon))
-  quantiles_below_median <- na.omit(unique(df$quantile)[unique(df$quantile) < 0.5])
-  target_types <- na.omit(unique(df$target_type))
 
   df_updated <- df
 
   for (model in models) {
-    for (target_type in target_types) {
-      for (horizon in horizons) {
-        for (quantile in quantiles_below_median) {
-          df_updated <- update_subset(df_updated, method, model, target_type, horizon, quantile, cv_init_training)
+    for (location in locations) {
+      for (target_type in target_types) {
+        for (horizon in horizons) {
+          for (quantile in quantiles_below_median) {
+            df_updated <- update_subset(df_updated, method, model, location, target_type, horizon, quantile, cv_init_training)
+          }
         }
       }
     }
   }
-
+  
   return(df_updated)
 }

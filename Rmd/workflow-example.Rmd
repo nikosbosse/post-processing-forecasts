@@ -63,6 +63,7 @@ df_combined <- collect_predictions(original = df, cqr = df_updated)
 
 df_combined |>
   filter_models(model) |>
+  filter_locations(location) |> 
   eval_forecasts(summarise_by = c("method", "model", "target_type")) |> 
   arrange(target_type, desc(method))
 ```

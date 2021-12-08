@@ -104,7 +104,7 @@ plot_cqr_results <- function(df, model, target_type, horizon, quantile) {
 
 
 #' @importFrom rlang .data
-
+#TODO: add a vertical line at the end of the training set
 plot_intervals <- function(df, model = NULL, target_type = c("Cases", "Deaths"),
                            quantile = 0.05, horizon = 1) {
   target <- rlang::arg_match(arg = target_type, values = c("Cases", "Deaths"))

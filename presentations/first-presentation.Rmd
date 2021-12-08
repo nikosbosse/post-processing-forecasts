@@ -58,7 +58,8 @@ https://epiforecasts.io/uk-challenge/
 
 --
 
-- Part of ongoing research project by the **epiforecasts** group of the London School of Hygiene & Tropical Medicine that our project partner Nikos Bosse is actively part of due to his PHD in Epidemiology
+- Part of ongoing research project by the **epiforecasts** group at the London School of Hygiene & Tropical Medicine where our project partner Nikos Bosse is engaged as a doctoral candidate
+<!-- Before: Part of ongoing research project by the **epiforecasts** group of the London School of Hygiene & Tropical Medicine that our project partner Nikos Bosse is actively part of due to his PHD in Epidemiology > -->
 
 ---
 
@@ -69,7 +70,7 @@ https://www.crowdforecastr.org/2021/05/11/uk-challenge/ <br>
 https://epiforecasts.io/uk-challenge/
 ]
 
-- Idea: Compare forecasts from humans with model-based predictions
+- Idea: Compare human forecasts from humans with model-based predictions
 
 --
 
@@ -182,7 +183,7 @@ Many post-processing methods available, including
 
 --
 
-- More detailed overview given in **README** Page of Project's GitHub Repository<sup>1</sup>
+- More detailed overview given in **README** Page of Project's GitHub Repository <sup>1</sup>
 
 .footnote[[1] https://github.com/nikosbosse/post-processing-forecasts]
 
@@ -191,11 +192,9 @@ Many post-processing methods available, including
 
 ## Evaluation
 
-- Based on **Weighted Interval Score**<sup>1</sup> 
+- Based on **Weighted Interval Score** 
 
 .center.bold[WIS = Sharpness + Underprediction + Overprediction]
-
-.footnote[[1] https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008618]
 
 --
 
@@ -323,53 +322,25 @@ class: inverse, center, middle
 
 ```{r echo=FALSE, fig.height=4}
 model <- "epiforecasts-EpiExpert"
-location <- "GB"
-plot_quantiles(df, model, location, quantiles = c(0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99))
+plot_quantiles(df, model, quantiles = c(0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99))
 ```
 
 ---
 
-## Time Series Cross-Validation
+## Adjust Predictions with Conformalized Quantile Regression
 
-.footnote[https://otexts.com/fpp3/tscv.html]
+<!-- Remove Chunk Option 'eval=FALSE' when code is compatible with updated functions -->
 
-.pull-left[
-
-- important point
-
-- next important point
-
-- very important point
-
-]
-
---
-
-.pull-right[
-
-```{r echo=FALSE}
-# TODO: Make image larger
-knitr::include_graphics("Images/cv-hyndman.svg")
-```
-
-]
-
----
-
-## Adjust Predictions 
 
 .size-90[
 
-```{r}
+```{r, eval=FALSE}
 model <- "epiforecasts-EpiExpert"
-location <- "GB"
 
 df_updated <- update_predictions(
   df,
-  method = "cqr", # ideally same interface for alternative methods
-  models = model, # can be used for multiple models and locations
-  locations = location,
-  cv_init_training = 10
+  method = "cqr",  # ideally same interface for alternative methods
+  models = model   # can be used for collection of different models
 )
 
 df_combined <- collect_predictions(original = df, cqr = df_updated)
@@ -381,22 +352,14 @@ df_combined <- collect_predictions(original = df, cqr = df_updated)
 
 ## Evaluate Predictions
 
-```{r, echo=FALSE}
-round_output <- function(df, digits) {
-  df |> mutate(across(.cols = where(is.numeric), .fns = ~ round(.x, digits)))
-}
-```
-
 .size-90[
 
-```{r}
+```{r, eval=FALSE}
 df_combined |>
   filter_models(model) |>
-  filter_locations(location) |>
-  eval_forecasts(summarise_by = c("method", "model", "target_type")) |> 
+  eval_forecasts(summarise_by = c("method", "model", "target_type")) |>
   select(method, target_type:overprediction) |>
-  arrange(target_type, desc(method)) |> 
-  round_output(digits = 3)
+  arrange(target_type, desc(method))
 ```
 
 ]
@@ -405,11 +368,8 @@ df_combined |>
 
 ## Compare Predictions Visually
 
-```{r fig.height=4, echo=FALSE}
-plot_intervals_grid(
-  df_combined, model, location,
-  facet_by = "quantile", quantiles = c(0.05, 0.1, 0.25)
-)
+```{r fig.height=4, echo=FALSE, eval=FALSE}
+plot_intervals_grid(df_combined, model, facet_by = "quantile", quantiles = c(0.05, 0.1, 0.25))
 ```
 
 ---
@@ -452,23 +412,7 @@ Romano Y., Patterson E., and Candès E. (2019). Conformalized Quantile Regressio
 **Variations and Extensions of CQR**
 
 Tibshirani R. (2019). Advances and Challenges in Conformal Inference. *Carnegie Mellon University*.
-  - Slides: www.stat.cmu.edu/~ryantibs/talks/conformal-2019.pdf
-
----
-
-## References
-
-**Theoretical Foundation of Weighted Interval Score** 
-
-Bracher et al. (2021). Evaluating epidemic forecasts in an interval format.
-  - Paper: https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008618
-  
-<br>
-
-**Time Series Cross Validation**
-
-Hyndman R., Athanasopoulos G. (2021). Forecasting: principles and practice, 3rd edition. *OTexts: Melbourne, Australia*.
-  - Online Version: https://otexts.com/fpp3/
+  - Slides: .underline[www.stat.cmu.edu/~ryantibs/talks/conformal-2019.pdf]
 
 ---
 

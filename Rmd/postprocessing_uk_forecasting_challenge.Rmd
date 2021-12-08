@@ -45,7 +45,7 @@ model <- unique(df$model)[2]
 
 # Updating Predictions
 df_updated <- update_predictions(df = df, method = "cqr", models = model, locations = "GB",
-                                 horizons = 1)#, cv_init_training = 5)
+                                 horizons = 1)
 
 # Preprocessing the original DF
 preprocessed <- preprocess_df(df = df, models = model, locations = "GB",
@@ -178,6 +178,20 @@ scores_combined_val <- df_combined_val |>
 scores_combined_val |> 
   arrange(target_type, desc(quantile))
 ```
+
+```{r}
+scores_combined_val_cqr <- scores_combined_val |> 
+  arrange(target_type, desc(quantile)) |>
+  filter(method == "cqr")
+  
+scores_combined_val_original <- scores_combined_val |> 
+  arrange(target_type, desc(quantile)) |>
+  filter(method == "original")
+
+scores_combined_val_cqr$interval_score - scores_combined_val_original$interval_score
+```
+
+
 
 ```{r}
 plot_intervals(df = df_combined, model = model, target_type = "Cases",

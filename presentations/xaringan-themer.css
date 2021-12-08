@@ -20,7 +20,7 @@
  * ------------------------------------------------------- */
 @import url(https://fonts.googleapis.com/css?family=Karla:300,300i&display=swap);
 @import url(https://fonts.googleapis.com/css?family=Noto+Sans&display=swap);
-@import url(https://fonts.googleapis.com/css?family=Cascadia+Code&display=swap);
+@import url(https://fonts.googleapis.com/css?family=Source+Code+Pro&display=swap);
 
 
 :root {
@@ -32,7 +32,7 @@
   --header-font-family: 'Noto Sans';
   --header-font-is-google: 1;
   --header-font-family-fallback: Georgia, serif;
-  --code-font-family: 'Cascadia Code';
+  --code-font-family: 'Source Code Pro';
   --code-font-is-google: 1;
   --base-font-size: 20px;
   --text-font-size: 1.2em;

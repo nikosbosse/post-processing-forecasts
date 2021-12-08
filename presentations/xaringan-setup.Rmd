@@ -85,7 +85,8 @@ style_mono_accent(
   # font style
   header_font_google = google_font("Noto Sans"),
   text_font_google = google_font("Karla", "300", "300i"),
-  code_font_google = google_font("Cascadia Code"),
+  # code_font_google = google_font("Cascadia Code"),
+  code_font_google = google_font("Source Code Pro"),
 
   # font size
   base_font_size = "20px",

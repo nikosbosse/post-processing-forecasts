@@ -59,7 +59,6 @@ https://epiforecasts.io/uk-challenge/
 --
 
 - Part of ongoing research project by the **epiforecasts** group at the London School of Hygiene & Tropical Medicine where our project partner Nikos Bosse is engaged as a doctoral candidate
-<!-- Before: Part of ongoing research project by the **epiforecasts** group of the London School of Hygiene & Tropical Medicine that our project partner Nikos Bosse is actively part of due to his PHD in Epidemiology > -->
 
 ---
 
@@ -126,7 +125,6 @@ df_subset |>
 
 .right-column[
 ![](Images/european-forecast-hub.png) 
-<!-- <img src="Images/european-forecast-hub.png" alt="" width="1000" height="500">   -->
 ]
 
 
@@ -183,7 +181,7 @@ Many post-processing methods available, including
 
 --
 
-- More detailed overview given in **README** Page of Project's GitHub Repository <sup>1</sup>
+- More detailed overview given in **README** Page of Project's GitHub Repository<sup>1</sup>
 
 .footnote[[1] https://github.com/nikosbosse/post-processing-forecasts]
 
@@ -192,9 +190,11 @@ Many post-processing methods available, including
 
 ## Evaluation
 
-- Based on **Weighted Interval Score** 
+- Based on **Weighted Interval Score**<sup>1</sup>  
 
 .center.bold[WIS = Sharpness + Underprediction + Overprediction]
+
+.footnote[[1] https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008618]
 
 --
 
@@ -322,54 +322,134 @@ class: inverse, center, middle
 
 ```{r echo=FALSE, fig.height=4}
 model <- "epiforecasts-EpiExpert"
-plot_quantiles(df, model, quantiles = c(0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99))
+location <- "GB"
+plot_quantiles(df, model, location, quantiles = c(0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99))
 ```
 
 ---
 
-## Adjust Predictions with Conformalized Quantile Regression
+## Time Series Cross-Validation
 
-<!-- Remove Chunk Option 'eval=FALSE' when code is compatible with updated functions -->
+.footnote[https://otexts.com/fpp3/tscv.html]
 
+.left-column[
 
-.size-90[
+- first important point
 
-```{r, eval=FALSE}
-model <- "epiforecasts-EpiExpert"
+- next important point
 
+- very important point
+
+]
+
+--
+
+.right-column[
+
+<img src="Images/cv-hyndman.svg" width="100%" height="100%"></img>
+
+]
+
+---
+
+## Update and Evaluate Forecasts for a fixed time horizon
+
+```{r}
 df_updated <- update_predictions(
   df,
-  method = "cqr",  # ideally same interface for alternative methods
-  models = model   # can be used for collection of different models
+  method = "cqr", # ideally same interface for alternative methods
+  models = "epiforecasts-EpiExpert",
+  locations = "GB",
+  horizons = 1,
+  cv_init_training = 5
 )
-
-df_combined <- collect_predictions(original = df, cqr = df_updated)
 ```
 
-]
 
----
+```{r, echo=FALSE}
+model <- "epiforecasts-EpiExpert"
+location <- "GB"
+cv_init_training <- 5
 
-## Evaluate Predictions
+preprocessed <- preprocess_df(df, model, location, horizons = 1)
+df_combined <- collect_predictions(original = preprocessed$df, cqr = df_updated)
+```
 
-.size-90[
+--
 
-```{r, eval=FALSE}
+```{r, echo=FALSE}
+round_output <- function(df, digits) {
+  df |> mutate(across(.cols = where(is.numeric), .fns = ~ round(.x, digits)))
+}
+```
+
+```{r, echo=FALSE}
 df_combined |>
-  filter_models(model) |>
+  filter(target_end_date %in% unique(df_combined$target_end_date)[-(1:cv_init_training)]) |>
   eval_forecasts(summarise_by = c("method", "model", "target_type")) |>
   select(method, target_type:overprediction) |>
-  arrange(target_type, desc(method))
+  arrange(target_type, desc(method)) |>
+  round_output(digits = 3) |>
+  gt::gt() |>
+  gt::tab_options(
+    table.align = "left", row.striping.include_table_body = TRUE,
+    data_row.padding = gt::px(15)
+  )
 ```
-
-]
 
 ---
 
-## Compare Predictions Visually
+```{r, echo=FALSE, fig.height=5}
+plot_intervals(
+  df_combined, model, location,
+  target_type = "Cases", quantile = 0.05, horizon = 1
+)
+```
 
-```{r fig.height=4, echo=FALSE, eval=FALSE}
-plot_intervals_grid(df_combined, model, facet_by = "quantile", quantiles = c(0.05, 0.1, 0.25))
+---
+
+## Evaluate Predicted Cases stratified by time horizon
+
+```{r}
+df_updated <- update_predictions(
+  df,
+  method = "cqr",
+  models = "epiforecasts-EpiExpert",
+  locations = "GB",
+  target_types = "Cases", # if not specified, all time horizons are included
+  cv_init_training = 5
+)
+```
+
+
+```{r, echo=FALSE}
+preprocessed <- preprocess_df(df, model, location, target_types = "Cases")
+df_combined <- collect_predictions(original = preprocessed$df, cqr = df_updated)
+```
+
+--
+
+```{r, echo=FALSE}
+df_combined |>
+  filter(target_end_date %in% unique(df_combined$target_end_date)[-(1:cv_init_training)]) |>
+  eval_forecasts(summarise_by = c("method", "model", "horizon")) |>
+  select(method, horizon:overprediction) |>
+  arrange(horizon, desc(method)) |>
+  round_output(digits = 3) |>
+  gt::gt() |>
+  gt::tab_options(
+    table.align = "left", row.striping.include_table_body = TRUE,
+    data_row.padding = gt::px(5)
+  )
+```
+
+---
+
+```{r, echo=FALSE, fig.height=5}
+plot_intervals(
+  df_combined, model, location,
+  target_type = "Cases", quantile = 0.05, horizon = 4
+)
 ```
 
 ---
@@ -413,6 +493,22 @@ Romano Y., Patterson E., and Candès E. (2019). Conformalized Quantile Regressio
 
 Tibshirani R. (2019). Advances and Challenges in Conformal Inference. *Carnegie Mellon University*.
   - Slides: .underline[www.stat.cmu.edu/~ryantibs/talks/conformal-2019.pdf]
+
+---
+
+## References
+
+**Theoretical Foundation of Weighted Interval Score** 
+
+Bracher et al. (2021). Evaluating epidemic forecasts in an interval format.
+  - Paper: https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008618
+
+<br>
+
+**Time Series Cross Validation**
+
+Hyndman R., Athanasopoulos G. (2021). Forecasting: principles and practice, 3rd edition. *OTexts: Melbourne, Australia*.
+  - Online Version: https://otexts.com/fpp3/
 
 ---
 

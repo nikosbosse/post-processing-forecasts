@@ -5,7 +5,18 @@
 ### location column                                                         ####
 
 filter_locations <- function(df, locations) {
+  locations <- c(locations)
   df |> dplyr::filter(.data$location %in% locations)
+}
+
+process_location_input <- function(df, location) {
+  if (!is.null(location)) {
+    df <- filter_locations(df, location)
+  } 
+  
+  # return location_name instead of location!
+  location_name <- df$location_name[1]
+  return(list(df = df, location_name = location_name))
 }
 
 
@@ -16,7 +27,6 @@ filter_models <- function(df, models) {
   models <- c(models)
   df |> dplyr::filter(.data$model %in% models)
 }
-
 
 process_model_input <- function(df, model) {
   # if input "model" is specified

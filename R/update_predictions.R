@@ -131,6 +131,7 @@ update_predictions <- function(df, method,
     filter_horizons(horizons) |>
     filter_quantile_pairs(quantiles_below_median)
 
+  # TODO: put select method line in update_subset()
   method <- select_method(method = method)
 
   df_updated <- df

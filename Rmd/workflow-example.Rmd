@@ -61,7 +61,7 @@ df_updated <- update_predictions(df, method = "cqr", models = model)
 df_combined <- collect_predictions(original = df, cqr = df_updated)
 
 scores_combined <- df_combined |>
-  filter(model == !!model) |>
+  filter_models(model) |>
   eval_forecasts(summarise_by = c("method", "model", "target_type"))
 
 scores_combined |> 
@@ -88,4 +88,3 @@ plot_intervals_grid(df_combined, model, facet_by = "horizon")
 ```{r}
 plot_intervals_grid(df_combined, model, facet_by = "quantile")
 ```
-

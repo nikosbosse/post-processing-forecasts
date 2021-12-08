@@ -1,9 +1,13 @@
 #' @importFrom rlang .data
 
-plot_quantiles <- function(df, model = NULL, quantiles = c(0.05, 0.5, 0.95)) {
+plot_quantiles <- function(df, model = NULL, location = NULL, quantiles = c(0.05, 0.5, 0.95)) {
   l <- process_model_input(df, model)
   df <- l$df
   model <- l$model
+  
+  l <- process_location_input(df, location)
+  df <- l$df
+  location_name <- l$location_name
 
   df |>
     filter_quantiles(quantiles) |>
@@ -21,9 +25,9 @@ plot_quantiles <- function(df, model = NULL, quantiles = c(0.05, 0.5, 0.95)) {
       scales = "free_y"
     ) +
     ggplot2::labs(
-      title = stringr::str_glue("Quantile Predictions for {model} model"),
-      subtitle = "True Values indicated by black line",
-      color = NULL, x = NULL, y = NULL,
+      x = NULL, y = NULL, color = NULL, 
+      title = stringr::str_glue("Predicted Quantiles in {location_name}"),
+      subtitle = stringr::str_glue("model: {model}")
     ) +
     ggplot2::guides(color = ggplot2::guide_legend(nrow = 1)) +
     ggplot2::theme_light() +
@@ -104,8 +108,15 @@ plot_cqr_results <- function(df, model, target_type, horizon, quantile) {
 
 
 #' @importFrom rlang .data
+<<<<<<< HEAD
 #TODO: add a vertical line at the end of the training set
 plot_intervals <- function(df, model = NULL, target_type = c("Cases", "Deaths"),
+=======
+
+# TODO: title: target, location, horizon, subtitle: model, quantile
+plot_intervals <- function(df, model = NULL, location = NULL,
+                           target_type = c("Cases", "Deaths"),
+>>>>>>> 411ecdc11181a69cd33175ced28e1c06ce23a6b0
                            quantile = 0.05, horizon = 1) {
   target <- rlang::arg_match(arg = target_type, values = c("Cases", "Deaths"))
   h <- paste_horizon(horizon)
@@ -113,28 +124,39 @@ plot_intervals <- function(df, model = NULL, target_type = c("Cases", "Deaths"),
   l <- process_model_input(df, model)
   df <- l$df
   model <- l$model
+  
+  l <- process_location_input(df, location)
+  df <- l$df
+  location_name <- l$location_name
 
   df |>
-    process_quantile_pair(quantile) |>
+    process_quantile_pair(quantile) |> #dplyr::count(quantile)
     filter_target_types(target) |>
     filter_horizons(horizon) |>
     change_to_date() |>
     setup_intervals_plot() +
-    ggplot2::ggtitle(stringr::str_glue(
-      "Predicted {target} for {model} model at level {quantile} {h}"
-    ))
+    ggplot2::labs(
+      x = NULL, y = NULL, color = NULL,
+      title = stringr::str_glue("Predicted {target} in {location_name} {h}"),
+      subtitle = stringr::str_glue("model: {model}   |   quantile: {quantile}")
+    )
 }
 
 
 #' @importFrom rlang .data
 
-plot_intervals_grid <- function(df, model = NULL, facet_by = c("horizon", "quantile"),
+plot_intervals_grid <- function(df, model = NULL, location = NULL,
+                                facet_by = c("horizon", "quantile"),
                                 quantiles = NULL, horizon = NULL) {
   facet_by <- rlang::arg_match(arg = facet_by, values = c("horizon", "quantile"))
 
   l <- process_model_input(df, model)
   df <- l$df
   model <- l$model
+  
+  l <- process_location_input(df, location)
+  df <- l$df
+  location_name <- l$location_name
 
   if (facet_by == "horizon") {
     if (is.null(quantiles)) {
@@ -167,8 +189,10 @@ plot_intervals_grid <- function(df, model = NULL, facet_by = c("horizon", "quant
         cols = ggplot2::vars(.data$horizon),
         scales = "free_y"
       ) +
-      ggplot2::ggtitle(
-        stringr::str_glue("Prediction Intervals for {model} model at level {q}")
+      ggplot2::labs(
+        x = NULL, y = NULL, color = NULL,
+        title = stringr::str_glue("Prediction Intervals in {location_name}"),
+        subtitle = stringr::str_glue("model: {model}   |   quantile: {q}")
       )
   } else if (facet_by == "quantile") {
     p <- p +
@@ -177,8 +201,10 @@ plot_intervals_grid <- function(df, model = NULL, facet_by = c("horizon", "quant
         cols = ggplot2::vars(.data$quantile_group),
         scales = "free_y"
       ) +
-      ggplot2::ggtitle(
-        stringr::str_glue("Prediction Intervals for {model} model {h}")
+      ggplot2::labs(
+        x = NULL, y = NULL, color = NULL,
+        title = stringr::str_glue("Prediction Intervals in {location_name} {h}"),
+        subtitle = stringr::str_glue("model: {model}")
       )
   }
   return(p)

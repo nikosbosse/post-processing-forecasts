@@ -20,8 +20,10 @@ collect_predictions <- function(...) {
 
 # TODO: fails unit test when data is imported with tidyverse readr::read_csv()
 update_subset <- function(df, method, model, location, target_type, horizon, quantile, cv_init_training) {
-  quantiles_list <- filter_combination(df, model, location, target_type, horizon, quantile)
+  method <- select_method(method = method)
 
+  quantiles_list <- filter_combination(df, model, location, target_type, horizon, quantile)
+  
   true_values <- quantiles_list$true_values
   quantiles_low <- quantiles_list$quantiles_low
   quantiles_high <- quantiles_list$quantiles_high
@@ -29,12 +31,7 @@ update_subset <- function(df, method, model, location, target_type, horizon, qua
   if (is.null(cv_init_training)) {
     # By default cv_init_training is equal to NULL and therefore equal to the complete data.
     # e.g. by default no split in training and validation set
-    result <- method(
-      quantile * 2,
-      true_values,
-      quantiles_low,
-      quantiles_high
-    )
+    result <- method(quantile * 2, true_values, quantiles_low, quantiles_high)
 
     margin <- result$margin
     quantiles_low_updated <- result$lower_bound
@@ -72,7 +69,6 @@ update_subset <- function(df, method, model, location, target_type, horizon, qua
       )
 
       margin <- results$margin
-
       quantiles_low_updated <- c(quantiles_low_updated, (quantiles_low[training_length + 1] - margin))
       quantiles_high_updated <- c(quantiles_high_updated, (quantiles_high[training_length + 1] + margin))
     }
@@ -82,7 +78,7 @@ update_subset <- function(df, method, model, location, target_type, horizon, qua
     df, model, location, target_type, horizon, quantile,
     quantiles_low_updated, quantiles_high_updated
   )
-  
+
   return(df_updated)
 }
 
@@ -91,24 +87,31 @@ update_subset <- function(df, method, model, location, target_type, horizon, qua
 
 
 
-update_predictions <- function(df, method, 
+update_predictions <- function(df, method,
                                models = NULL, locations = NULL, target_types = NULL, horizons = NULL, quantiles_below_median = NULL,
                                cv_init_training = NULL) {
+  # TODO: Write general error message function validate_inputs()
+  # for inputs models, locations, target_types, horizons, quantiles_below_median
   if (!all(models %in% unique(df$model))) {
     stop("At least one of the input models is not contained in the input data frame.")
   }
   
-  # Preprocessing the df and inputs
-  preprocessed <- preprocess_df(df = df, models = models, locations = locations, target_types = target_types, 
-                      horizons = horizons, quantiles_below_median = quantiles_below_median)
-  df <- preprocessed$df
-  models<- preprocessed$models
-  locations <- preprocessed$locations
-  target_types <- preprocessed$target_types
-  horizons <- preprocessed$horizons
-  quantiles_below_median <- preprocessed$quantiles_below_median
+  if (!all(locations %in% unique(df$location))) {
+    stop("At least one of the input locations is not contained in the input data frame.")
+  }
 
-  method <- select_method(method = method)
+  # Preprocessing the df and inputs
+  preprocessed_list <- preprocess_df(
+    df = df, models = models, locations = locations, target_types = target_types,
+    horizons = horizons, quantiles_below_median = quantiles_below_median
+  )
+
+  df <- preprocessed_list$df
+  models <- preprocessed_list$models
+  locations <- preprocessed_list$locations
+  target_types <- preprocessed_list$target_types
+  horizons <- preprocessed_list$horizons
+  quantiles_below_median <- preprocessed_list$quantiles_below_median
 
   df_updated <- df
 
@@ -123,6 +126,6 @@ update_predictions <- function(df, method,
       }
     }
   }
-  
+
   return(df_updated)
 }

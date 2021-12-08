@@ -4,7 +4,7 @@ plot_quantiles <- function(df, model = NULL, location = NULL, quantiles = c(0.05
   l <- process_model_input(df, model)
   df <- l$df
   model <- l$model
-  
+
   l <- process_location_input(df, location)
   df <- l$df
   location_name <- l$location_name
@@ -25,7 +25,7 @@ plot_quantiles <- function(df, model = NULL, location = NULL, quantiles = c(0.05
       scales = "free_y"
     ) +
     ggplot2::labs(
-      x = NULL, y = NULL, color = NULL, 
+      x = NULL, y = NULL, color = NULL,
       title = stringr::str_glue("Predicted Quantiles in {location_name}"),
       subtitle = stringr::str_glue("model: {model}")
     ) +
@@ -120,13 +120,13 @@ plot_intervals <- function(df, model = NULL, location = NULL,
   l <- process_model_input(df, model)
   df <- l$df
   model <- l$model
-  
+
   l <- process_location_input(df, location)
   df <- l$df
   location_name <- l$location_name
 
   df |>
-    process_quantile_pair(quantile) |> #dplyr::count(quantile)
+    process_quantile_pair(quantile) |> # dplyr::count(quantile)
     filter_target_types(target) |>
     filter_horizons(horizon) |>
     change_to_date() |>
@@ -135,6 +135,13 @@ plot_intervals <- function(df, model = NULL, location = NULL,
       x = NULL, y = NULL, color = NULL,
       title = stringr::str_glue("Predicted {target} in {location_name} {h}"),
       subtitle = stringr::str_glue("model: {model}   |   quantile: {quantile}")
+    ) +
+    ggplot2::theme_minimal() +
+    # making theme specifications before setting general theme does not work!
+    ggplot2::theme(
+      plot.title = ggplot2::element_text(hjust = 0.5),
+      plot.subtitle = ggplot2::element_text(hjust = 0.5),
+      legend.position = "top"
     )
 }
 
@@ -149,7 +156,7 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
   l <- process_model_input(df, model)
   df <- l$df
   model <- l$model
-  
+
   l <- process_location_input(df, location)
   df <- l$df
   location_name <- l$location_name
@@ -189,6 +196,12 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
         x = NULL, y = NULL, color = NULL,
         title = stringr::str_glue("Prediction Intervals in {location_name}"),
         subtitle = stringr::str_glue("model: {model}   |   quantile: {q}")
+      ) +
+      ggplot2::theme_light() +
+      ggplot2::theme(
+        plot.title = ggplot2::element_text(hjust = 0.5),
+        plot.subtitle = ggplot2::element_text(hjust = 0.5),
+        legend.position = "top"
       )
   } else if (facet_by == "quantile") {
     p <- p +
@@ -201,6 +214,12 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
         x = NULL, y = NULL, color = NULL,
         title = stringr::str_glue("Prediction Intervals in {location_name} {h}"),
         subtitle = stringr::str_glue("model: {model}")
+      ) +
+      ggplot2::theme_light() +
+      ggplot2::theme(
+        plot.title = ggplot2::element_text(hjust = 0.5),
+        plot.subtitle = ggplot2::element_text(hjust = 0.5),
+        legend.position = "top"
       )
   }
   return(p)

@@ -25,3 +25,15 @@ setup_intervals_plot <- function(df) {
     ) +
     ggplot2::scale_color_brewer(palette = "Set1")
 }
+
+set_labels <- function() {
+  ggplot2::labs(x = NULL, y = NULL, color = NULL)
+}
+
+modify_theme <- function() {
+  ggplot2::theme(
+    plot.title = ggplot2::element_text(hjust = 0.5),
+    plot.subtitle = ggplot2::element_text(hjust = 0.5),
+    legend.position = "top"
+  )
+}

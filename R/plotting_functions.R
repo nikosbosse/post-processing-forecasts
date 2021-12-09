@@ -25,17 +25,13 @@ plot_quantiles <- function(df, model = NULL, location = NULL, quantiles = c(0.05
       scales = "free_y"
     ) +
     ggplot2::labs(
-      x = NULL, y = NULL, color = NULL,
       title = stringr::str_glue("Predicted Quantiles in {location_name}"),
       subtitle = stringr::str_glue("model: {model}")
     ) +
+    set_labels() +
     ggplot2::guides(color = ggplot2::guide_legend(nrow = 1)) +
     ggplot2::theme_light() +
-    ggplot2::theme(
-      plot.title = ggplot2::element_text(hjust = 0.5),
-      plot.subtitle = ggplot2::element_text(hjust = 0.5),
-      legend.position = "top"
-    )
+    modify_theme()
 }
 
 
@@ -109,7 +105,6 @@ plot_cqr_results <- function(df, model, target_type, horizon, quantile) {
 
 #' @importFrom rlang .data
 
-# TODO: title: target, location, horizon, subtitle: model, quantile
 # TODO: add a vertical line at the end of the training set
 plot_intervals <- function(df, model = NULL, location = NULL,
                            target_type = c("Cases", "Deaths"),
@@ -132,17 +127,13 @@ plot_intervals <- function(df, model = NULL, location = NULL,
     change_to_date() |>
     setup_intervals_plot() +
     ggplot2::labs(
-      x = NULL, y = NULL, color = NULL,
       title = stringr::str_glue("Predicted {target} in {location_name} {h}"),
       subtitle = stringr::str_glue("model: {model}   |   quantile: {quantile}")
     ) +
-    ggplot2::theme_minimal() +
+    set_labels() +
     # making theme specifications before setting general theme does not work!
-    ggplot2::theme(
-      plot.title = ggplot2::element_text(hjust = 0.5),
-      plot.subtitle = ggplot2::element_text(hjust = 0.5),
-      legend.position = "top"
-    )
+    ggplot2::theme_minimal() +
+    modify_theme()
 }
 
 
@@ -193,16 +184,12 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
         scales = "free_y"
       ) +
       ggplot2::labs(
-        x = NULL, y = NULL, color = NULL,
         title = stringr::str_glue("Prediction Intervals in {location_name}"),
         subtitle = stringr::str_glue("model: {model}   |   quantile: {q}")
       ) +
+      set_labels() +
       ggplot2::theme_light() +
-      ggplot2::theme(
-        plot.title = ggplot2::element_text(hjust = 0.5),
-        plot.subtitle = ggplot2::element_text(hjust = 0.5),
-        legend.position = "top"
-      )
+      modify_theme()
   } else if (facet_by == "quantile") {
     p <- p +
       ggplot2::facet_grid(
@@ -211,16 +198,12 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
         scales = "free_y"
       ) +
       ggplot2::labs(
-        x = NULL, y = NULL, color = NULL,
         title = stringr::str_glue("Prediction Intervals in {location_name} {h}"),
         subtitle = stringr::str_glue("model: {model}")
       ) +
+      set_labels() +
       ggplot2::theme_light() +
-      ggplot2::theme(
-        plot.title = ggplot2::element_text(hjust = 0.5),
-        plot.subtitle = ggplot2::element_text(hjust = 0.5),
-        legend.position = "top"
-      )
+      modify_theme()
   }
   return(p)
 }

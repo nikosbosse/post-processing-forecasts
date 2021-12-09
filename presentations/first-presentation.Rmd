@@ -45,7 +45,7 @@ df_subset <- slice_sample(df, n = 50)
 
 <!-- M: Grundsätzliches:
 - Müssen entscheiden ob wir einen Punkt nach Bullet points machen. Ich findes es ohne besser.
-- Ich finde wir sollten versuchen unsere Bullte points möglichst kurz zu formulieren und mehr dazu zu sagen. Dann wirkt es weniger abgelesen.
+- Ich finde wir sollten versuchen unsere Bullet points möglichst kurz zu formulieren und mehr dazu zu sagen. Dann wirkt es weniger abgelesen.
 - Wenn wir lange sätze machen sollten wir zumindest die EKy wörter in den Bullte farblich und fett kennzeichnen (powerpoint best practice)
 - Können wir die abstände zwishcen bullet points größer machen damit die Folien besser ausgefüllt sind?
 - Wann Groß und wann Kleinschreibung in Bullet Points
@@ -155,59 +155,47 @@ class: inverse, center, middle
     - **Training:** Build quantile predictions model
     - **Validation:** Determine hyperparameters of post-processing method
     - **Test:** Evaluate adjusted predictions
-<!--  
-    - **Training:** Build Forecast Model to make quantile predictions
-    - **Validation:** Use predictions to determine potential hyperparameters of post-processing method
-    - **Test:** Evaluate Adjusted Predictions compared to original predictions 
--->
   
 --
     
 - **Important:** In our project we do **not** build a prediction model, we merely adjust forecasts of existing ones.
-<!-- In our case the data already contains quantile predictions such that step 1 is not required
 
---
-
-- **Important:** We do **not** build a prediction model ourselves. <br>
-Instead we take existing predictions as input and output adjusted / processed forecasts.
--->
 ---
 
+```{r,echo=FALSE}
 ## Methods
-
-Many post-processing methods available, including
-<!--M: I wouldn't discuss the methods in detail. An example intorduction is done later when we talk about CQR.
-Either go over the slide fast or ommit it and add a bullet point with the three methods to the slide before + Verlinkung zum Repository-->
---
-
-- **Conformalized Quantile Regression**: <br>
-  Focus of Today
-
---
-
-- **Quantile Regression Averaging**: <br>
-  For given quantile level $\alpha$, new prediction is a weighted average of multiple existing predictions from different models. 
-    The individual contributions, i.e. the weights, are chosen to minimize a custom loss function.
-    
---
-
-- **Quantile Spread Adjustment**: <br>
-  Assumes multiplicative relationship between quantile levels, e.g. $q_{0.9} = \lambda_{0.9} \cdot q_{0.8} = \lambda_{0.8} \cdot q_{0.8}$ with potentially different factors $\lambda_{\alpha}$. <br>
-  Too conservative quantile predictions can thus be corrected by choosing larger multiplicative factors in the tails of the predictive distribution. 
-<!--the indices of the multiplication looks wrong here.-->
-
---
-
-- More detailed overview given in **README** Page of Project's GitHub Repository<sup>1</sup>
-
-.footnote[[1] https://github.com/nikosbosse/post-processing-forecasts]
-
----
-
+#Many post-processing methods available, including
+#<!--M: I wouldn't discuss the methods in detail. An example intorduction is done later when we talk about CQR.
+#Either go over the slide fast or ommit it and add a bullet point with the three methods to the slide before + #Verlinkung zum Repository-->
+#--
+#
+#- **Conformalized Quantile Regression**: <br>
+#  Focus of Today
+#
+#--
+#
+#- **Quantile Regression Averaging**: <br>
+#  For given quantile level $\alpha$, new prediction is a weighted average of multiple existing predictions from #different models. 
+#    The oindividual contributions, i.e. the weights, are chosen to minimize a custom loss function.
+#    
+#--
+#
+#- **Quantile Spread Adjustment**: <br>
+#  Assumes multiplicative relationship between quantile levels, e.g. $q_{0.9} = \lambda_{0.9} \cdot q_{0.8} = #\lambda_{0.8} \cdot q_{0.8}$ with potentially different factors $\lambda_{\alpha}$. <br>
+#  Too conservative quantile predictions can thus be corrected by choosing larger multiplicative factors in the #tails of the predictive distribution. 
+#<!--the indices of the multiplication looks wrong here.-->
+#
+#--
+#
+#- More detailed overview given in **README** Page of Project's GitHub Repository<sup>1</sup>
+#
+#.footnote[[1] https://github.com/nikosbosse/post-processing-forecasts]
+#
+```
 
 ## Evaluation
 
-- Based on * *Weighted Interval Score**<sup>1</sup>  
+- Based on **Weighted Interval Score**<sup>1</sup>  
 
 .center.bold[WIS = Sharpness + Underprediction + Overprediction]
 
@@ -223,14 +211,11 @@ $$
 
 --
 
-- The Score of the entire model can be obtained from a weighted average over all (included) quantile levels $\alpha$  
-<!--M: Darüber würde ich gerne nochmal sprechen. Wie genau funktioniert der Intervall Score wenn wir z.B.über die Horizonte zusammenrechnen? -->
-
+- The Score of the entire model can be obtained from a weighted sum over all (included) quantile levels $\alpha$  
 
 --
 
 - Implemented in the .mono[**scoringutils**] R package written by Nikos
-<!-- - Implemented in the .mono[**eval_forecasts()**] function of the .mono[**scoringutils**] R package written by Nikos -->
 
 
 ---
@@ -314,13 +299,9 @@ $$
 
 --
 
-Note that the **same** margin is subtracted/added for the lower and upper bound, which limits flexibility.
+- Note that the **same** margin is subtracted/added for the lower and upper bound, which limits flexibility
 
-Possible extensions could use different margins and/or **multiplicative** correction terms.
-
-<!-- Note that the **same** margin is subtracted/added for the lower and upper bound, which limits the flexibility of the classical CQR approach.
-
-Possible extensions of the CQR principle could use different margins and/or **multiplicative** instead of additive correction terms. -->
+- Possible extensions could use different margins and/or **multiplicative** correction terms
 
 ---
 class: inverse, center, middle
@@ -520,25 +501,6 @@ class: center, middle, inverse
 --
 
 - Construct new Post-Processing method as Ensemble Model of individual processing techniques
-
-<!--
-
-- - Extension / Refinement of the CQR Method with asymmetric and/or multiplicative approach
-
---
-
-- Implementation of further Post-Processing methods
-
---
-
-- Analysis of which methods perform best. 
-Is this dependent on characteristics of the data such as sample size, forecast horizon or prediction model?
-
---
-
-- Construct new Post-Processing method as Ensemble Model of individual processing techniques
-
--->
 
 ---
 

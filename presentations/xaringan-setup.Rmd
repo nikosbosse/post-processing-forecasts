@@ -195,7 +195,66 @@ Thus, <style> tags are NOT necessary for xaringan !!
   background: black;
 }
 
-/* font size categories for text and code */
+.remark-slide thead, .remark-slide tr:nth-child(2n) {
+  background-color: white;
+}
+.remark-slide thead, .remark-slide tr:nth-child(2n) {
+  background-color: white;
+}
+
+/* footer specifications */
+div.my-footer {
+    background-color: #1a1917;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    height: 20px;
+    width: 100%;
+}
+div.my-footer span {
+    font-size: 10pt;
+    color: #F7F8FA;
+    position: absolute;
+    left: 15px;
+    bottom: 2px;
+}
+```
+
+
+<!-- Custom CSS Classes -->
+<!-- ----------------------------------------------------------------------- -->
+
+```{css, echo=FALSE}
+.bold {
+  font-weight: bold;
+}
+
+.underline {
+  text-decoration: underline;  
+}
+
+.mono {
+  font-family: 'Fira Mono', monospace;
+}
+
+/* make left and right column horizontally aligned */
+.right-column {
+  padding-top: 0;
+}
+
+/* 
+The first two commands change the background of the input code block,
+the repeated commands with the star change the background of the output code block
+
+With special name .remark-code this is set as the new default, add custom prefix ( e.g. .grey-code-bg .remark-code) to leave the default unchanged
+*/
+.remark-code, .remark-code * {
+    background-color: #f0f2f0;
+}
+```
+
+```{css, echo=FALSE}
+/* Font Size Categories for Text and Code */
 .size-60 {
   font-size: 60%;
 }
@@ -295,67 +354,11 @@ Thus, <style> tags are NOT necessary for xaringan !!
 .size-150 .remark-code {
   font-size: 150%;
 }
-
-.remark-slide thead, .remark-slide tr:nth-child(2n) {
-  background-color: white;
-}
-.remark-slide thead, .remark-slide tr:nth-child(2n) {
-  background-color: white;
-}
-
-/* footer specifications */
-div.my-footer {
-    background-color: #1a1917;
-    position: absolute;
-    bottom: 0px;
-    left: 0px;
-    height: 20px;
-    width: 100%;
-}
-div.my-footer span {
-    font-size: 10pt;
-    color: #F7F8FA;
-    position: absolute;
-    left: 15px;
-    bottom: 2px;
-}
 ```
 
 
-<!-- Custom CSS Classes -->
-<!-- ----------------------------------------------------------------------- -->
-
 ```{css, echo=FALSE}
-.bold {
-  font-weight: bold;
-}
-
-.underline {
-  text-decoration: underline;  
-}
-
-.mono {
-  font-family: 'Fira Mono', monospace;
-}
-
-/* make left and right column horizontally aligned */
-.right-column {
-  padding-top: 0;
-}
-
-/* 
-The first two commands change the background of the input code block,
-the repeated commands with the star change the background of the output code block
-
-With special name .remark-code this is set as the new default, add custom prefix ( e.g. .grey-code-bg .remark-code) to leave the default unchanged
-*/
-.remark-code, .remark-code * {
-    background-color: #f0f2f0;
-}
-
-
-/* Two - Column Layouts */
-
+/* Two - Column Layouts of different widths */
 .left-75 {
   width: 75%;
   float: left;

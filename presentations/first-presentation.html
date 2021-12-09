@@ -333,6 +333,10 @@ With special name .remark-code this is set as the new default, add custom prefix
   width: 20%;
   float: right;
 }
+.right-20 + * {
+  clear: both;
+}
+
 
 .left-70 {
   width: 70%;
@@ -342,55 +346,10 @@ With special name .remark-code this is set as the new default, add custom prefix
   width: 25%;
   float: right;
 }
-
-.left-30 {
-  width: 30%;
-  float: left;
-}
-.right-65 {
-  width: 65%;
-  float: right;
-}
-
-.right-65 + * {
+.right-25 + * {
   clear: both;
 }
 
-.left-35 {
-  width: 35%;
-  float: left;
-}
-.right-60 {
-  width: 60%;
-  float: right;
-}
-
-.left-40 {
-  width: 40%;
-  float: left;
-}
-.right-55 {
-  width: 55%;
-  float: right;
-}
-
-.left-55 {
-  width: 55%;
-  float: left;
-}
-.right-40 {
-  width: 40%;
-  float: right;
-}
-
-.left-60 {
-  width: 60%;
-  float: left;
-}
-.right-35 {
-  width: 35%;
-  float: right;
-}
 
 .left-65 {
   width: 65%;
@@ -400,23 +359,99 @@ With special name .remark-code this is set as the new default, add custom prefix
   width: 30%;
   float: right;
 }
+.right-30 + * {
+  clear: both;
+}
 
-.left-70 {
-  width: 70%;
+
+.left-60 {
+  width: 60%;
   float: left;
 }
-.right-25 {
+.right-35 {
+  width: 35%;
+  float: right;
+}
+.right-35 + * {
+  clear: both;
+}
+
+
+.left-55 {
+  width: 55%;
+  float: left;
+}
+.right-40 {
+  width: 40%;
+  float: right;
+}
+.right-40 + * {
+  clear: both;
+}
+
+
+.left-40 {
+  width: 40%;
+  float: left;
+}
+.right-55 {
+  width: 55%;
+  float: right;
+}
+.right-55 + * {
+  clear: both;
+}
+
+
+.left-35 {
+  width: 35%;
+  float: left;
+}
+.right-60 {
+  width: 60%;
+  float: right;
+}
+.right-60 + * {
+  clear: both;
+}
+
+
+.left-30 {
+  width: 30%;
+  float: left;
+}
+.right-65 {
+  width: 65%;
+  float: right;
+}
+.right-65 + * {
+  clear: both;
+}
+
+
+.left-25 {
   width: 25%;
-  float: right;
-}
-
-.left-75 {
-  width: 75%;
   float: left;
 }
-.right-20 {
-  width: 20%;
+.right-65 {
+  width: 65%;
   float: right;
+}
+.right-65 + * {
+  clear: both;
+}
+
+
+.left-20 {
+  width: 20%;
+  float: left;
+}
+.right-75 {
+  width: 75%;
+  float: right;
+}
+.right-75 + * {
+  clear: both;
 }
 &lt;/style&gt;
 
@@ -457,7 +492,7 @@ https://epiforecasts.io/uk-challenge/
 
 --
 
-- Part of ongoing research project by the **epiforecasts** group at the London School of Hygiene &amp; Tropical Medicine where our project partner Nikos Bosse is engaged as a doctoral candidate
+- Part of ongoing research project by the **epiforecasts** group at the London School of Hygiene &amp; Tropical Medicine where our project supervisor Nikos Bosse is engaged as a doctoral candidate
 
 ---
 
@@ -488,8 +523,8 @@ https://epiforecasts.io/uk-challenge/
 
 .size-80[
 
-<div id="htmlwidget-51e4bce63f5f91b6e895" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-51e4bce63f5f91b6e895">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"disabled\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"disabled\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"integer\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"59\" data-max=\"296447\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"disabled\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.025\" data-max=\"0.99\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"24.0128431633641\" data-max=\"700353\" data-scale=\"13\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"integer\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"1\" data-max=\"4\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","fillContainer":false,"data":[["GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB"],["United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom"],["2021-06-26","2021-08-07","2021-08-14","2021-06-19","2021-06-26","2021-06-12","2021-07-31","2021-06-19","2020-06-06","2021-06-26","2021-05-29","2021-07-31","2021-07-24","2021-06-05","2021-06-12","2021-06-05","2021-08-28","2021-07-17","2021-08-21","2021-07-24","2021-07-03","2021-08-14","2021-07-10","2021-06-26","2021-07-10","2021-06-12","2021-07-10","2021-07-17","2021-09-04","2021-06-19","2021-08-07","2021-07-31","2021-07-24","2021-08-28","2021-07-24","2021-08-07","2021-06-26","2021-08-28","2021-06-26","2021-05-29","2021-07-24","2021-06-26","2021-06-19","2021-08-07","2021-07-17","2021-08-28","2021-06-12","2021-08-21","2021-06-12","2021-06-19"],["Deaths","Cases","Cases","Cases","Deaths","Cases","Deaths","Cases","Cases","Cases","Deaths","Cases","Cases","Cases","Deaths","Deaths","Deaths","Cases","Deaths","Deaths","Cases","Deaths","Cases","Deaths","Deaths","Cases","Deaths","Deaths","Cases","Cases","Cases","Cases","Cases","Cases","Deaths","Deaths","Cases","Cases","Deaths","Deaths","Deaths","Deaths","Deaths","Cases","Deaths","Cases","Cases","Cases","Cases","Cases"],[119,185724,198759,62474,119,46825,524,62474,8442,96843,59,187268,282920,30724,60,61,785,296447,697,447,161805,613,210277,119,192,46825,192,284,243125,62474,185724,187268,282920,237556,447,627,96843,237556,119,59,447,119,74,185724,284,237556,46825,219919,46825,62474],[66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273],["2021-05-31","2021-07-19","2021-07-19","2021-05-24","2021-06-07","2021-05-31","2021-07-26","2021-05-24","","2021-06-21","2021-05-24","2021-07-12","2021-07-05","2021-05-24","2021-05-31","2021-05-24","2021-08-02","2021-07-12","2021-07-26","2021-07-19","2021-06-14","2021-07-26","2021-06-28","2021-06-07","2021-06-21","2021-06-07","2021-06-28","2021-07-12","2021-08-16","2021-06-07","2021-07-26","2021-07-26","2021-07-19","2021-08-02","2021-07-12","2021-07-19","2021-06-07","2021-08-09","2021-06-14","2021-05-24","2021-07-19","2021-06-07","2021-06-14","2021-07-26","2021-07-05","2021-08-16","2021-06-07","2021-07-26","2021-05-31","2021-05-24"],[0.35,0.05,0.6,0.4,0.99,0.55,0.35,0.35,null,0.95,0.2,0.3,0.4,0.025,0.1,0.5,0.99,0.95,0.975,0.025,0.95,0.99,0.45,0.85,0.5,0.85,0.5,0.05,0.99,0.75,0.5,0.35,0.85,0.1,0.05,0.85,0.4,0.2,0.85,0.025,0.55,0.15,0.5,0.8,0.1,0.025,0.4,0.35,0.95,0.95],[113.933220474606,435321,700353,4474.27935500017,397.637160604256,30280.9750914043,555,12484.6031914509,null,163610.294414344,28.6191514215752,489812,448404,10227.2195534156,45.2080534728972,30,4103,385181.029208783,3167.02342123559,345,246856.36796892,949,173648.699423242,103.714046788761,100,71686.3772214177,150,170.510011498859,326601,96146.177282203,280430,256304,430385.567249798,31834,287,975,64570.4,146325,147.640227737682,24.0128431633641,436,79,73.62,326597.681180666,157,111792.077651326,55334.0324759455,256102.294955866,42790.7114126137,31675.5757910658],["Sophia","epiforecasts-EpiExpert","epiforecasts-EpiExpert","habakuk","Layperson_21","d.simons","epiforecasts-EpiExpert_direct","d.simons","","andyw_76","habakuk","Layperson_21 (Rt)","epiforecasts-EpiExpert_Rt","anonymous_Dunlin","anonymous_Stingray","abc123","EuroCOVIDhub-baseline","pentapenguin","anonymous_Human","nib (Rt)","BQuilty","anonymous_Curious (Rt)","anonymous_Human","macaronisoup","Usedtobeabiologist","anonymous_Ant","2e10e122","anonymous_Bison","Layperson_21 (Rt)","aen","EuroCOVIDhub-ensemble","EuroCOVIDhub-ensemble","aurelwu","anonymous_Crane (Rt)","anonymous_Snail (Rt)","Cantabulous (Rt)","seb (Rt)","EuroCOVIDhub-baseline","RitwikP","anonymous_Wasp","CosmicDan (Rt)","epiforecasts-EpiExpert","d.simons","lukeo","epiforecasts-EpiExpert_direct","RitwikP","The Battered Bunnet","anonymous_Stingray","seabbs","seabbs"],[4,3,4,4,3,2,1,4,null,1,1,3,3,2,2,2,4,1,4,1,3,3,2,3,3,1,2,1,3,2,2,1,1,4,2,3,3,3,2,1,1,3,1,2,2,2,1,4,2,4],["Non-expert","Unknown","Unknown","Non-expert","Non-expert","Expert","Unknown","Expert","","Non-expert","Non-expert","Non-expert","Unknown","Non-expert","Non-expert","Non-expert","Unknown","Non-expert","Expert","Expert","Expert","Unknown","Expert","Non-expert","Non-expert","Non-expert","Non-expert","Non-expert","Non-expert","Expert","Unknown","Unknown","Non-expert","Unknown","Unknown","Expert","Expert","Unknown","Non-expert","Expert","Non-expert","Unknown","Expert","Non-expert","Unknown","Non-expert","Non-expert","Non-expert","Expert","Expert"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>location<\/th>\n      <th>location_name<\/th>\n      <th>target_end_date<\/th>\n      <th>target_type<\/th>\n      <th>true_value<\/th>\n      <th>population<\/th>\n      <th>forecast_date<\/th>\n      <th>quantile<\/th>\n      <th>prediction<\/th>\n      <th>model<\/th>\n      <th>horizon<\/th>\n      <th>expert<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"scrollX":true,"pageLength":4,"autoWidth":true,"columnDefs":[{"className":"dt-right","targets":[4,5,7,8,10]}],"order":[],"orderClasses":false,"orderCellsTop":true,"lengthMenu":[4,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-897348aa5a5d35c83b10" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-897348aa5a5d35c83b10">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"disabled\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"disabled\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"integer\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"60\" data-max=\"282920\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"disabled\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.01\" data-max=\"0.99\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0\" data-max=\"646586\" data-scale=\"13\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"integer\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"1\" data-max=\"4\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","fillContainer":false,"data":[["GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB"],["United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom"],["2021-06-26","2021-06-05","2021-08-07","2021-06-12","2021-07-10","2021-07-31","2021-06-19","2021-07-10","2021-06-05","2021-09-11","2021-07-31","2021-06-19","2021-09-04","2021-07-31","2021-07-24","2021-07-03","2021-06-26","2021-08-07","2021-07-17","2021-08-21","2021-07-31","2021-06-19","2021-08-14","2021-08-14","2021-08-14","2021-08-14","2021-06-26","2021-07-31","2021-06-12","2021-07-24","2021-07-03","2021-06-26","2021-08-07","2021-07-31","2021-09-11","2021-08-21","2021-07-03","2021-08-07","2021-08-07","2021-07-17","2021-07-10","2021-07-10","2021-06-05","2021-06-19","2021-06-19","2021-08-07","2021-07-03","2021-08-07","2021-06-26","2021-06-26"],["Cases","Cases","Deaths","Cases","Deaths","Cases","Cases","Deaths","Deaths","Deaths","Cases","Deaths","Cases","Cases","Cases","Deaths","Deaths","Cases","Deaths","Deaths","Deaths","Cases","Deaths","Cases","Cases","Cases","Cases","Deaths","Deaths","Cases","Deaths","Cases","Cases","Deaths","Cases","Cases","Cases","Deaths","Deaths","Deaths","Cases","Cases","Cases","Cases","Deaths","Cases","Cases","Deaths","Cases","Cases"],[96843,30724,627,46825,192,187268,62474,192,61,983,187268,74,243125,187268,282920,118,119,185724,284,697,524,62474,613,198759,198759,198759,96843,524,60,282920,118,96843,185724,524,256051,219919,161805,627,627,284,210277,210277,30724,62474,74,185724,161805,627,96843,96843],[66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273],["2021-06-07","2021-05-24","2021-07-26","2021-06-07","2021-07-05","2021-07-12","2021-05-24","2021-06-21","2021-05-24","2021-08-16","2021-07-12","2021-06-14","2021-08-16","2021-07-26","2021-07-12","2021-06-14","2021-05-31","2021-08-02","2021-06-21","2021-08-02","2021-07-05","2021-05-24","2021-07-26","2021-07-19","2021-07-26","2021-08-09","2021-06-21","2021-07-26","2021-05-24","2021-07-12","2021-06-14","2021-06-21","2021-08-02","2021-07-05","2021-08-16","2021-08-16","2021-06-14","2021-07-19","2021-07-26","2021-07-05","2021-06-21","2021-06-28","2021-05-24","2021-05-24","2021-06-07","2021-08-02","2021-06-28","2021-07-26","2021-06-14","2021-06-07"],[0.3,0.1,0.75,0.1,0.15,0.3,0.9,0.99,0.4,0.65,0.95,0.99,0.95,0.25,0.55,0.55,0.5,0.2,0.95,0.75,0.75,0.025,0.7,0.25,0.7,0.4,0.975,0.35,0.25,0.85,0.2,0.4,0.5,0.01,0.05,0.95,0.4,0.99,0.85,0.2,0.2,0.25,0.65,0.15,0.025,0.01,0.3,0.975,0.4,0.55],[60608,10715.3434339412,687.594955584767,34253.9566241384,101.963077351108,438826,22981.8,492.02,68.6881326065583,601.038735139786,581902,183.241636001409,328429,221418.098540805,287715.034501867,79.4730519040361,69,97403.1321121192,634.05,429,308.993397401754,7490.37497382804,667,646586,265028,220089,108322.450856761,585.018128315608,17.6904947302839,395811.149016102,54.1494142091332,61679,144312,538,104619.11164168,282616.742128337,81274.9027701502,925.586809037539,688,357,134884.8,164583.143936497,13652.8712632163,0,17.9936566824464,148400.549922253,107389,2791,73396,72025.5104296496],["seb (Rt)","seabbs","anonymous_Bat","w.mcewan","nib","nib (Rt)","seabbs (Rt)","seabbs (Rt)","anonymous_Dunlin","BQuilty","epiforecasts-EpiExpert_direct","2e10e122","epiforecasts-EpiExpert","joewelsh99","seb","anonymous_Sheep","curlykale","2e10e122","Blitzer (Rt)","seb (Rt)","RitwikP","seabbs","epiforecasts-EpiExpert_Rt","epiforecasts-EpiExpert_direct","anonymous_Curious (Rt)","epiforecasts-EpiExpert_Rt","Gw3n","anonymous_Stingray","anonymous_Wasp","aurelwu","seb","EuroCOVIDhub-baseline","CosmicDan (Rt)","BQuilty (Rt)","CosmicDan","2e10e122","anonymous_Sheep","CosmicDan","OMAC (Rt)","Sophia (Rt)","Blitzer (Rt)","BQuilty","2e10e122","EuroCOVIDhub-baseline","anonymous_Ruff","anonymous_Gnu","EuroCOVIDhub-ensemble","EuroCOVIDhub-baseline","EuroCOVIDhub-ensemble","curlykale"],[3,2,2,1,1,3,4,3,2,4,3,1,3,1,2,3,4,1,4,3,4,4,3,4,3,1,1,1,3,2,3,1,1,4,4,1,3,3,2,2,3,2,2,4,2,1,1,2,2,3],["Expert","Expert","Expert","Expert","Expert","Expert","Expert","Expert","Non-expert","Expert","Unknown","Non-expert","Unknown","Non-expert","Expert","Non-expert","Non-expert","Non-expert","Unknown","Expert","Non-expert","Expert","Unknown","Unknown","Unknown","Unknown","Non-expert","Non-expert","Expert","Non-expert","Expert","Unknown","Non-expert","Expert","Non-expert","Non-expert","Non-expert","Non-expert","Unknown","Non-expert","Unknown","Expert","Non-expert","Unknown","Expert","Expert","Unknown","Unknown","Unknown","Non-expert"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>location<\/th>\n      <th>location_name<\/th>\n      <th>target_end_date<\/th>\n      <th>target_type<\/th>\n      <th>true_value<\/th>\n      <th>population<\/th>\n      <th>forecast_date<\/th>\n      <th>quantile<\/th>\n      <th>prediction<\/th>\n      <th>model<\/th>\n      <th>horizon<\/th>\n      <th>expert<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"scrollX":true,"pageLength":4,"autoWidth":true,"columnDefs":[{"className":"dt-right","targets":[4,5,7,8,10]}],"order":[],"orderClasses":false,"orderCellsTop":true,"lengthMenu":[4,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
 
 ]
 
@@ -552,7 +587,7 @@ class: inverse, center, middle
 
 --
 
-- For a given quantile level `\(\alpha\)` and observed value `\(y\)`, the score is computed as
+  - For a given quantile level `\(\alpha\)`, true observed value `\(y\)` as well as lower bound `\(l\)` and upper bound `\(u\)` of the corresponding `\((1 - \alpha) \cdot 100\)`% prediction interval, the score is computed as
 
 $$
 Score_\alpha(y) = (u-l) + \frac{2}{\alpha} \cdot (l-y) \cdot \mathbf{1} (y \leq l) + \frac{2}{\alpha} \cdot (y-u) \cdot \mathbf{1}(y \geq u)
@@ -580,7 +615,7 @@ Theory based on Paper Romano Y., Patterson E., and Candès E. (2019): *Conformal
 
 **Central Theorem:** 
 
-If `\((X_i, Y_i), i = 1, \ldots, n+1\)` are exchangeable, then the prediction interval `\(C(X_{n+1})\)` constructed by the CQR algorithm satisfies
+If `\((X_i, Y_i), i = 1, \ldots, n+1\)` are exchangeable, then the `\((1 - \alpha) \cdot 100\)`% prediction interval `\(C(X_{n+1})\)` constructed by the CQR algorithm satisfies
   
 $$
 `\begin{aligned}
@@ -609,46 +644,46 @@ For a given quantile `\(\alpha\)` and a given quantile regression algorithm `\(\
 
 $$
 `\begin{aligned}
-\left\{ \hat{ q}_{\alpha, \, low}, \; \hat{ q}_{\alpha, \, high} \right\} \leftarrow \mathcal{A} \left( \left\{ (X_i, Y_i): i \in I_1 \right\} \right) 
+\left\{ \hat{ q}_{\alpha, low}, \; \hat{ q}_{\alpha, high} \right\} \leftarrow \mathcal{A} \left( \left\{ (X_i, Y_i): i \in I_1 \right\} \right) 
 \end{aligned}`
 $$
 
----
-
-## CQR Algorithm
+--
 
 **Step 3:** &lt;br&gt;
 Compute **conformity scores** on the calibration set:
 
 $$
 `\begin{aligned}
-E_i := \operatorname*{max} \left\{ \hat{ q}_{\alpha, \, low}(X_i) - Y_i, \; Y_i - \hat{ q}_{\alpha, \, high}(X_i) \right\} \quad \forall \; i \in I_2
+E_i := \operatorname*{max} \left\{ \hat{ q}_{\alpha, low}(X_i) - Y_i, \; Y_i - \hat{ q}_{\alpha, high}(X_i) \right\} \quad \forall \; i \in I_2
 \end{aligned}`
 $$
 
-For each `\(i\)`, the corresponding score `\(E_i\)` is positive if `\(Y_i\)` is *outside* the interval `\(\left[ \hat{ q}_{\alpha, \, low}(X_i), \; \hat{ q}_{\alpha, \, high}(X_i) \right]\)` and negative if `\(Y_i\)` is *inside* the interval.
-
---
-
-**Step 4:** &lt;br&gt;
-Compute the **margin** `\(Q_{1 - \alpha}(E, I_2)\)` given by the `\((1 - \alpha)(1 + \frac{ 1}{ 1 + \left| I_2 \right| })\)`-th empirical quantile of the scores `\(E_i\)` in the calibration set.
+For each `\(i\)`, the corresponding score `\(E_i\)` is **positive** if `\(Y_i\)` is **outside** the interval `\(\left[ \hat{ q}_{\alpha, low}(X_i), \; \hat{ q}_{\alpha, high}(X_i) \right]\)` and **negative** if `\(Y_i\)` is **inside** the interval.
 
 ---
 
 ## CQR Algorithm
 
+**Step 4:** &lt;br&gt;
+Compute the **margin** `\(Q_{1 - \alpha}(E, I_2)\)` given by the `\((1 - \alpha)(1 + \frac{ 1}{ 1 + \left| I_2 \right| })\)`-th empirical quantile of the scores `\(E_i\)` in the calibration set.
+
+--
+
 **Step 5:** &lt;br&gt;
-On the basis of the original prediction interval bounds `\(\hat{ q}_{\alpha, \, low}(X_i)\)` and `\(\hat{ q}_{\alpha, \, high}(X_i)\)`, the new *post-processed* prediction interval for `\(Y_i\)` is given by
+On the basis of the original prediction interval bounds `\(\hat{ q}_{\alpha, low}(X_i)\)` and `\(\hat{ q}_{\alpha, high}(X_i)\)`, the new *post-processed* prediction interval for `\(Y_i\)` is given by
 
 $$
 `\begin{aligned}
-C(X_{n+1}) = \left[ \hat{ q}_{\alpha, \, low}(X_i) - Q_{1 - \alpha}(E, I_2), \; \hat{ q}_{\alpha, \, high}(X_i) + Q_{1 - \alpha}(E, I_2) \right].
+C(X_{n+1}) = \left[ \hat{ q}_{\alpha,  low}(X_i) - Q_{1 - \alpha}(E, I_2), \; \hat{ q}_{\alpha,  high}(X_i) + Q_{1 - \alpha}(E, I_2) \right].
 \end{aligned}`
 $$
 
 --
 
-- Note that the **same** margin is subtracted/added for the lower and upper bound, which limits flexibility
+- Note that the **same** margin is subtracted/added for the lower and upper bound, which limits the flexibility
+
+--
 
 - Possible extensions could use different margins and/or **multiplicative** correction terms
 
@@ -714,12 +749,12 @@ df_updated &lt;- update_predictions(
 
 
 
-<div id="regrwivqqp" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="jtikviqsfu" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#regrwivqqp .gt_table {
+#jtikviqsfu .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: 0;
@@ -744,7 +779,7 @@ df_updated &lt;- update_predictions(
   border-left-color: #D3D3D3;
 }
 
-#regrwivqqp .gt_heading {
+#jtikviqsfu .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -756,7 +791,7 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#regrwivqqp .gt_title {
+#jtikviqsfu .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -766,7 +801,7 @@ df_updated &lt;- update_predictions(
   border-bottom-width: 0;
 }
 
-#regrwivqqp .gt_subtitle {
+#jtikviqsfu .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -776,13 +811,13 @@ df_updated &lt;- update_predictions(
   border-top-width: 0;
 }
 
-#regrwivqqp .gt_bottom_border {
+#jtikviqsfu .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#regrwivqqp .gt_col_headings {
+#jtikviqsfu .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -797,7 +832,7 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#regrwivqqp .gt_col_heading {
+#jtikviqsfu .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -817,7 +852,7 @@ df_updated &lt;- update_predictions(
   overflow-x: hidden;
 }
 
-#regrwivqqp .gt_column_spanner_outer {
+#jtikviqsfu .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -829,15 +864,15 @@ df_updated &lt;- update_predictions(
   padding-right: 4px;
 }
 
-#regrwivqqp .gt_column_spanner_outer:first-child {
+#jtikviqsfu .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#regrwivqqp .gt_column_spanner_outer:last-child {
+#jtikviqsfu .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#regrwivqqp .gt_column_spanner {
+#jtikviqsfu .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -849,7 +884,7 @@ df_updated &lt;- update_predictions(
   width: 100%;
 }
 
-#regrwivqqp .gt_group_heading {
+#jtikviqsfu .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -871,7 +906,7 @@ df_updated &lt;- update_predictions(
   vertical-align: middle;
 }
 
-#regrwivqqp .gt_empty_group_heading {
+#jtikviqsfu .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -886,15 +921,15 @@ df_updated &lt;- update_predictions(
   vertical-align: middle;
 }
 
-#regrwivqqp .gt_from_md > :first-child {
+#jtikviqsfu .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#regrwivqqp .gt_from_md > :last-child {
+#jtikviqsfu .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#regrwivqqp .gt_row {
+#jtikviqsfu .gt_row {
   padding-top: 15px;
   padding-bottom: 15px;
   padding-left: 5px;
@@ -913,7 +948,7 @@ df_updated &lt;- update_predictions(
   overflow-x: hidden;
 }
 
-#regrwivqqp .gt_stub {
+#jtikviqsfu .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -925,7 +960,7 @@ df_updated &lt;- update_predictions(
   padding-left: 12px;
 }
 
-#regrwivqqp .gt_summary_row {
+#jtikviqsfu .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -935,7 +970,7 @@ df_updated &lt;- update_predictions(
   padding-right: 5px;
 }
 
-#regrwivqqp .gt_first_summary_row {
+#jtikviqsfu .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -945,7 +980,7 @@ df_updated &lt;- update_predictions(
   border-top-color: #D3D3D3;
 }
 
-#regrwivqqp .gt_grand_summary_row {
+#jtikviqsfu .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -955,7 +990,7 @@ df_updated &lt;- update_predictions(
   padding-right: 5px;
 }
 
-#regrwivqqp .gt_first_grand_summary_row {
+#jtikviqsfu .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -965,11 +1000,11 @@ df_updated &lt;- update_predictions(
   border-top-color: #D3D3D3;
 }
 
-#regrwivqqp .gt_striped {
+#jtikviqsfu .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#regrwivqqp .gt_table_body {
+#jtikviqsfu .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -978,7 +1013,7 @@ df_updated &lt;- update_predictions(
   border-bottom-color: #D3D3D3;
 }
 
-#regrwivqqp .gt_footnotes {
+#jtikviqsfu .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -992,13 +1027,13 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#regrwivqqp .gt_footnote {
+#jtikviqsfu .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#regrwivqqp .gt_sourcenotes {
+#jtikviqsfu .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1012,41 +1047,41 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#regrwivqqp .gt_sourcenote {
+#jtikviqsfu .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#regrwivqqp .gt_left {
+#jtikviqsfu .gt_left {
   text-align: left;
 }
 
-#regrwivqqp .gt_center {
+#jtikviqsfu .gt_center {
   text-align: center;
 }
 
-#regrwivqqp .gt_right {
+#jtikviqsfu .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#regrwivqqp .gt_font_normal {
+#jtikviqsfu .gt_font_normal {
   font-weight: normal;
 }
 
-#regrwivqqp .gt_font_bold {
+#jtikviqsfu .gt_font_bold {
   font-weight: bold;
 }
 
-#regrwivqqp .gt_font_italic {
+#jtikviqsfu .gt_font_italic {
   font-style: italic;
 }
 
-#regrwivqqp .gt_super {
+#jtikviqsfu .gt_super {
   font-size: 65%;
 }
 
-#regrwivqqp .gt_footnote_marks {
+#jtikviqsfu .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -1179,12 +1214,12 @@ df_updated &lt;- update_predictions(
 
 --&gt;
 
-<div id="pekwopsher" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="hpohnkwsnx" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#pekwopsher .gt_table {
+#hpohnkwsnx .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: 0;
@@ -1209,7 +1244,7 @@ df_updated &lt;- update_predictions(
   border-left-color: #D3D3D3;
 }
 
-#pekwopsher .gt_heading {
+#hpohnkwsnx .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1221,7 +1256,7 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#pekwopsher .gt_title {
+#hpohnkwsnx .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1231,7 +1266,7 @@ df_updated &lt;- update_predictions(
   border-bottom-width: 0;
 }
 
-#pekwopsher .gt_subtitle {
+#hpohnkwsnx .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1241,13 +1276,13 @@ df_updated &lt;- update_predictions(
   border-top-width: 0;
 }
 
-#pekwopsher .gt_bottom_border {
+#hpohnkwsnx .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#pekwopsher .gt_col_headings {
+#hpohnkwsnx .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1262,7 +1297,7 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#pekwopsher .gt_col_heading {
+#hpohnkwsnx .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1282,7 +1317,7 @@ df_updated &lt;- update_predictions(
   overflow-x: hidden;
 }
 
-#pekwopsher .gt_column_spanner_outer {
+#hpohnkwsnx .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1294,15 +1329,15 @@ df_updated &lt;- update_predictions(
   padding-right: 4px;
 }
 
-#pekwopsher .gt_column_spanner_outer:first-child {
+#hpohnkwsnx .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#pekwopsher .gt_column_spanner_outer:last-child {
+#hpohnkwsnx .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#pekwopsher .gt_column_spanner {
+#hpohnkwsnx .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1314,7 +1349,7 @@ df_updated &lt;- update_predictions(
   width: 100%;
 }
 
-#pekwopsher .gt_group_heading {
+#hpohnkwsnx .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1336,7 +1371,7 @@ df_updated &lt;- update_predictions(
   vertical-align: middle;
 }
 
-#pekwopsher .gt_empty_group_heading {
+#hpohnkwsnx .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1351,15 +1386,15 @@ df_updated &lt;- update_predictions(
   vertical-align: middle;
 }
 
-#pekwopsher .gt_from_md > :first-child {
+#hpohnkwsnx .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#pekwopsher .gt_from_md > :last-child {
+#hpohnkwsnx .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#pekwopsher .gt_row {
+#hpohnkwsnx .gt_row {
   padding-top: 15px;
   padding-bottom: 15px;
   padding-left: 5px;
@@ -1378,7 +1413,7 @@ df_updated &lt;- update_predictions(
   overflow-x: hidden;
 }
 
-#pekwopsher .gt_stub {
+#hpohnkwsnx .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1390,7 +1425,7 @@ df_updated &lt;- update_predictions(
   padding-left: 12px;
 }
 
-#pekwopsher .gt_summary_row {
+#hpohnkwsnx .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1400,7 +1435,7 @@ df_updated &lt;- update_predictions(
   padding-right: 5px;
 }
 
-#pekwopsher .gt_first_summary_row {
+#hpohnkwsnx .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1410,7 +1445,7 @@ df_updated &lt;- update_predictions(
   border-top-color: #D3D3D3;
 }
 
-#pekwopsher .gt_grand_summary_row {
+#hpohnkwsnx .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1420,7 +1455,7 @@ df_updated &lt;- update_predictions(
   padding-right: 5px;
 }
 
-#pekwopsher .gt_first_grand_summary_row {
+#hpohnkwsnx .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1430,11 +1465,11 @@ df_updated &lt;- update_predictions(
   border-top-color: #D3D3D3;
 }
 
-#pekwopsher .gt_striped {
+#hpohnkwsnx .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#pekwopsher .gt_table_body {
+#hpohnkwsnx .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1443,7 +1478,7 @@ df_updated &lt;- update_predictions(
   border-bottom-color: #D3D3D3;
 }
 
-#pekwopsher .gt_footnotes {
+#hpohnkwsnx .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1457,13 +1492,13 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#pekwopsher .gt_footnote {
+#hpohnkwsnx .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#pekwopsher .gt_sourcenotes {
+#hpohnkwsnx .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1477,41 +1512,41 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#pekwopsher .gt_sourcenote {
+#hpohnkwsnx .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#pekwopsher .gt_left {
+#hpohnkwsnx .gt_left {
   text-align: left;
 }
 
-#pekwopsher .gt_center {
+#hpohnkwsnx .gt_center {
   text-align: center;
 }
 
-#pekwopsher .gt_right {
+#hpohnkwsnx .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#pekwopsher .gt_font_normal {
+#hpohnkwsnx .gt_font_normal {
   font-weight: normal;
 }
 
-#pekwopsher .gt_font_bold {
+#hpohnkwsnx .gt_font_bold {
   font-weight: bold;
 }
 
-#pekwopsher .gt_font_italic {
+#hpohnkwsnx .gt_font_italic {
   font-style: italic;
 }
 
-#pekwopsher .gt_super {
+#hpohnkwsnx .gt_super {
   font-size: 65%;
 }
 
-#pekwopsher .gt_footnote_marks {
+#hpohnkwsnx .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -1596,12 +1631,12 @@ df_updated &lt;- update_predictions(
 
 
 
-<div id="cfjsvruijx" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="zjgkypbwia" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#cfjsvruijx .gt_table {
+#zjgkypbwia .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: 0;
@@ -1626,7 +1661,7 @@ df_updated &lt;- update_predictions(
   border-left-color: #D3D3D3;
 }
 
-#cfjsvruijx .gt_heading {
+#zjgkypbwia .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1638,7 +1673,7 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#cfjsvruijx .gt_title {
+#zjgkypbwia .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1648,7 +1683,7 @@ df_updated &lt;- update_predictions(
   border-bottom-width: 0;
 }
 
-#cfjsvruijx .gt_subtitle {
+#zjgkypbwia .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1658,13 +1693,13 @@ df_updated &lt;- update_predictions(
   border-top-width: 0;
 }
 
-#cfjsvruijx .gt_bottom_border {
+#zjgkypbwia .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#cfjsvruijx .gt_col_headings {
+#zjgkypbwia .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1679,7 +1714,7 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#cfjsvruijx .gt_col_heading {
+#zjgkypbwia .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1699,7 +1734,7 @@ df_updated &lt;- update_predictions(
   overflow-x: hidden;
 }
 
-#cfjsvruijx .gt_column_spanner_outer {
+#zjgkypbwia .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1711,15 +1746,15 @@ df_updated &lt;- update_predictions(
   padding-right: 4px;
 }
 
-#cfjsvruijx .gt_column_spanner_outer:first-child {
+#zjgkypbwia .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#cfjsvruijx .gt_column_spanner_outer:last-child {
+#zjgkypbwia .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#cfjsvruijx .gt_column_spanner {
+#zjgkypbwia .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1731,7 +1766,7 @@ df_updated &lt;- update_predictions(
   width: 100%;
 }
 
-#cfjsvruijx .gt_group_heading {
+#zjgkypbwia .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1753,7 +1788,7 @@ df_updated &lt;- update_predictions(
   vertical-align: middle;
 }
 
-#cfjsvruijx .gt_empty_group_heading {
+#zjgkypbwia .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1768,15 +1803,15 @@ df_updated &lt;- update_predictions(
   vertical-align: middle;
 }
 
-#cfjsvruijx .gt_from_md > :first-child {
+#zjgkypbwia .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#cfjsvruijx .gt_from_md > :last-child {
+#zjgkypbwia .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#cfjsvruijx .gt_row {
+#zjgkypbwia .gt_row {
   padding-top: 5px;
   padding-bottom: 5px;
   padding-left: 5px;
@@ -1795,7 +1830,7 @@ df_updated &lt;- update_predictions(
   overflow-x: hidden;
 }
 
-#cfjsvruijx .gt_stub {
+#zjgkypbwia .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1807,7 +1842,7 @@ df_updated &lt;- update_predictions(
   padding-left: 12px;
 }
 
-#cfjsvruijx .gt_summary_row {
+#zjgkypbwia .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1817,7 +1852,7 @@ df_updated &lt;- update_predictions(
   padding-right: 5px;
 }
 
-#cfjsvruijx .gt_first_summary_row {
+#zjgkypbwia .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1827,7 +1862,7 @@ df_updated &lt;- update_predictions(
   border-top-color: #D3D3D3;
 }
 
-#cfjsvruijx .gt_grand_summary_row {
+#zjgkypbwia .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1837,7 +1872,7 @@ df_updated &lt;- update_predictions(
   padding-right: 5px;
 }
 
-#cfjsvruijx .gt_first_grand_summary_row {
+#zjgkypbwia .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1847,11 +1882,11 @@ df_updated &lt;- update_predictions(
   border-top-color: #D3D3D3;
 }
 
-#cfjsvruijx .gt_striped {
+#zjgkypbwia .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#cfjsvruijx .gt_table_body {
+#zjgkypbwia .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1860,7 +1895,7 @@ df_updated &lt;- update_predictions(
   border-bottom-color: #D3D3D3;
 }
 
-#cfjsvruijx .gt_footnotes {
+#zjgkypbwia .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1874,13 +1909,13 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#cfjsvruijx .gt_footnote {
+#zjgkypbwia .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#cfjsvruijx .gt_sourcenotes {
+#zjgkypbwia .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1894,41 +1929,41 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#cfjsvruijx .gt_sourcenote {
+#zjgkypbwia .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#cfjsvruijx .gt_left {
+#zjgkypbwia .gt_left {
   text-align: left;
 }
 
-#cfjsvruijx .gt_center {
+#zjgkypbwia .gt_center {
   text-align: center;
 }
 
-#cfjsvruijx .gt_right {
+#zjgkypbwia .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#cfjsvruijx .gt_font_normal {
+#zjgkypbwia .gt_font_normal {
   font-weight: normal;
 }
 
-#cfjsvruijx .gt_font_bold {
+#zjgkypbwia .gt_font_bold {
   font-weight: bold;
 }
 
-#cfjsvruijx .gt_font_italic {
+#zjgkypbwia .gt_font_italic {
   font-style: italic;
 }
 
-#cfjsvruijx .gt_super {
+#zjgkypbwia .gt_super {
   font-size: 65%;
 }
 
-#cfjsvruijx .gt_footnote_marks {
+#zjgkypbwia .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;

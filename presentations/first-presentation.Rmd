@@ -58,7 +58,7 @@ https://epiforecasts.io/uk-challenge/
 
 --
 
-- Part of ongoing research project by the **epiforecasts** group at the London School of Hygiene & Tropical Medicine where our project partner Nikos Bosse is engaged as a doctoral candidate
+- Part of ongoing research project by the **epiforecasts** group at the London School of Hygiene & Tropical Medicine where our project supervisor Nikos Bosse is engaged as a doctoral candidate
 
 ---
 
@@ -194,7 +194,7 @@ class: inverse, center, middle
 
 --
 
-- For a given quantile level $\alpha$ and observed value $y$, the score is computed as
+  - For a given quantile level $\alpha$, true observed value $y$ as well as lower bound $l$ and upper bound $u$ of the corresponding $(1 - \alpha) \cdot 100$% prediction interval, the score is computed as
 
 $$
 Score_\alpha(y) = (u-l) + \frac{2}{\alpha} \cdot (l-y) \cdot \mathbf{1} (y \leq l) + \frac{2}{\alpha} \cdot (y-u) \cdot \mathbf{1}(y \geq u)
@@ -222,7 +222,7 @@ Theory based on Paper Romano Y., Patterson E., and Candès E. (2019): *Conformal
 
 **Central Theorem:** 
 
-If $(X_i, Y_i), i = 1, \ldots, n+1$ are exchangeable, then the prediction interval $C(X_{n+1})$ constructed by the CQR algorithm satisfies
+If $(X_i, Y_i), i = 1, \ldots, n+1$ are exchangeable, then the $(1 - \alpha) \cdot 100$% prediction interval $C(X_{n+1})$ constructed by the CQR algorithm satisfies
   
 $$
 \begin{aligned}
@@ -251,46 +251,46 @@ For a given quantile $\alpha$ and a given quantile regression algorithm $\mathca
 
 $$
 \begin{aligned}
-\left\{ \hat{ q}_{\alpha, \, low}, \; \hat{ q}_{\alpha, \, high} \right\} \leftarrow \mathcal{A} \left( \left\{ (X_i, Y_i): i \in I_1 \right\} \right) 
+\left\{ \hat{ q}_{\alpha, low}, \; \hat{ q}_{\alpha, high} \right\} \leftarrow \mathcal{A} \left( \left\{ (X_i, Y_i): i \in I_1 \right\} \right) 
 \end{aligned}
 $$
 
----
-
-## CQR Algorithm
+--
 
 **Step 3:** <br>
 Compute **conformity scores** on the calibration set:
 
 $$
 \begin{aligned}
-E_i := \operatorname*{max} \left\{ \hat{ q}_{\alpha, \, low}(X_i) - Y_i, \; Y_i - \hat{ q}_{\alpha, \, high}(X_i) \right\} \quad \forall \; i \in I_2
+E_i := \operatorname*{max} \left\{ \hat{ q}_{\alpha, low}(X_i) - Y_i, \; Y_i - \hat{ q}_{\alpha, high}(X_i) \right\} \quad \forall \; i \in I_2
 \end{aligned}
 $$
 
-For each $i$, the corresponding score $E_i$ is positive if $Y_i$ is *outside* the interval $\left[ \hat{ q}_{\alpha, \, low}(X_i), \; \hat{ q}_{\alpha, \, high}(X_i) \right]$ and negative if $Y_i$ is *inside* the interval.
-
---
-
-**Step 4:** <br>
-Compute the **margin** $Q_{1 - \alpha}(E, I_2)$ given by the $(1 - \alpha)(1 + \frac{ 1}{ 1 + \left| I_2 \right| })$-th empirical quantile of the scores $E_i$ in the calibration set.
+For each $i$, the corresponding score $E_i$ is **positive** if $Y_i$ is **outside** the interval $\left[ \hat{ q}_{\alpha, low}(X_i), \; \hat{ q}_{\alpha, high}(X_i) \right]$ and **negative** if $Y_i$ is **inside** the interval.
 
 ---
 
 ## CQR Algorithm
 
+**Step 4:** <br>
+Compute the **margin** $Q_{1 - \alpha}(E, I_2)$ given by the $(1 - \alpha)(1 + \frac{ 1}{ 1 + \left| I_2 \right| })$-th empirical quantile of the scores $E_i$ in the calibration set.
+
+--
+
 **Step 5:** <br>
-On the basis of the original prediction interval bounds $\hat{ q}_{\alpha, \, low}(X_i)$ and $\hat{ q}_{\alpha, \, high}(X_i)$, the new *post-processed* prediction interval for $Y_i$ is given by
+On the basis of the original prediction interval bounds $\hat{ q}_{\alpha, low}(X_i)$ and $\hat{ q}_{\alpha, high}(X_i)$, the new *post-processed* prediction interval for $Y_i$ is given by
 
 $$
 \begin{aligned}
-C(X_{n+1}) = \left[ \hat{ q}_{\alpha, \, low}(X_i) - Q_{1 - \alpha}(E, I_2), \; \hat{ q}_{\alpha, \, high}(X_i) + Q_{1 - \alpha}(E, I_2) \right].
+C(X_{n+1}) = \left[ \hat{ q}_{\alpha,  low}(X_i) - Q_{1 - \alpha}(E, I_2), \; \hat{ q}_{\alpha,  high}(X_i) + Q_{1 - \alpha}(E, I_2) \right].
 \end{aligned}
 $$
 
 --
 
-- Note that the **same** margin is subtracted/added for the lower and upper bound, which limits flexibility
+- Note that the **same** margin is subtracted/added for the lower and upper bound, which limits the flexibility
+
+--
 
 - Possible extensions could use different margins and/or **multiplicative** correction terms
 

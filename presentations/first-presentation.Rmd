@@ -317,15 +317,26 @@ class: inverse, center, middle
 
 ---
 
+## Overview of original Data
+
+<!-- M: either put this plot on the slide before or in the data introduction at the beginning -->
+```{r echo=FALSE, fig.height=4}
+model <- "epiforecasts-EpiExpert"
+location <- "GB"
+plot_quantiles(df, model, location, quantiles = c(0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99))
+```
+
+---
+
 ## Update Predictions with CQR
 
 .left-30[
 
-- a
+- The interval score for the entire data set improves after applying the CQR method
 
-- b
+- This result holds in the aggregate over all horizons and quantiles
 
-- c
+- They also hold in both target types
 
 ]
 
@@ -336,8 +347,7 @@ df_updated <- update_predictions(
   df,
   method = "cqr",
   models = "epiforecasts-EpiExpert",
-  locations = "GB",
-  horizons = 1
+  locations = "GB"
 )
 ```
 
@@ -346,18 +356,10 @@ df_updated <- update_predictions(
 model <- "epiforecasts-EpiExpert"
 location <- "GB"
 
-preprocessed <- preprocess_df(df, model, location, horizons = 1)
+preprocessed <- preprocess_df(df, model, location)
 df_combined <- collect_predictions(original = preprocessed$df, cqr = df_updated)
 ```
 
-
-<!-- M: bullet points:
-
-- On a more granular level we observe that CQR provides a benefit in forecasting at larger horizons
-
-- Similar results are found for larger prediction intervals
-
--->
 
 ```{r, echo=FALSE}
 round_output <- function(df, digits) {
@@ -379,17 +381,6 @@ df_combined |>
 ```
 
 ]
-
----
-
-## Overview of original Data
-
-<!-- M: either put this plot on the slide before or in the data introduction at the beginning -->
-```{r echo=FALSE, fig.height=4}
-model <- "epiforecasts-EpiExpert"
-location <- "GB"
-plot_quantiles(df, model, location, quantiles = c(0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99))
-```
 
 ---
 
@@ -419,25 +410,13 @@ plot_quantiles(df, model, location, quantiles = c(0.01, 0.05, 0.25, 0.5, 0.75, 0
 
 ## Update and Evaluate Forecasts for a fixed time horizon
 
-<!-- M: If possible I would like to add a slide identical to the one using cross validation but with pure training with the cqr method to highlight the contrast to the time series cross validation -->
-
-<!-- M: can the code chunk and the table be put on the right so that we can add bullet points to the slide? -->
-
-<!-- M: bullet points:
-
-- The interval score for the validation set is slightly worse after applying the CQR method
-
-- This result holds in the aggregate over all horizons and quantiles
-
--->
-
 .left-30[
 
-- a
+- For the validation set the interval score improvement is much lower
 
-- b
+- Under- and overprediction decrease while sharpness increases
 
-- c 
+- This indicates an overall increase in prediction intervals
 
 ]
 
@@ -449,7 +428,6 @@ df_updated <- update_predictions(
   method = "cqr",
   models = "epiforecasts-EpiExpert",
   locations = "GB",
-  horizons = 1,
   cv_init_training = 5
 )
 ```
@@ -460,17 +438,10 @@ model <- "epiforecasts-EpiExpert"
 location <- "GB"
 cv_init_training <- 5
 
-preprocessed <- preprocess_df(df, model, location, horizons = 1)
+preprocessed <- preprocess_df(df, model, location)
 df_combined <- collect_predictions(original = preprocessed$df, cqr = df_updated)
 ```
 
-<!-- M: bullet points:
-
-- On a more granular level we observe that CQR provides a benefit in forecasting at larger horizons
-
-- Similar results are found for larger prediction intervals
-
--->
 
 ```{r, echo=FALSE}
 df_combined |>
@@ -503,11 +474,11 @@ plot_intervals(
 
 .left-30[
 
-- a
+- CQR provides a benefit in forecasting at larger horizons
 
-- b
+- In the aggregate results for larger horizon tend to have a stronger weight on the scores
 
-- c
+- Similar results are found for the prediction interval size,  larger quantiles tend to benefit more
 
 ]
 

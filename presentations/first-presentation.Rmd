@@ -188,7 +188,7 @@ class: inverse, center, middle
 
 - Based on **Weighted Interval Score**<sup>1</sup>  
 
-.center.bold[WIS = Sharpness + Underprediction + Overprediction]
+.center.bold[WIS = Sharpness + Overprediction + Underprediction]
 
 .footnote[[1] https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008618]
 

@@ -121,7 +121,7 @@ plot_intervals <- function(df, model = NULL, location = NULL,
   location_name <- l$location_name
 
   df |>
-    process_quantile_pair(quantile) |> # dplyr::count(quantile)
+    process_quantile_pair(quantile) |>
     filter_target_types(target) |>
     filter_horizons(horizon) |>
     change_to_date() |>

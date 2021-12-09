@@ -386,6 +386,10 @@ With special name .remark-code this is set as the new default, add custom prefix
   float: right;
 }
 
+.right-65 + * {
+  clear: both;
+}
+
 .left-35 {
   width: 35%;
   float: left;

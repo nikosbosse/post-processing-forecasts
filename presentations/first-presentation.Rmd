@@ -43,15 +43,6 @@ df_subset <- slice_sample(df, n = 50)
 
 <!-- here content of second slide -->
 
-<!-- M: Grundsätzliches:
-- Müssen entscheiden ob wir einen Punkt nach Bullet points machen. Ich findes es ohne besser.
-- Ich finde wir sollten versuchen unsere Bullet points möglichst kurz zu formulieren und mehr dazu zu sagen. Dann wirkt es weniger abgelesen.
-- Wenn wir lange sätze machen sollten wir zumindest die EKy wörter in den Bullte farblich und fett kennzeichnen (powerpoint best practice)
-- Können wir die abstände zwishcen bullet points größer machen damit die Folien besser ausgefüllt sind?
-- Wann Groß und wann Kleinschreibung in Bullet Points
-
--->
-
 ## Motivation:<br>UK Covid-19 Crowd Forecasting Challenge
 
 .footnote[ 
@@ -326,6 +317,71 @@ class: inverse, center, middle
 
 ---
 
+## Update Predictions with CQR
+
+.left-30[
+
+- a
+
+- b
+
+- c
+
+]
+
+.right-65[
+
+```{r}
+df_updated <- update_predictions(
+  df,
+  method = "cqr",
+  models = "epiforecasts-EpiExpert",
+  locations = "GB",
+  horizons = 1
+)
+```
+
+
+```{r, echo=FALSE}
+model <- "epiforecasts-EpiExpert"
+location <- "GB"
+
+preprocessed <- preprocess_df(df, model, location, horizons = 1)
+df_combined <- collect_predictions(original = preprocessed$df, cqr = df_updated)
+```
+
+
+<!-- M: bullet points:
+
+- On a more granular level we observe that CQR provides a benefit in forecasting at larger horizons
+
+- Similar results are found for larger prediction intervals
+
+-->
+
+```{r, echo=FALSE}
+round_output <- function(df, digits) {
+  df |> mutate(across(.cols = where(is.numeric), .fns = ~ round(.x, digits)))
+}
+```
+
+```{r, echo=FALSE}
+df_combined |>
+  eval_forecasts(summarise_by = c("method", "model", "target_type")) |>
+  select(method, target_type:overprediction) |>
+  arrange(target_type, desc(method)) |>
+  round_output(digits = 3) |>
+  gt::gt() |>
+  gt::tab_options(
+    table.align = "left", row.striping.include_table_body = TRUE,
+    data_row.padding = gt::px(15)
+  )
+```
+
+]
+
+---
+
 ## Overview of original Data
 
 <!-- M: either put this plot on the slide before or in the data introduction at the beginning -->
@@ -375,6 +431,17 @@ plot_quantiles(df, model, location, quantiles = c(0.01, 0.05, 0.25, 0.5, 0.75, 0
 
 -->
 
+.left-30[
+
+- a
+
+- b
+
+- c 
+
+]
+
+.right-65[
 
 ```{r}
 df_updated <- update_predictions(
@@ -386,7 +453,6 @@ df_updated <- update_predictions(
   cv_init_training = 5
 )
 ```
-<!-- M: ommited the comment: # ideally same interface for alternative methods . What do we want to say whith this? -->
 
 
 ```{r, echo=FALSE}
@@ -398,8 +464,6 @@ preprocessed <- preprocess_df(df, model, location, horizons = 1)
 df_combined <- collect_predictions(original = preprocessed$df, cqr = df_updated)
 ```
 
---
-
 <!-- M: bullet points:
 
 - On a more granular level we observe that CQR provides a benefit in forecasting at larger horizons
@@ -407,12 +471,6 @@ df_combined <- collect_predictions(original = preprocessed$df, cqr = df_updated)
 - Similar results are found for larger prediction intervals
 
 -->
-
-```{r, echo=FALSE}
-round_output <- function(df, digits) {
-  df |> mutate(across(.cols = where(is.numeric), .fns = ~ round(.x, digits)))
-}
-```
 
 ```{r, echo=FALSE}
 df_combined |>
@@ -428,6 +486,8 @@ df_combined |>
   )
 ```
 
+]
+
 ---
 
 ```{r, echo=FALSE, fig.height=5}
@@ -441,6 +501,18 @@ plot_intervals(
 
 ## Evaluate Predicted Cases stratified by time horizon
 
+.left-30[
+
+- a
+
+- b
+
+- c
+
+]
+
+.right-65[
+
 ```{r}
 df_updated <- update_predictions(
   df,
@@ -452,13 +524,10 @@ df_updated <- update_predictions(
 )
 ```
 
-
 ```{r, echo=FALSE}
 preprocessed <- preprocess_df(df, model, location, target_types = "Cases")
 df_combined <- collect_predictions(original = preprocessed$df, cqr = df_updated)
 ```
-
---
 
 ```{r, echo=FALSE}
 df_combined |>
@@ -473,6 +542,8 @@ df_combined |>
     data_row.padding = gt::px(5)
   )
 ```
+
+]
 
 ---
 

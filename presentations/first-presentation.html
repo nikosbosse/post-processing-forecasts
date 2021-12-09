@@ -28,7 +28,7 @@
     <script src="first-presentation_files/nouislider/jquery.nouislider.min.js"></script>
     <link href="first-presentation_files/selectize/selectize.bootstrap3.css" rel="stylesheet" />
     <script src="first-presentation_files/selectize/selectize.min.js"></script>
-    <link href="first-presentation_files/crosstalk/css/crosstalk.css" rel="stylesheet" />
+    <link href="first-presentation_files/crosstalk/css/crosstalk.min.css" rel="stylesheet" />
     <script src="first-presentation_files/crosstalk/js/crosstalk.min.js"></script>
     <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
   </head>
@@ -352,6 +352,10 @@ With special name .remark-code this is set as the new default, add custom prefix
   float: right;
 }
 
+.right-65 + * {
+  clear: both;
+}
+
 .left-35 {
   width: 35%;
   float: left;
@@ -438,15 +442,6 @@ With special name .remark-code this is set as the new default, add custom prefix
 
 &lt;!-- here content of second slide --&gt;
 
-&lt;!-- M: Grundsätzliches:
-- Müssen entscheiden ob wir einen Punkt nach Bullet points machen. Ich findes es ohne besser.
-- Ich finde wir sollten versuchen unsere Bullte points möglichst kurz zu formulieren und mehr dazu zu sagen. Dann wirkt es weniger abgelesen.
-- Wenn wir lange sätze machen sollten wir zumindest die EKy wörter in den Bullte farblich und fett kennzeichnen (powerpoint best practice)
-- Können wir die abstände zwishcen bullet points größer machen damit die Folien besser ausgefüllt sind?
-- Wann Groß und wann Kleinschreibung in Bullet Points
-
---&gt;
-
 ## Motivation:&lt;br&gt;UK Covid-19 Crowd Forecasting Challenge
 
 .footnote[ 
@@ -493,8 +488,8 @@ https://epiforecasts.io/uk-challenge/
 
 .size-80[
 
-<div id="htmlwidget-9b6345bf8546418d9555" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-9b6345bf8546418d9555">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"disabled\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"disabled\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"integer\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"60\" data-max=\"296447\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"disabled\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.01\" data-max=\"0.99\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"20.8383818624527\" data-max=\"631063\" data-scale=\"13\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"integer\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"1\" data-max=\"4\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","fillContainer":false,"data":[["GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB"],["United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom"],["2021-06-05","2021-07-10","2021-08-28","2021-06-19","2021-06-26","2021-08-21","2021-07-17","2021-08-21","2021-08-07","2021-06-26","2021-09-04","2021-08-14","2021-07-17","2021-08-21","2021-07-10","2021-06-12","2021-06-12","2021-06-19","2021-08-28","2021-06-26","2021-08-28","2021-08-07","2021-07-31","2021-08-21","2021-06-12","2021-07-17","2021-07-03","2021-06-19","2021-07-24","2021-07-31","2021-08-21","2021-07-17","2021-06-19","2021-08-21","2021-07-17","2021-07-17","2021-07-10","2021-07-17","2021-06-05","2021-08-14","2021-06-19","2021-08-07","2021-07-03","2021-08-21","2021-08-21","2021-06-19","2021-06-12","2021-07-31","2021-06-19","2021-08-07"],["Deaths","Deaths","Cases","Cases","Deaths","Deaths","Deaths","Cases","Deaths","Cases","Deaths","Cases","Cases","Cases","Deaths","Deaths","Cases","Cases","Cases","Cases","Cases","Deaths","Deaths","Cases","Deaths","Cases","Deaths","Deaths","Deaths","Deaths","Deaths","Deaths","Deaths","Deaths","Cases","Cases","Deaths","Deaths","Deaths","Cases","Deaths","Cases","Cases","Cases","Deaths","Cases","Cases","Cases","Cases","Deaths"],[61,192,237556,62474,119,697,284,219919,627,96843,785,198759,296447,219919,192,60,46825,62474,237556,96843,237556,627,524,219919,60,296447,118,74,447,524,697,284,74,697,296447,296447,192,284,61,198759,74,185724,161805,219919,697,62474,46825,187268,62474,627],[66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273],["2021-05-24","2021-06-14","2021-08-16","2021-06-07","2021-05-31","2021-08-09","2021-06-28","2021-08-09","2021-07-12","2021-06-21","2021-08-16","2021-07-26","2021-07-05","2021-08-02","2021-06-14","2021-06-07","2021-06-07","2021-05-31","2021-08-16","2021-06-14","2021-08-02","2021-07-12","2021-07-26","2021-07-26","2021-06-07","2021-06-28","2021-06-07","2021-05-24","2021-07-12","2021-07-12","2021-07-26","2021-07-05","2021-05-31","2021-08-16","2021-06-28","2021-06-21","2021-07-05","2021-07-05","2021-05-31","2021-07-26","2021-06-14","2021-07-19","2021-06-14","2021-07-26","2021-07-26","2021-06-14","2021-06-07","2021-07-05","2021-06-14","2021-07-12"],[0.01,0.99,0.35,0.55,0.1,0.8,0.15,0.975,0.9,0.01,0.15,0.6,0.95,0.05,0.65,0.025,0.9,0.01,0.4,0.3,0.5,0.6,0.45,0.99,0.975,0.4,0.6,0.6,0.9,0.99,0.65,0.15,0.025,0.05,0.15,0.25,0.5,0.9,0.8,0.6,0.5,0.2,0.5,0.25,0.35,0.8,0.45,0.45,0.15,0.3],[25,825.060011029393,165484,52768.8619065161,84,701.730646141415,324,270098.815712336,607.039226424764,65783.3165759593,502.429302161934,292968,371277.196932214,121290.922790089,93.2326105221959,49.8500182672787,67191.9891731538,12712,211227.066513522,83943.2,91323,1131,469.264728112287,469388,167.439572702598,215422.181325844,329,56.9927063446227,543.481410119022,839.498290537566,549.136531577613,121.15233068155,20.8383818624527,468.611216512647,210790.378808957,138182.5,271,295.856624820767,69.8158939327714,236694.391770406,75,564846.067596767,122052,229647.246094937,864.109875620129,81307,37937.2,631063,47804.55,495.850925128131],["seb (Rt)","anonymous_Dunlin","CosmicDan (Rt)","d.simons","curlykale (Rt)","anonymous_Gnu","Blitzer (Rt)","anonymous_Stingray","Sophia","anonymous_Dunlin","northofcam","epiforecasts-EpiExpert_direct","nib","anonymous_Stingray","aen","rmdepicurin","curlykale","epiforecasts-EpiExpert_Rt","anonymous_Tapir","BQuilty (Rt)","seb (Rt)","anonymous_Duck (Rt)","joewelsh99","EuroCOVIDhub-ensemble","d.simons","Usedtobeabiologist","epiforecasts-EpiExpert_Rt","d.simons","anonymous_Bison","pentapenguin","anonymous_Gazelle","Sophia","anonymous_Raccoon","anonymous_Human","anonymous_Rail","anonymous_Dunlin (Rt)","Sophia (Rt)","anonymous_Stingray","d.simons","RitwikP","anonymous_Dunlin","BQuilty","epiforecasts-EpiExpert_Rt","anonymous_Yak","CosmicDan","epiforecasts-EpiExpert","aen (Rt)","BQuilty (Rt)","seabbs (Rt)","seb"],[2,4,2,2,4,2,3,2,4,1,3,3,2,3,4,1,1,3,2,2,4,4,1,4,1,3,4,4,2,3,4,2,3,1,3,4,1,2,1,3,1,3,3,4,4,1,1,4,1,4],["Expert","Non-expert","Non-expert","Expert","Non-expert","Expert","Unknown","Non-expert","Non-expert","Non-expert","Non-expert","Unknown","Expert","Non-expert","Expert","Non-expert","Non-expert","Unknown","Non-expert","Expert","Expert","Unknown","Non-expert","Unknown","Expert","Non-expert","Unknown","Expert","Non-expert","Non-expert","Non-expert","Non-expert","Expert","Expert","Expert","Non-expert","Non-expert","Non-expert","Expert","Non-expert","Non-expert","Expert","Unknown","Non-expert","Non-expert","Unknown","Expert","Expert","Expert","Expert"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>location<\/th>\n      <th>location_name<\/th>\n      <th>target_end_date<\/th>\n      <th>target_type<\/th>\n      <th>true_value<\/th>\n      <th>population<\/th>\n      <th>forecast_date<\/th>\n      <th>quantile<\/th>\n      <th>prediction<\/th>\n      <th>model<\/th>\n      <th>horizon<\/th>\n      <th>expert<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"scrollX":true,"pageLength":4,"autoWidth":true,"columnDefs":[{"className":"dt-right","targets":[4,5,7,8,10]}],"order":[],"orderClasses":false,"orderCellsTop":true,"lengthMenu":[4,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-51e4bce63f5f91b6e895" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-51e4bce63f5f91b6e895">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"disabled\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"disabled\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"integer\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"59\" data-max=\"296447\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"disabled\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.025\" data-max=\"0.99\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"24.0128431633641\" data-max=\"700353\" data-scale=\"13\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"integer\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"1\" data-max=\"4\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","fillContainer":false,"data":[["GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB","GB"],["United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom","United Kingdom"],["2021-06-26","2021-08-07","2021-08-14","2021-06-19","2021-06-26","2021-06-12","2021-07-31","2021-06-19","2020-06-06","2021-06-26","2021-05-29","2021-07-31","2021-07-24","2021-06-05","2021-06-12","2021-06-05","2021-08-28","2021-07-17","2021-08-21","2021-07-24","2021-07-03","2021-08-14","2021-07-10","2021-06-26","2021-07-10","2021-06-12","2021-07-10","2021-07-17","2021-09-04","2021-06-19","2021-08-07","2021-07-31","2021-07-24","2021-08-28","2021-07-24","2021-08-07","2021-06-26","2021-08-28","2021-06-26","2021-05-29","2021-07-24","2021-06-26","2021-06-19","2021-08-07","2021-07-17","2021-08-28","2021-06-12","2021-08-21","2021-06-12","2021-06-19"],["Deaths","Cases","Cases","Cases","Deaths","Cases","Deaths","Cases","Cases","Cases","Deaths","Cases","Cases","Cases","Deaths","Deaths","Deaths","Cases","Deaths","Deaths","Cases","Deaths","Cases","Deaths","Deaths","Cases","Deaths","Deaths","Cases","Cases","Cases","Cases","Cases","Cases","Deaths","Deaths","Cases","Cases","Deaths","Deaths","Deaths","Deaths","Deaths","Cases","Deaths","Cases","Cases","Cases","Cases","Cases"],[119,185724,198759,62474,119,46825,524,62474,8442,96843,59,187268,282920,30724,60,61,785,296447,697,447,161805,613,210277,119,192,46825,192,284,243125,62474,185724,187268,282920,237556,447,627,96843,237556,119,59,447,119,74,185724,284,237556,46825,219919,46825,62474],[66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273,66022273],["2021-05-31","2021-07-19","2021-07-19","2021-05-24","2021-06-07","2021-05-31","2021-07-26","2021-05-24","","2021-06-21","2021-05-24","2021-07-12","2021-07-05","2021-05-24","2021-05-31","2021-05-24","2021-08-02","2021-07-12","2021-07-26","2021-07-19","2021-06-14","2021-07-26","2021-06-28","2021-06-07","2021-06-21","2021-06-07","2021-06-28","2021-07-12","2021-08-16","2021-06-07","2021-07-26","2021-07-26","2021-07-19","2021-08-02","2021-07-12","2021-07-19","2021-06-07","2021-08-09","2021-06-14","2021-05-24","2021-07-19","2021-06-07","2021-06-14","2021-07-26","2021-07-05","2021-08-16","2021-06-07","2021-07-26","2021-05-31","2021-05-24"],[0.35,0.05,0.6,0.4,0.99,0.55,0.35,0.35,null,0.95,0.2,0.3,0.4,0.025,0.1,0.5,0.99,0.95,0.975,0.025,0.95,0.99,0.45,0.85,0.5,0.85,0.5,0.05,0.99,0.75,0.5,0.35,0.85,0.1,0.05,0.85,0.4,0.2,0.85,0.025,0.55,0.15,0.5,0.8,0.1,0.025,0.4,0.35,0.95,0.95],[113.933220474606,435321,700353,4474.27935500017,397.637160604256,30280.9750914043,555,12484.6031914509,null,163610.294414344,28.6191514215752,489812,448404,10227.2195534156,45.2080534728972,30,4103,385181.029208783,3167.02342123559,345,246856.36796892,949,173648.699423242,103.714046788761,100,71686.3772214177,150,170.510011498859,326601,96146.177282203,280430,256304,430385.567249798,31834,287,975,64570.4,146325,147.640227737682,24.0128431633641,436,79,73.62,326597.681180666,157,111792.077651326,55334.0324759455,256102.294955866,42790.7114126137,31675.5757910658],["Sophia","epiforecasts-EpiExpert","epiforecasts-EpiExpert","habakuk","Layperson_21","d.simons","epiforecasts-EpiExpert_direct","d.simons","","andyw_76","habakuk","Layperson_21 (Rt)","epiforecasts-EpiExpert_Rt","anonymous_Dunlin","anonymous_Stingray","abc123","EuroCOVIDhub-baseline","pentapenguin","anonymous_Human","nib (Rt)","BQuilty","anonymous_Curious (Rt)","anonymous_Human","macaronisoup","Usedtobeabiologist","anonymous_Ant","2e10e122","anonymous_Bison","Layperson_21 (Rt)","aen","EuroCOVIDhub-ensemble","EuroCOVIDhub-ensemble","aurelwu","anonymous_Crane (Rt)","anonymous_Snail (Rt)","Cantabulous (Rt)","seb (Rt)","EuroCOVIDhub-baseline","RitwikP","anonymous_Wasp","CosmicDan (Rt)","epiforecasts-EpiExpert","d.simons","lukeo","epiforecasts-EpiExpert_direct","RitwikP","The Battered Bunnet","anonymous_Stingray","seabbs","seabbs"],[4,3,4,4,3,2,1,4,null,1,1,3,3,2,2,2,4,1,4,1,3,3,2,3,3,1,2,1,3,2,2,1,1,4,2,3,3,3,2,1,1,3,1,2,2,2,1,4,2,4],["Non-expert","Unknown","Unknown","Non-expert","Non-expert","Expert","Unknown","Expert","","Non-expert","Non-expert","Non-expert","Unknown","Non-expert","Non-expert","Non-expert","Unknown","Non-expert","Expert","Expert","Expert","Unknown","Expert","Non-expert","Non-expert","Non-expert","Non-expert","Non-expert","Non-expert","Expert","Unknown","Unknown","Non-expert","Unknown","Unknown","Expert","Expert","Unknown","Non-expert","Expert","Non-expert","Unknown","Expert","Non-expert","Unknown","Non-expert","Non-expert","Non-expert","Expert","Expert"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>location<\/th>\n      <th>location_name<\/th>\n      <th>target_end_date<\/th>\n      <th>target_type<\/th>\n      <th>true_value<\/th>\n      <th>population<\/th>\n      <th>forecast_date<\/th>\n      <th>quantile<\/th>\n      <th>prediction<\/th>\n      <th>model<\/th>\n      <th>horizon<\/th>\n      <th>expert<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"scrollX":true,"pageLength":4,"autoWidth":true,"columnDefs":[{"className":"dt-right","targets":[4,5,7,8,10]}],"order":[],"orderClasses":false,"orderCellsTop":true,"lengthMenu":[4,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
 
 ]
 
@@ -538,59 +533,18 @@ class: inverse, center, middle
     - **Training:** Build quantile predictions model
     - **Validation:** Determine hyperparameters of post-processing method
     - **Test:** Evaluate adjusted predictions
-&lt;!--  
-    - **Training:** Build Forecast Model to make quantile predictions
-    - **Validation:** Use predictions to determine potential hyperparameters of post-processing method
-    - **Test:** Evaluate Adjusted Predictions compared to original predictions 
---&gt;
   
 --
     
 - **Important:** In our project we do **not** build a prediction model, we merely adjust forecasts of existing ones.
-&lt;!-- In our case the data already contains quantile predictions such that step 1 is not required
-
---
-
-- **Important:** We do **not** build a prediction model ourselves. &lt;br&gt;
-Instead we take existing predictions as input and output adjusted / processed forecasts.
---&gt;
----
-
-## Methods
-
-Many post-processing methods available, including
-&lt;!--M: I wouldn't discuss the methods in detail. An example intorduction is done later when we talk about CQR.
-Either go over the slide fast or ommit it and add a bullet point with the three methods to the slide before + Verlinkung zum Repository--&gt;
---
-
-- **Conformalized Quantile Regression**: &lt;br&gt;
-  Focus of Today
-
---
-
-- **Quantile Regression Averaging**: &lt;br&gt;
-  For given quantile level `\(\alpha\)`, new prediction is a weighted average of multiple existing predictions from different models. 
-    The individual contributions, i.e. the weights, are chosen to minimize a custom loss function.
-    
---
-
-- **Quantile Spread Adjustment**: &lt;br&gt;
-  Assumes multiplicative relationship between quantile levels, e.g. `\(q_{0.9} = \lambda_{0.9} \cdot q_{0.8} = \lambda_{0.8} \cdot q_{0.8}\)` with potentially different factors `\(\lambda_{\alpha}\)`. &lt;br&gt;
-  Too conservative quantile predictions can thus be corrected by choosing larger multiplicative factors in the tails of the predictive distribution. 
-&lt;!--the indices of the multiplication looks wrong here.--&gt;
-
---
-
-- More detailed overview given in **README** Page of Project's GitHub Repository&lt;sup&gt;1&lt;/sup&gt;
-
-.footnote[[1] https://github.com/nikosbosse/post-processing-forecasts]
 
 ---
+
 
 
 ## Evaluation
 
-- Based on * *Weighted Interval Score**&lt;sup&gt;1&lt;/sup&gt;  
+- Based on **Weighted Interval Score**&lt;sup&gt;1&lt;/sup&gt;  
 
 .center.bold[WIS = Sharpness + Underprediction + Overprediction]
 
@@ -606,14 +560,11 @@ $$
 
 --
 
-- The Score of the entire model can be obtained from a weighted average over all (included) quantile levels `\(\alpha\)`  
-&lt;!--M: Darüber würde ich gerne nochmal sprechen. Wie genau funktioniert der Intervall Score wenn wir z.B.über die Horizonte zusammenrechnen? --&gt;
-
+- The Score of the entire model can be obtained from a weighted sum over all (included) quantile levels `\(\alpha\)`  
 
 --
 
 - Implemented in the .mono[**scoringutils**] R package written by Nikos
-&lt;!-- - Implemented in the .mono[**eval_forecasts()**] function of the .mono[**scoringutils**] R package written by Nikos --&gt;
 
 
 ---
@@ -697,13 +648,9 @@ $$
 
 --
 
-Note that the **same** margin is subtracted/added for the lower and upper bound, which limits flexibility.
+- Note that the **same** margin is subtracted/added for the lower and upper bound, which limits flexibility
 
-Possible extensions could use different margins and/or **multiplicative** correction terms.
-
-&lt;!-- Note that the **same** margin is subtracted/added for the lower and upper bound, which limits the flexibility of the classical CQR approach.
-
-Possible extensions of the CQR principle could use different margins and/or **multiplicative** instead of additive correction terms. --&gt;
+- Possible extensions could use different margins and/or **multiplicative** correction terms
 
 ---
 class: inverse, center, middle
@@ -728,10 +675,434 @@ class: inverse, center, middle
 
 ---
 
+## Update Predictions with CQR
+
+.left-30[
+
+- a
+
+- b
+
+- c
+
+]
+
+.right-65[
+
+
+```r
+df_updated &lt;- update_predictions(
+  df,
+  method = "cqr",
+  models = "epiforecasts-EpiExpert",
+  locations = "GB",
+  horizons = 1
+)
+```
+
+
+
+
+
+&lt;!-- M: bullet points:
+
+- On a more granular level we observe that CQR provides a benefit in forecasting at larger horizons
+
+- Similar results are found for larger prediction intervals
+
+--&gt;
+
+
+
+<div id="regrwivqqp" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#regrwivqqp .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: 0;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#regrwivqqp .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#regrwivqqp .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#regrwivqqp .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#regrwivqqp .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#regrwivqqp .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#regrwivqqp .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#regrwivqqp .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#regrwivqqp .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#regrwivqqp .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#regrwivqqp .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#regrwivqqp .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#regrwivqqp .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#regrwivqqp .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#regrwivqqp .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#regrwivqqp .gt_row {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#regrwivqqp .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#regrwivqqp .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#regrwivqqp .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#regrwivqqp .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#regrwivqqp .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#regrwivqqp .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#regrwivqqp .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#regrwivqqp .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#regrwivqqp .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#regrwivqqp .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#regrwivqqp .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#regrwivqqp .gt_left {
+  text-align: left;
+}
+
+#regrwivqqp .gt_center {
+  text-align: center;
+}
+
+#regrwivqqp .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#regrwivqqp .gt_font_normal {
+  font-weight: normal;
+}
+
+#regrwivqqp .gt_font_bold {
+  font-weight: bold;
+}
+
+#regrwivqqp .gt_font_italic {
+  font-style: italic;
+}
+
+#regrwivqqp .gt_super {
+  font-size: 65%;
+}
+
+#regrwivqqp .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 65%;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">method</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">target_type</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">interval_score</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">sharpness</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">underprediction</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">overprediction</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">original</td>
+<td class="gt_row gt_left">Cases</td>
+<td class="gt_row gt_right">16263.866</td>
+<td class="gt_row gt_right">5737.327</td>
+<td class="gt_row gt_right">2161.462</td>
+<td class="gt_row gt_right">8365.077</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">cqr</td>
+<td class="gt_row gt_left gt_striped">Cases</td>
+<td class="gt_row gt_right gt_striped">16187.031</td>
+<td class="gt_row gt_right gt_striped">7268.713</td>
+<td class="gt_row gt_right gt_striped">1363.843</td>
+<td class="gt_row gt_right gt_striped">7554.475</td></tr>
+    <tr><td class="gt_row gt_left">original</td>
+<td class="gt_row gt_left">Deaths</td>
+<td class="gt_row gt_right">22.089</td>
+<td class="gt_row gt_right">9.571</td>
+<td class="gt_row gt_right">9.503</td>
+<td class="gt_row gt_right">3.014</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">cqr</td>
+<td class="gt_row gt_left gt_striped">Deaths</td>
+<td class="gt_row gt_right gt_striped">22.035</td>
+<td class="gt_row gt_right gt_striped">11.523</td>
+<td class="gt_row gt_right gt_striped">8.202</td>
+<td class="gt_row gt_right gt_striped">2.310</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+
+]
+
+---
+
 ## Overview of original Data
 
 &lt;!-- M: either put this plot on the slide before or in the data introduction at the beginning --&gt;
-&lt;img src="first-presentation_files/figure-html/unnamed-chunk-4-1.png" width="100%" /&gt;
+&lt;img src="first-presentation_files/figure-html/unnamed-chunk-9-1.png" width="100%" /&gt;
 
 ---
 
@@ -773,6 +1144,17 @@ class: inverse, center, middle
 
 --&gt;
 
+.left-30[
+
+- a
+
+- b
+
+- c 
+
+]
+
+.right-65[
 
 
 ```r
@@ -785,12 +1167,9 @@ df_updated &lt;- update_predictions(
   cv_init_training = 5
 )
 ```
-&lt;!-- M: ommited the comment: # ideally same interface for alternative methods . What do we want to say whith this? --&gt;
 
 
 
-
---
 
 &lt;!-- M: bullet points:
 
@@ -800,14 +1179,12 @@ df_updated &lt;- update_predictions(
 
 --&gt;
 
-
-
-<div id="dffgbnvvkr" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="pekwopsher" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#dffgbnvvkr .gt_table {
+#pekwopsher .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: 0;
@@ -832,7 +1209,7 @@ df_updated &lt;- update_predictions(
   border-left-color: #D3D3D3;
 }
 
-#dffgbnvvkr .gt_heading {
+#pekwopsher .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -844,7 +1221,7 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#dffgbnvvkr .gt_title {
+#pekwopsher .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -854,7 +1231,7 @@ df_updated &lt;- update_predictions(
   border-bottom-width: 0;
 }
 
-#dffgbnvvkr .gt_subtitle {
+#pekwopsher .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -864,13 +1241,13 @@ df_updated &lt;- update_predictions(
   border-top-width: 0;
 }
 
-#dffgbnvvkr .gt_bottom_border {
+#pekwopsher .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#dffgbnvvkr .gt_col_headings {
+#pekwopsher .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -885,7 +1262,7 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#dffgbnvvkr .gt_col_heading {
+#pekwopsher .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -905,7 +1282,7 @@ df_updated &lt;- update_predictions(
   overflow-x: hidden;
 }
 
-#dffgbnvvkr .gt_column_spanner_outer {
+#pekwopsher .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -917,15 +1294,15 @@ df_updated &lt;- update_predictions(
   padding-right: 4px;
 }
 
-#dffgbnvvkr .gt_column_spanner_outer:first-child {
+#pekwopsher .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#dffgbnvvkr .gt_column_spanner_outer:last-child {
+#pekwopsher .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#dffgbnvvkr .gt_column_spanner {
+#pekwopsher .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -937,7 +1314,7 @@ df_updated &lt;- update_predictions(
   width: 100%;
 }
 
-#dffgbnvvkr .gt_group_heading {
+#pekwopsher .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -959,7 +1336,7 @@ df_updated &lt;- update_predictions(
   vertical-align: middle;
 }
 
-#dffgbnvvkr .gt_empty_group_heading {
+#pekwopsher .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -974,15 +1351,15 @@ df_updated &lt;- update_predictions(
   vertical-align: middle;
 }
 
-#dffgbnvvkr .gt_from_md > :first-child {
+#pekwopsher .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#dffgbnvvkr .gt_from_md > :last-child {
+#pekwopsher .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#dffgbnvvkr .gt_row {
+#pekwopsher .gt_row {
   padding-top: 15px;
   padding-bottom: 15px;
   padding-left: 5px;
@@ -1001,7 +1378,7 @@ df_updated &lt;- update_predictions(
   overflow-x: hidden;
 }
 
-#dffgbnvvkr .gt_stub {
+#pekwopsher .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1013,7 +1390,7 @@ df_updated &lt;- update_predictions(
   padding-left: 12px;
 }
 
-#dffgbnvvkr .gt_summary_row {
+#pekwopsher .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1023,7 +1400,7 @@ df_updated &lt;- update_predictions(
   padding-right: 5px;
 }
 
-#dffgbnvvkr .gt_first_summary_row {
+#pekwopsher .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1033,7 +1410,7 @@ df_updated &lt;- update_predictions(
   border-top-color: #D3D3D3;
 }
 
-#dffgbnvvkr .gt_grand_summary_row {
+#pekwopsher .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1043,7 +1420,7 @@ df_updated &lt;- update_predictions(
   padding-right: 5px;
 }
 
-#dffgbnvvkr .gt_first_grand_summary_row {
+#pekwopsher .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1053,11 +1430,11 @@ df_updated &lt;- update_predictions(
   border-top-color: #D3D3D3;
 }
 
-#dffgbnvvkr .gt_striped {
+#pekwopsher .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#dffgbnvvkr .gt_table_body {
+#pekwopsher .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1066,7 +1443,7 @@ df_updated &lt;- update_predictions(
   border-bottom-color: #D3D3D3;
 }
 
-#dffgbnvvkr .gt_footnotes {
+#pekwopsher .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1080,13 +1457,13 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#dffgbnvvkr .gt_footnote {
+#pekwopsher .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#dffgbnvvkr .gt_sourcenotes {
+#pekwopsher .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1100,41 +1477,41 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#dffgbnvvkr .gt_sourcenote {
+#pekwopsher .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#dffgbnvvkr .gt_left {
+#pekwopsher .gt_left {
   text-align: left;
 }
 
-#dffgbnvvkr .gt_center {
+#pekwopsher .gt_center {
   text-align: center;
 }
 
-#dffgbnvvkr .gt_right {
+#pekwopsher .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#dffgbnvvkr .gt_font_normal {
+#pekwopsher .gt_font_normal {
   font-weight: normal;
 }
 
-#dffgbnvvkr .gt_font_bold {
+#pekwopsher .gt_font_bold {
   font-weight: bold;
 }
 
-#dffgbnvvkr .gt_font_italic {
+#pekwopsher .gt_font_italic {
   font-style: italic;
 }
 
-#dffgbnvvkr .gt_super {
+#pekwopsher .gt_super {
   font-size: 65%;
 }
 
-#dffgbnvvkr .gt_footnote_marks {
+#pekwopsher .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -1183,13 +1560,27 @@ df_updated &lt;- update_predictions(
 </table>
 </div>
 
+]
+
 ---
 
-&lt;img src="first-presentation_files/figure-html/unnamed-chunk-9-1.png" width="100%" /&gt;
+&lt;img src="first-presentation_files/figure-html/unnamed-chunk-13-1.png" width="100%" /&gt;
 
 ---
 
 ## Evaluate Predicted Cases stratified by time horizon
+
+.left-30[
+
+- a
+
+- b
+
+- c
+
+]
+
+.right-65[
 
 
 ```r
@@ -1205,15 +1596,12 @@ df_updated &lt;- update_predictions(
 
 
 
-
---
-
-<div id="nofruqwqwc" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="cfjsvruijx" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#nofruqwqwc .gt_table {
+#cfjsvruijx .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: 0;
@@ -1238,7 +1626,7 @@ df_updated &lt;- update_predictions(
   border-left-color: #D3D3D3;
 }
 
-#nofruqwqwc .gt_heading {
+#cfjsvruijx .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1250,7 +1638,7 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#nofruqwqwc .gt_title {
+#cfjsvruijx .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1260,7 +1648,7 @@ df_updated &lt;- update_predictions(
   border-bottom-width: 0;
 }
 
-#nofruqwqwc .gt_subtitle {
+#cfjsvruijx .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1270,13 +1658,13 @@ df_updated &lt;- update_predictions(
   border-top-width: 0;
 }
 
-#nofruqwqwc .gt_bottom_border {
+#cfjsvruijx .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#nofruqwqwc .gt_col_headings {
+#cfjsvruijx .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1291,7 +1679,7 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#nofruqwqwc .gt_col_heading {
+#cfjsvruijx .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1311,7 +1699,7 @@ df_updated &lt;- update_predictions(
   overflow-x: hidden;
 }
 
-#nofruqwqwc .gt_column_spanner_outer {
+#cfjsvruijx .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1323,15 +1711,15 @@ df_updated &lt;- update_predictions(
   padding-right: 4px;
 }
 
-#nofruqwqwc .gt_column_spanner_outer:first-child {
+#cfjsvruijx .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#nofruqwqwc .gt_column_spanner_outer:last-child {
+#cfjsvruijx .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#nofruqwqwc .gt_column_spanner {
+#cfjsvruijx .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1343,7 +1731,7 @@ df_updated &lt;- update_predictions(
   width: 100%;
 }
 
-#nofruqwqwc .gt_group_heading {
+#cfjsvruijx .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1365,7 +1753,7 @@ df_updated &lt;- update_predictions(
   vertical-align: middle;
 }
 
-#nofruqwqwc .gt_empty_group_heading {
+#cfjsvruijx .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1380,15 +1768,15 @@ df_updated &lt;- update_predictions(
   vertical-align: middle;
 }
 
-#nofruqwqwc .gt_from_md > :first-child {
+#cfjsvruijx .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#nofruqwqwc .gt_from_md > :last-child {
+#cfjsvruijx .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#nofruqwqwc .gt_row {
+#cfjsvruijx .gt_row {
   padding-top: 5px;
   padding-bottom: 5px;
   padding-left: 5px;
@@ -1407,7 +1795,7 @@ df_updated &lt;- update_predictions(
   overflow-x: hidden;
 }
 
-#nofruqwqwc .gt_stub {
+#cfjsvruijx .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1419,7 +1807,7 @@ df_updated &lt;- update_predictions(
   padding-left: 12px;
 }
 
-#nofruqwqwc .gt_summary_row {
+#cfjsvruijx .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1429,7 +1817,7 @@ df_updated &lt;- update_predictions(
   padding-right: 5px;
 }
 
-#nofruqwqwc .gt_first_summary_row {
+#cfjsvruijx .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1439,7 +1827,7 @@ df_updated &lt;- update_predictions(
   border-top-color: #D3D3D3;
 }
 
-#nofruqwqwc .gt_grand_summary_row {
+#cfjsvruijx .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1449,7 +1837,7 @@ df_updated &lt;- update_predictions(
   padding-right: 5px;
 }
 
-#nofruqwqwc .gt_first_grand_summary_row {
+#cfjsvruijx .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1459,11 +1847,11 @@ df_updated &lt;- update_predictions(
   border-top-color: #D3D3D3;
 }
 
-#nofruqwqwc .gt_striped {
+#cfjsvruijx .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#nofruqwqwc .gt_table_body {
+#cfjsvruijx .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1472,7 +1860,7 @@ df_updated &lt;- update_predictions(
   border-bottom-color: #D3D3D3;
 }
 
-#nofruqwqwc .gt_footnotes {
+#cfjsvruijx .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1486,13 +1874,13 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#nofruqwqwc .gt_footnote {
+#cfjsvruijx .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#nofruqwqwc .gt_sourcenotes {
+#cfjsvruijx .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1506,41 +1894,41 @@ df_updated &lt;- update_predictions(
   border-right-color: #D3D3D3;
 }
 
-#nofruqwqwc .gt_sourcenote {
+#cfjsvruijx .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#nofruqwqwc .gt_left {
+#cfjsvruijx .gt_left {
   text-align: left;
 }
 
-#nofruqwqwc .gt_center {
+#cfjsvruijx .gt_center {
   text-align: center;
 }
 
-#nofruqwqwc .gt_right {
+#cfjsvruijx .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#nofruqwqwc .gt_font_normal {
+#cfjsvruijx .gt_font_normal {
   font-weight: normal;
 }
 
-#nofruqwqwc .gt_font_bold {
+#cfjsvruijx .gt_font_bold {
   font-weight: bold;
 }
 
-#nofruqwqwc .gt_font_italic {
+#cfjsvruijx .gt_font_italic {
   font-style: italic;
 }
 
-#nofruqwqwc .gt_super {
+#cfjsvruijx .gt_super {
   font-size: 65%;
 }
 
-#nofruqwqwc .gt_footnote_marks {
+#cfjsvruijx .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -1613,9 +2001,11 @@ df_updated &lt;- update_predictions(
 </table>
 </div>
 
+]
+
 ---
 
-&lt;img src="first-presentation_files/figure-html/unnamed-chunk-13-1.png" width="100%" /&gt;
+&lt;img src="first-presentation_files/figure-html/unnamed-chunk-17-1.png" width="100%" /&gt;
 
 ---
 class: center, middle, inverse
@@ -1635,25 +2025,6 @@ class: center, middle, inverse
 --
 
 - Construct new Post-Processing method as Ensemble Model of individual processing techniques
-
-&lt;!--
-
-- - Extension / Refinement of the CQR Method with asymmetric and/or multiplicative approach
-
---
-
-- Implementation of further Post-Processing methods
-
---
-
-- Analysis of which methods perform best. 
-Is this dependent on characteristics of the data such as sample size, forecast horizon or prediction model?
-
---
-
-- Construct new Post-Processing method as Ensemble Model of individual processing techniques
-
---&gt;
 
 ---
 

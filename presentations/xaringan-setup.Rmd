@@ -367,6 +367,10 @@ With special name .remark-code this is set as the new default, add custom prefix
   width: 20%;
   float: right;
 }
+.right-20 + * {
+  clear: both;
+}
+
 
 .left-70 {
   width: 70%;
@@ -376,55 +380,10 @@ With special name .remark-code this is set as the new default, add custom prefix
   width: 25%;
   float: right;
 }
-
-.left-30 {
-  width: 30%;
-  float: left;
-}
-.right-65 {
-  width: 65%;
-  float: right;
-}
-
-.right-65 + * {
+.right-25 + * {
   clear: both;
 }
 
-.left-35 {
-  width: 35%;
-  float: left;
-}
-.right-60 {
-  width: 60%;
-  float: right;
-}
-
-.left-40 {
-  width: 40%;
-  float: left;
-}
-.right-55 {
-  width: 55%;
-  float: right;
-}
-
-.left-55 {
-  width: 55%;
-  float: left;
-}
-.right-40 {
-  width: 40%;
-  float: right;
-}
-
-.left-60 {
-  width: 60%;
-  float: left;
-}
-.right-35 {
-  width: 35%;
-  float: right;
-}
 
 .left-65 {
   width: 65%;
@@ -434,23 +393,99 @@ With special name .remark-code this is set as the new default, add custom prefix
   width: 30%;
   float: right;
 }
+.right-30 + * {
+  clear: both;
+}
 
-.left-70 {
-  width: 70%;
+
+.left-60 {
+  width: 60%;
   float: left;
 }
-.right-25 {
+.right-35 {
+  width: 35%;
+  float: right;
+}
+.right-35 + * {
+  clear: both;
+}
+
+
+.left-55 {
+  width: 55%;
+  float: left;
+}
+.right-40 {
+  width: 40%;
+  float: right;
+}
+.right-40 + * {
+  clear: both;
+}
+
+
+.left-40 {
+  width: 40%;
+  float: left;
+}
+.right-55 {
+  width: 55%;
+  float: right;
+}
+.right-55 + * {
+  clear: both;
+}
+
+
+.left-35 {
+  width: 35%;
+  float: left;
+}
+.right-60 {
+  width: 60%;
+  float: right;
+}
+.right-60 + * {
+  clear: both;
+}
+
+
+.left-30 {
+  width: 30%;
+  float: left;
+}
+.right-65 {
+  width: 65%;
+  float: right;
+}
+.right-65 + * {
+  clear: both;
+}
+
+
+.left-25 {
   width: 25%;
-  float: right;
-}
-
-.left-75 {
-  width: 75%;
   float: left;
 }
-.right-20 {
-  width: 20%;
+.right-65 {
+  width: 65%;
   float: right;
+}
+.right-65 + * {
+  clear: both;
+}
+
+
+.left-20 {
+  width: 20%;
+  float: left;
+}
+.right-75 {
+  width: 75%;
+  float: right;
+}
+.right-75 + * {
+  clear: both;
 }
 ```
 

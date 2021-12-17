@@ -14,8 +14,15 @@ collect_predictions <- function(...) {
   df_combined <- dplyr::bind_rows(..., .id = "method")
 
   # keep cv_init_training attribute from second input argument
-  l <- list(...)
-  for (df in l) {
+  # always convert to list to safely check for type of input '...'
+  df_list <- list(...)
+  
+  # if input was already a list of dataframes, loop through input list
+  if (typeof(df_list[[1]]) == "list") {
+    df_list <- df_list[[1]]
+  }
+  
+  for (df in df_list) {
     cv_init_training <- attr(df, "cv_init_training")
     if (!is.null(attr(df, "cv_init_training"))) {
       attr(df_combined, "cv_init_training") <- cv_init_training
@@ -24,7 +31,6 @@ collect_predictions <- function(...) {
 
   return(df_combined)
 }
-
 
 
 
@@ -102,7 +108,8 @@ update_subset <- function(df, method, model, location, target_type, horizon, qua
 
 
 update_predictions <- function(df, methods,
-                               models = NULL, locations = NULL, target_types = NULL, horizons = NULL, quantiles_below_median = NULL,
+                               models = NULL, locations = NULL, target_types = NULL,
+                               horizons = NULL, quantiles_below_median = NULL,
                                cv_init_training = NULL, filter_original = FALSE) {
   # TODO: Write general error message function validate_inputs()
   # for inputs models, locations, target_types, horizons, quantiles_below_median

@@ -59,7 +59,7 @@ We update the prediction values over a set of different train and validation set
 # unique(df$model)
 df_save <- cross_validation(
   df = df, models = c("epiforecasts-EpiExpert"),
-  method = "cqr", training_lengths = c(40)
+  methods = "cqr", training_lengths = c(40)
 ) # seq(40,73,1)
 
 # TODO: in .rds speichern, mit datentyp. tidyverse ads reader.
@@ -71,34 +71,41 @@ sum(is.na(df_save$target_end_date))
  
 ```{r}
 # unique(df$model)
-df_forecast <- update_predictions(df=df, 
-                                  method="cqr",
-                                  models="epiforecasts-EpiExpert",
-                                  locations = "GB",
-                                  cv_init_training=4) #seq(40,73,1)
+df_forecast <- update_predictions(
+  df = df,
+  methods = "cqr",
+  models = "epiforecasts-EpiExpert",
+  locations = "GB",
+  cv_init_training = 4
+) # seq(40,73,1)
 
 
-pred_new <- df_forecast$prediction 
+pred_new <- df_forecast$prediction
 
-pred_old <- df |> 
-  filter_models(c("epiforecasts-EpiExpert")) |> 
-  filter_locations(c("GB")) |> dplyr::pull(prediction)
+pred_old <- df |>
+  filter_models(c("epiforecasts-EpiExpert")) |>
+  filter_locations(c("GB")) |>
+  dplyr::pull(prediction)
 
 print(sum(abs(pred_old - pred_new)))
 
 pred_old - pred_new # zeros could be the extremest quantiles that are not adjusted?
 
-old <- dplyr::filter(df, location == "GB" & model == "epiforecasts-EpiExpert" & target_type == "Cases" & horizon == 1 & quantile == 1 - 0.05) |> dplyr::arrange(target_end_date) |> dplyr::pull(prediction)
+old <- dplyr::filter(df, location == "GB" & model == "epiforecasts-EpiExpert" & target_type == "Cases" & horizon == 1 & quantile == 1 - 0.05) |>
+  dplyr::arrange(target_end_date) |>
+  dplyr::pull(prediction)
 
-new <- dplyr::filter(df_forecast, location == "GB" & model == "epiforecasts-EpiExpert" & target_type == "Cases" & horizon == 1 & quantile == 1 - 0.05) |> dplyr::arrange(target_end_date) |> dplyr::pull(prediction)
+new <- dplyr::filter(df_forecast, location == "GB" & model == "epiforecasts-EpiExpert" & target_type == "Cases" & horizon == 1 & quantile == 1 - 0.05) |>
+  dplyr::arrange(target_end_date) |>
+  dplyr::pull(prediction)
 
 old - new
 
-#TODO: in .ads speichern, mit datentyp. tidyverse ads reader.
-#write.csv(df_save,here::here("data", "full-data-european-forecast-hub-2-updated-epiforecasts-EpiExpert.csv"), row.names = FALSE)
+# TODO: in .ads speichern, mit datentyp. tidyverse ads reader.
+# write.csv(df_save,here::here("data", "full-data-european-forecast-hub-2-updated-epiforecasts-EpiExpert.csv"), row.names = FALSE)
 
 unique(df$model)
-#sum(is.na(df_save$target_end_date))
+# sum(is.na(df_save$target_end_date))
 ```
  
  

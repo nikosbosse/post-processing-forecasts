@@ -42,7 +42,7 @@ plot_training_end <- function(p, df, type = c("segment", "vline")) {
   cv_init_training <- attr(df, "cv_init_training")
 
   if (!is.null(cv_init_training)) {
-    training_end_date <- lubridate::ymd(unique(df_combined$target_end_date)[cv_init_training])
+    training_end_date <- lubridate::ymd(unique(df$target_end_date)[cv_init_training])
     if (type == "segment") {
       p <- p + ggplot2::geom_segment(ggplot2::aes(
         x = training_end_date, xend = training_end_date,

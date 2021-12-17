@@ -54,13 +54,13 @@ plot_quantiles(df, model, location, quantiles = c(0.01, 0.05, 0.25, 0.5, 0.75, 0
 
 ```{r}
 # Option 1 (new)
-df_list <- update_predictions(df, method = "cqr", model, location, cv_init_training = 3, filter_original = TRUE)
-df_combined_1 <- collect_predictions(original = df_list$original, cqr = df_list$cqr)
+df_list <- update_predictions(df, methods = "cqr", model, location, cv_init_training = 3, filter_original = TRUE)
+df_combined_1 <- collect_predictions(df_list)
 ```
 
 ```{r}
 # Option 2 (old)
-df_updated <- update_predictions(df, method = "cqr", model, location, cv_init_training = 3)
+df_updated <- update_predictions(df, methods = "cqr", model, location, cv_init_training = 3)
 preprocessed_list <- preprocess_df(df, model)
 df_combined_2 <- collect_predictions(original = preprocessed_list$df, cqr = df_updated)
 ```

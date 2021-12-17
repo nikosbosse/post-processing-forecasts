@@ -44,7 +44,7 @@ Our first step is to update forecasts for one model, the ensembled model "epifor
 model <- unique(df$model)[2]
 
 # Updating Predictions
-df_updated <- update_predictions(df = df, method = "cqr", models = model, locations = "GB",
+df_updated <- update_predictions(df = df, methods = "cqr", models = model, locations = "GB",
                                  horizons = 1)
 
 # Preprocessing the original DF
@@ -86,7 +86,7 @@ We again update our forecast but this time we use crossvalidation with a trainin
 model <- unique(df$model)[2]
 
 # Updating Predictions
-df_updated <- update_predictions(df = df, method = "cqr", models = model, locations = "GB",
+df_updated <- update_predictions(df = df, methods = "cqr", models = model, locations = "GB",
                                  horizons = 1, cv_init_training = 5)
 
 # Preprocessing the original DF
@@ -143,7 +143,7 @@ The plot exemplifies how uncertainty is strongly underestimated for larger quant
 model <- unique(df$model)[2]
 
 # Updating Predictions
-df_updated <- update_predictions(df = df, method = "cqr", models = model, locations = "GB", target_types = "Cases", cv_init_training = 5)
+df_updated <- update_predictions(df = df, methods = "cqr", models = model, locations = "GB", target_types = "Cases", cv_init_training = 5)
 
 # Preprocessing the original DF
 preprocessed <- preprocess_df(df = df, models = model, locations = "GB", target_types = "Cases")

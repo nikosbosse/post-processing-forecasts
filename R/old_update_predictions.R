@@ -149,7 +149,7 @@
 #    cat("Running Model with training length:", training_length)
 #    
 #    # Updating the predictions and storing them in a new updated dataframe.
-#    df_updated <- update_predictions(df, method=method, models=models, training_length=training_length)
+#    df_updated <- update_predictions(df, methods=method, models=models, training_length=training_length)
 #    
 #    # Renaming the method of the updated dataframe according to the method and traning set length
 #    df_updated["method"] <- paste0(method,"_updated_training_length_",training_length)

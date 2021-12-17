@@ -1,7 +1,7 @@
 df <- read.csv("test-data/full-data-uk-challenge.csv")
 model <- "epiforecasts-EpiExpert"
 
-df_updated <- update_predictions(df, method = "cqr", models = model)
+df_updated <- update_predictions(df, methods = "cqr", models = model)
 df_combined <- collect_predictions(original = df, cqr = df_updated)
 
 # use expect_error() with second argument 'NA' to test for simple functionality

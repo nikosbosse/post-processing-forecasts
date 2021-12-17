@@ -10,7 +10,7 @@ location <- "GB"
 test_that("works for cv_init_training = NULL", {
   df_subset <- update_subset(
     df,
-    method = cqr, model = model, target_type = "Cases", horizon = 1,
+    method = "cqr", model = model, target_type = "Cases", horizon = 1,
     quantile = 0.01, cv_init_training = NULL
   )
 
@@ -24,7 +24,7 @@ test_that("works for cv_init_training = NULL", {
 test_that("works for cv_init_training != NULL", {
   df_subset <- update_subset(
     df,
-    method = cqr, model = model, target_type = "Cases", horizon = 1,
+    method = "cqr", model = model, target_type = "Cases", horizon = 1,
     quantile = 0.01, cv_init_training = 5
   )
 
@@ -51,7 +51,7 @@ test_that("works for tibble object", {
 #   ____________________________________________________________________________
 #   Tests for update_predictions()                                          ####
 
-df_updated <- update_predictions(df, method = "cqr", models = model, locations = location, cv_init_training = NULL)
+df_updated <- update_predictions(df, methods = "cqr", models = model, locations = location, cv_init_training = NULL)
 
 # TODO: refactor tests for equal shape
 test_that("old and new data frames have same shape", {
@@ -68,7 +68,7 @@ test_that("prediction column is updated", {
 
 test_that("works for multiple models", {
   expect_equal(
-    nrow(update_predictions(df, method = "cqr", models = c(model, "seb"), locations = location)),
+    nrow(update_predictions(df, methods = "cqr", models = c(model, "seb"), locations = location)),
     nrow(df)
   )
 })
@@ -77,14 +77,14 @@ test_that("works for multiple models", {
 
 test_that("error message for wrong method is triggered as intended", {
   expect_error(
-    update_predictions(df, method = "qr", models = model, locations = location),
+    update_predictions(df, methods = "qr", models = model, locations = location),
     "qr is not an implemented post processing method."
   )
 })
 
 test_that("error message for wrong model is triggered as intended", {
   expect_error(
-    update_predictions(df, method = "cqr", models = c(model, "s"), locations = location),
+    update_predictions(df, methods = "cqr", models = c(model, "s"), locations = location),
     "At least one of the input models is not contained in the input data frame."
   )
 })

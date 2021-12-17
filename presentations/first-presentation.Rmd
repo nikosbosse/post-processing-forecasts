@@ -345,7 +345,7 @@ plot_quantiles(df, model, location, quantiles = c(0.01, 0.05, 0.25, 0.5, 0.75, 0
 ```{r}
 df_updated <- update_predictions(
   df,
-  method = "cqr",
+  methods = "cqr",
   models = "epiforecasts-EpiExpert",
   locations = "GB"
 )
@@ -423,7 +423,7 @@ df_combined |>
 ```{r}
 df_updated <- update_predictions(
   df,
-  method = "cqr",
+  methods = "cqr",
   models = "epiforecasts-EpiExpert",
   locations = "GB",
   cv_init_training = 5
@@ -485,7 +485,7 @@ plot_intervals(
 ```{r}
 df_updated <- update_predictions(
   df,
-  method = "cqr",
+  methods = "cqr",
   models = "epiforecasts-EpiExpert",
   locations = "GB",
   target_types = "Cases", # if not specified, all time horizons are included

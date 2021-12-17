@@ -105,10 +105,9 @@ plot_cqr_results <- function(df, model, target_type, horizon, quantile) {
 
 #' @importFrom rlang .data
 
-# TODO: add a vertical line at the end of the training set
 plot_intervals <- function(df, model = NULL, location = NULL,
                            target_type = c("Cases", "Deaths"),
-                           quantile = 0.05, horizon = 1) {
+                           quantile = 0.05, horizon = 1, highlight_cv = TRUE) {
   target <- rlang::arg_match(arg = target_type, values = c("Cases", "Deaths"))
   h <- paste_horizon(horizon)
 
@@ -120,7 +119,7 @@ plot_intervals <- function(df, model = NULL, location = NULL,
   df <- l$df
   location_name <- l$location_name
 
-  df |>
+  p <- df |>
     process_quantile_pair(quantile) |>
     filter_target_types(target) |>
     filter_horizons(horizon) |>
@@ -134,6 +133,12 @@ plot_intervals <- function(df, model = NULL, location = NULL,
     # making theme specifications before setting general theme does not work!
     ggplot2::theme_minimal() +
     modify_theme()
+
+  if (highlight_cv) {
+    p <- plot_training_end(p, df, type = "segment")
+  }
+
+  return(p)
 }
 
 
@@ -141,7 +146,7 @@ plot_intervals <- function(df, model = NULL, location = NULL,
 
 plot_intervals_grid <- function(df, model = NULL, location = NULL,
                                 facet_by = c("horizon", "quantile"),
-                                quantiles = NULL, horizon = NULL) {
+                                quantiles = NULL, horizon = NULL, highlight_cv = FALSE) {
   facet_by <- rlang::arg_match(arg = facet_by, values = c("horizon", "quantile"))
 
   l <- process_model_input(df, model)
@@ -176,6 +181,10 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
     change_to_date() |>
     setup_intervals_plot()
 
+  if (highlight_cv) {
+    p <- plot_training_end(p, df, type = "vline")
+  }
+
   if (facet_by == "horizon") {
     p <- p +
       ggplot2::facet_grid(
@@ -205,5 +214,6 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
       ggplot2::theme_light() +
       modify_theme()
   }
+
   return(p)
 }

@@ -13,22 +13,21 @@ select_method <- function(method) {
 collect_predictions <- function(...) {
   df_combined <- dplyr::bind_rows(..., .id = "method")
 
-  # keep cv_init_training attribute from second input argument
   # always convert to list to safely check for type of input '...'
   df_list <- list(...)
-  
+
   # if input was already a list of dataframes, loop through input list
   if (typeof(df_list[[1]]) == "list") {
     df_list <- df_list[[1]]
   }
-  
+
+  # keep cv_init_training attribute from second input argument
   for (df in df_list) {
     cv_init_training <- attr(df, "cv_init_training")
-    if (!is.null(attr(df, "cv_init_training"))) {
+    if (!is.null(cv_init_training)) {
       attr(df_combined, "cv_init_training") <- cv_init_training
     }
   }
-
   return(df_combined)
 }
 

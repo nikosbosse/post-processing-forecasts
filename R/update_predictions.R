@@ -11,7 +11,18 @@ select_method <- function(method) {
 
 
 collect_predictions <- function(...) {
-  dplyr::bind_rows(..., .id = "method")
+  df_combined <- dplyr::bind_rows(..., .id = "method")
+
+  # keep cv_init_training attribute from second input argument
+  l <- list(...)
+  for (df in l) {
+    cv_init_training <- attr(df, "cv_init_training")
+    if (!is.null(attr(df, "cv_init_training"))) {
+      attr(df_combined, "cv_init_training") <- cv_init_training
+    }
+  }
+
+  return(df_combined)
 }
 
 
@@ -23,7 +34,7 @@ update_subset <- function(df, method, model, location, target_type, horizon, qua
   method <- select_method(method = method)
 
   quantiles_list <- filter_combination(df, model, location, target_type, horizon, quantile)
-  
+
   true_values <- quantiles_list$true_values
   quantiles_low <- quantiles_list$quantiles_low
   quantiles_high <- quantiles_list$quantiles_high
@@ -79,6 +90,9 @@ update_subset <- function(df, method, model, location, target_type, horizon, qua
     quantiles_low_updated, quantiles_high_updated
   )
 
+  # set training length as attribute for plotting vertical line
+  attr(df_updated, "cv_init_training") <- cv_init_training
+
   return(df_updated)
 }
 
@@ -87,15 +101,15 @@ update_subset <- function(df, method, model, location, target_type, horizon, qua
 
 
 
-update_predictions <- function(df, method,
+update_predictions <- function(df, methods,
                                models = NULL, locations = NULL, target_types = NULL, horizons = NULL, quantiles_below_median = NULL,
-                               cv_init_training = NULL) {
+                               cv_init_training = NULL, filter_original = FALSE) {
   # TODO: Write general error message function validate_inputs()
   # for inputs models, locations, target_types, horizons, quantiles_below_median
   if (!all(models %in% unique(df$model))) {
     stop("At least one of the input models is not contained in the input data frame.")
   }
-  
+
   if (!all(locations %in% unique(df$location))) {
     stop("At least one of the input locations is not contained in the input data frame.")
   }
@@ -106,26 +120,39 @@ update_predictions <- function(df, method,
     horizons = horizons, quantiles_below_median = quantiles_below_median
   )
 
-  df <- preprocessed_list$df
+  df_preprocessed <- preprocessed_list$df
   models <- preprocessed_list$models
   locations <- preprocessed_list$locations
   target_types <- preprocessed_list$target_types
   horizons <- preprocessed_list$horizons
   quantiles_below_median <- preprocessed_list$quantiles_below_median
 
-  df_updated <- df
+  # store updated dataframes for all methods in list
+  updated_list <- list()
 
-  for (model in models) {
-    for (location in locations) {
-      for (target_type in target_types) {
-        for (horizon in horizons) {
-          for (quantile in quantiles_below_median) {
-            df_updated <- update_subset(df_updated, method, model, location, target_type, horizon, quantile, cv_init_training)
+  for (method in methods) {
+    # start with original data frame for each method
+    df_updated <- df_preprocessed
+    for (model in models) {
+      for (location in locations) {
+        for (target_type in target_types) {
+          for (horizon in horizons) {
+            for (quantile in quantiles_below_median) {
+              df_updated <- update_subset(df_updated, method, model, location, target_type, horizon, quantile, cv_init_training)
+            }
           }
         }
       }
     }
+    # updated data frames are named after corresponding method
+    updated_list[[method]] <- df_updated
   }
 
-  return(df_updated)
+  # return list of original and all updated data frames (one for each method)
+  if (filter_original) {
+    return(c(list(original = df_preprocessed), updated_list))
+  }
+
+  # return only first updated data frame (old behaviour unchanged)
+  return(updated_list[[1]])
 }

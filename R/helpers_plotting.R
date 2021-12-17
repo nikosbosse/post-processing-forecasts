@@ -37,3 +37,24 @@ modify_theme <- function() {
     legend.position = "top"
   )
 }
+
+plot_training_end <- function(p, df, type = c("segment", "vline")) {
+  cv_init_training <- attr(df, "cv_init_training")
+
+  if (!is.null(cv_init_training)) {
+    training_end_date <- lubridate::ymd(unique(df_combined$target_end_date)[cv_init_training])
+    if (type == "segment") {
+      p <- p + ggplot2::geom_segment(ggplot2::aes(
+        x = training_end_date, xend = training_end_date,
+        y = min(.data$lower), yend = max(.data$upper)
+      ),
+      linetype = "dashed", color = "grey60"
+      )
+    } else if (type == "vline") {
+      p <- p + ggplot2::geom_vline(
+        xintercept = training_end_date, linetype = "dashed", color = "grey60"
+      )
+    }
+  }
+  return(p)
+}

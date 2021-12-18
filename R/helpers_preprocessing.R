@@ -145,7 +145,7 @@ preprocess_input <- function(df, vec, string) {
 ### preprocessing df based on inputs                                        ####
 
 preprocess_df <- function(df, models = NULL, locations = NULL, target_types = NULL,
-                          horizons = NULL, quantiles_below_median = NULL) {
+                          horizons = NULL, quantiles = NULL) {
 
   # Preprocessing the inputs
   models <- preprocess_input(df, models, "model")
@@ -153,10 +153,10 @@ preprocess_df <- function(df, models = NULL, locations = NULL, target_types = NU
   target_types <- preprocess_input(df, target_types, "target_type")
   horizons <- preprocess_input(df, horizons, "horizon")
 
-  if (is.null(quantiles_below_median)) {
-    quantiles_below_median <- na.omit(unique(df$quantile)[unique(df$quantile) < 0.5])
+  if (is.null(quantiles)) {
+    quantiles <- na.omit(unique(df$quantile)[unique(df$quantile) < 0.5])
   } else {
-    quantiles_below_median <- c(quantiles_below_median)
+    quantiles <- c(quantiles)
   }
 
   # Filtering out all combinations that are not updated
@@ -165,12 +165,12 @@ preprocess_df <- function(df, models = NULL, locations = NULL, target_types = NU
     filter_locations(locations) |>
     filter_target_types(target_types) |>
     filter_horizons(horizons) |>
-    filter_quantile_pairs(quantiles_below_median)
+    filter_quantile_pairs(quantiles)
 
   return(list(
     df = df, models = models, locations = locations,
     target_types = target_types, horizons = horizons,
-    quantiles_below_median = quantiles_below_median
+    quantiles = quantiles
   ))
 }
 

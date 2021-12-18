@@ -107,7 +107,7 @@ update_subset <- function(df, method, model, location, target_type, horizon, qua
 
 update_predictions <- function(df, methods,
                                models = NULL, locations = NULL, target_types = NULL,
-                               horizons = NULL, quantiles_below_median = NULL,
+                               horizons = NULL, quantiles = NULL,
                                cv_init_training = NULL, filter_original = FALSE) {
   # TODO: Write general error message function validate_inputs()
   # for inputs models, locations, target_types, horizons, quantiles_below_median
@@ -121,8 +121,7 @@ update_predictions <- function(df, methods,
 
   # Preprocessing the df and inputs
   preprocessed_list <- preprocess_df(
-    df = df, models = models, locations = locations, target_types = target_types,
-    horizons = horizons, quantiles_below_median = quantiles_below_median
+    df, models, locations, target_types, horizons, quantiles
   )
 
   df_preprocessed <- preprocessed_list$df
@@ -130,7 +129,7 @@ update_predictions <- function(df, methods,
   locations <- preprocessed_list$locations
   target_types <- preprocessed_list$target_types
   horizons <- preprocessed_list$horizons
-  quantiles_below_median <- preprocessed_list$quantiles_below_median
+  quantiles <- preprocessed_list$quantiles
 
   # store updated dataframes for all methods in list
   updated_list <- list()
@@ -142,7 +141,7 @@ update_predictions <- function(df, methods,
       for (location in locations) {
         for (target_type in target_types) {
           for (horizon in horizons) {
-            for (quantile in quantiles_below_median) {
+            for (quantile in quantiles) {
               df_updated <- update_subset(df_updated, method, model, location, target_type, horizon, quantile, cv_init_training)
             }
           }

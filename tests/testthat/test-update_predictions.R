@@ -3,46 +3,49 @@ tbl <- readr::read_csv("test-data/full-data-uk-challenge.csv", show_col_types = 
 model <- "epiforecasts-EpiExpert"
 location <- "GB"
 
+df_preprocessed <- preprocess_df(df, model)$df
+tbl_preprocessed <- preprocess_df(tbl, model)$df
+
 
 #   ____________________________________________________________________________
 #   Tests for update_subset()                                               ####
 
+# input of update_subset() is preprocessed / filtered data frame
+
 test_that("works for cv_init_training = NULL", {
   df_subset <- update_subset(
-    df,
+    df_preprocessed,
     method = "cqr", model, location, target_type = "Cases", horizon = 1,
     quantile = 0.01, cv_init_training = NULL
   )
 
   # dimensions of updated data frame are correct
-  expect_equal(dim(df), dim(df_subset))
+  expect_equal(dim(df_preprocessed), dim(df_subset))
 
   # prediction column is updated
-  expect_false(all(df$prediction == df_subset$prediction))
+  expect_false(all(df_preprocessed$prediction == df_subset$prediction))
 })
 
 test_that("works for cv_init_training != NULL", {
   df_subset <- update_subset(
-    df,
+    df_preprocessed,
     method = "cqr", model, location, target_type = "Cases", horizon = 1,
     quantile = 0.01, cv_init_training = 5
   )
 
-  expect_equal(dim(df), dim(df_subset))
-  expect_false(all(df$prediction == df_subset$prediction))
+  expect_equal(dim(df_preprocessed), dim(df_subset))
+  expect_false(all(df_preprocessed$prediction == df_subset$prediction))
 })
 
+test_that("works for tibble object", {
+  tbl_subset <- update_subset(
+    tbl_preprocessed,
+    method = "cqr", model, location, target_type = "Cases", horizon = 1,
+    quantile = 0.01, cv_init_training = NULL
+  )
 
-# TODO
-# test_that("works for tibble object", {
-#   tbl_subset <- update_subset(
-#     tbl,
-#     method = "cqr", model = model,
-#     target_type = "Cases", horizon = 1, quantile = 0.01
-#   )
-#
-#   expect_equal(dim(tbl), dim(tbl_subset))
-# })
+  expect_equal(dim(tbl_preprocessed), dim(tbl_subset))
+})
 
 
 
@@ -55,7 +58,6 @@ test_that("works for cv_init_training != NULL", {
 ### update_predictions()                                                    ####
 
 df_updated <- update_predictions(df, methods = "cqr", model, location, cv_init_training = 3, filter_original = FALSE)
-df_preprocessed <- preprocess_df(df, model)$df
 
 test_that("updated data frame is downsampled correctly", {
   expect_lt(nrow(df_updated), nrow(df))

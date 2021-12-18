@@ -34,7 +34,6 @@ collect_predictions <- function(...) {
 
 
 
-# TODO: fails unit test when data is imported with tidyverse readr::read_csv()
 update_subset <- function(df, method, model, location, target_type, horizon, quantile, cv_init_training) {
   method <- select_method(method = method)
 

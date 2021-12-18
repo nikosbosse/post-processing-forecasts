@@ -127,18 +127,42 @@ filter_methods <- function(df, methods) {
   df |> dplyr::filter(.data$method %in% methods)
 }
 
+
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### validate inputs                                                         ####
+
+validate_input <- function(df, input, string) {
+  if (!all(input %in% unique(df[[string]]))) {
+    stop(stringr::str_glue(
+      "At least one of the input {string}s is not contained in the input data frame."
+    ))
+  }
+}
+
+
+validate_inputs <- function(df, models, locations, target_types, horizons, quantiles) {
+  input_mapping <- list(
+    model = models, location = locations, target_type = target_types,
+    horizon = horizons, quantile = quantiles
+  )
+
+  for (i in seq_along(input_mapping)) {
+    validate_input(df, input = input_mapping[[i]], string = names(input_mapping[i]))
+  }
+}
+
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### preprocess inputs                                                       ####
 
-preprocess_input <- function(df, vec, string) {
-  if (is.null(vec)) {
+preprocess_input <- function(df, input, string) {
+  if (is.null(input)) {
     # Default is no filtering, so each variable is equal to its unique values
-    vec <- na.omit(unique(df[[string]]))
+    input <- na.omit(unique(df[[string]]))
   } else {
     # make function work for single model and single locations
-    vec <- c(vec)
+    input <- c(input)
   }
-  return(vec)
+  return(input)
 }
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
@@ -152,12 +176,7 @@ preprocess_df <- function(df, models = NULL, locations = NULL, target_types = NU
   locations <- preprocess_input(df, locations, "location")
   target_types <- preprocess_input(df, target_types, "target_type")
   horizons <- preprocess_input(df, horizons, "horizon")
-
-  if (is.null(quantiles)) {
-    quantiles <- na.omit(unique(df$quantile)[unique(df$quantile) < 0.5])
-  } else {
-    quantiles <- c(quantiles)
-  }
+  quantiles <- preprocess_input(df, quantiles, "quantile")
 
   # Filtering out all combinations that are not updated
   df <- df |>

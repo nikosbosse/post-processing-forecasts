@@ -123,7 +123,6 @@ test_that("attributes from updated data frame are transferred", {
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### update_predictions()                                                    ####
 
-
 df_list <- update_predictions(df, methods = "cqr", model, location, cv_init_training = 3, filter_original = TRUE)
 
 test_that("return value is correctly named list", {
@@ -138,6 +137,7 @@ test_that("updated data frame has cv_init_training attribute", {
 test_that("preprocessed original and updated data frame have the same shape", {
   expect_equal(dim(df_list$original), dim(df_list$cqr))
 })
+
 
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..

@@ -109,15 +109,8 @@ update_predictions <- function(df, methods,
                                models = NULL, locations = NULL, target_types = NULL,
                                horizons = NULL, quantiles = NULL,
                                cv_init_training = NULL, filter_original = FALSE) {
-  # TODO: Write general error message function validate_inputs()
-  # for inputs models, locations, target_types, horizons, quantiles_below_median
-  if (!all(models %in% unique(df$model))) {
-    stop("At least one of the input models is not contained in the input data frame.")
-  }
-
-  if (!all(locations %in% unique(df$location))) {
-    stop("At least one of the input locations is not contained in the input data frame.")
-  }
+  # stops function for invalid input values
+  validate_inputs(df, models, locations, target_types, horizons, quantiles)
 
   # Preprocessing the df and inputs
   preprocessed_list <- preprocess_df(
@@ -137,6 +130,11 @@ update_predictions <- function(df, methods,
   for (method in methods) {
     # start with original data frame for each method
     df_updated <- df_preprocessed
+
+    # specifically for cqr select only quantiles below median
+    if (method == "cqr") {
+      quantiles <- quantiles <- quantiles[quantiles < 0.5]
+    }
     for (model in models) {
       for (location in locations) {
         for (target_type in target_types) {

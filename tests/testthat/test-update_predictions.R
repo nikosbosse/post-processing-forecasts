@@ -57,7 +57,10 @@ test_that("works for tibble object", {
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### update_predictions()                                                    ####
 
-df_updated <- update_predictions(df, methods = "cqr", model, location, cv_init_training = 3, filter_original = FALSE)
+df_updated <- update_predictions(df,
+  methods = "cqr", model, location, cv_init_training = 3,
+  filter_original = FALSE
+)
 
 test_that("updated data frame is downsampled correctly", {
   expect_lt(nrow(df_updated), nrow(df))
@@ -78,17 +81,30 @@ test_that("updated data frame has cv_init_training attribute", {
 })
 
 
-test_that("error message for wrong method is triggered as intended", {
+test_that("error messages are triggered as intended", {
   expect_error(
     update_predictions(df, methods = "qr", models = model, locations = location),
     "qr is not an implemented post processing method."
   )
-})
-
-test_that("error message for wrong model is triggered as intended", {
   expect_error(
     update_predictions(df, methods = "cqr", models = c(model, "s"), locations = location),
     "At least one of the input models is not contained in the input data frame."
+  )
+  expect_error(
+    update_predictions(df, methods = "cqr", models = model, locations = "DEU"),
+    "At least one of the input locations is not contained in the input data frame."
+  )
+  expect_error(
+    update_predictions(df, methods = "cqr", models = model, locations = location, target_types = "Case"),
+    "At least one of the input target_types is not contained in the input data frame."
+  )
+  expect_error(
+    update_predictions(df, methods = "cqr", models = model, locations = location, horizons = c(1, 5)),
+    "At least one of the input horizons is not contained in the input data frame."
+  )
+  expect_error(
+    update_predictions(df, methods = "cqr", models = model, locations = location, quantiles = c(0, 1)),
+    "At least one of the input quantiles is not contained in the input data frame."
   )
 })
 
@@ -125,7 +141,10 @@ test_that("attributes from updated data frame are transferred", {
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### update_predictions()                                                    ####
 
-df_list <- update_predictions(df, methods = "cqr", model, location, cv_init_training = 3, filter_original = TRUE)
+df_list <- update_predictions(df,
+  methods = "cqr", model, location, cv_init_training = 3,
+  filter_original = TRUE
+)
 
 test_that("return value is correctly named list", {
   expect_type(df_list, "list")

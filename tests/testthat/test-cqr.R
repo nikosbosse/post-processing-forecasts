@@ -37,9 +37,9 @@ test_that("result is correct for toy input", {
 
 result <- cqr(quantile, true_values, quantiles_low, quantiles_high)
 
-test_that("returns named list", {
+test_that("returns correctly named list", {
   expect_type(result, "list")
-  expect_named(result, c("lower_bound", "upper_bound"))
+  expect_named(result, c("lower_bound", "upper_bound", "margin"))
 })
 
 test_that("result is correct for toy input", {

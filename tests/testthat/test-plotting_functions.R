@@ -52,3 +52,10 @@ test_that("inputs for faceting by quantile work", {
     NA
   )
 })
+
+test_that("highlight_cv input works", {
+  expect_error(
+    plot_intervals_grid(df_combined, model, facet_by = "quantile", highlight_cv = TRUE),
+    NA
+  )
+})

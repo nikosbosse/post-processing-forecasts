@@ -17,7 +17,7 @@ collect_predictions <- function(...) {
   df_list <- list(...)
 
   # if input was already a list of dataframes, loop through input list
-  if (typeof(df_list[[1]]) == "list") {
+  if (class(df_list[[1]]) == "list") {
     df_list <- df_list[[1]]
   }
 

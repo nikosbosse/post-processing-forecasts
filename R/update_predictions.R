@@ -127,13 +127,13 @@ update_predictions <- function(df, methods,
   # store updated dataframes for all methods in list
   updated_list <- list()
 
-  for (method in methods) {
+  for (method in c(methods)) {
     # start with original data frame for each method
     df_updated <- df_preprocessed
 
     # specifically for cqr select only quantiles below median
     if (method == "cqr") {
-      quantiles <- quantiles <- quantiles[quantiles < 0.5]
+      quantiles <- quantiles[quantiles < 0.5]
     }
     for (model in models) {
       for (location in locations) {

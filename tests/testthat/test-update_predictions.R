@@ -111,6 +111,23 @@ test_that("error messages are triggered as intended", {
 
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### cqr within update_predictions()  
+
+test_that("cqr improves the quantiles in the training mode (no cv) for Cases as well as Deaths", {
+  df_combined <- update_predictions(df,method = "cqr", models = model, locations = location,
+                                   cv_init_training = NULL, filter_original = TRUE)
+  library(scoringutils)
+  dt <- extract_validation_set(df_combined) |>
+    eval_forecasts( summarise_by = c("method", "model", "target_type")) |>
+    arrange(target_type, desc(method))
+  
+  expect_gt(dt$interval_score[1] - dt$interval_score[2], 0) #Cases
+  expect_gt(dt$interval_score[3] - dt$interval_score[4], 0) #Deaths
+})
+
+
+
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### collect_predictions()                                                   ####
 
 df_combined_old <- collect_predictions(original = df_preprocessed, cqr = df_updated)

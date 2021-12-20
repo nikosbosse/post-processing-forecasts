@@ -33,33 +33,31 @@ df <- read.csv(here::here("data", "full-data-uk-challenge.csv"))
 
 ## CQR: Conformalized Quantile Regression
 
-The following code applies the CQR to the UK-Forecasting-Challenge data. 
+The following code applies the CQR to the UK-Forecasting-Challenge data.
 
 #### Updating Forecasts
 
-Our first step is to update forecasts for one model, the ensembled model "epiforecasts-EpiExpert", regading the target type "Cases", the horizon 1 and subsequently compare prediction interval metrics before and after applying CQR. For the update we loop over all quantile pairs as well as target types. We define a prediction interval pair by its lower boundary quantile. We finally combine the updated DataFrame with the preprocessed original Dataframe in order to prepare it for the following analysis.
+Our first step is to update forecasted (symmetric) prediction intervals using the postprocessing package pipeline. For now, restrict ourselves to analyzing the results of the ensembled model named "epiforecasts-EpiExpert". We do however update its results for both target types, the 4 forecasting horizons as well as all (symmetric) quantile pairs. 
 
 ```{r}
-# Defining the Model
-model <- unique(df$model)[2]
+df_combined <- update_predictions(df, 
+                                  methods = "cqr", 
+                                  model = "epiforecasts-EpiExpert", 
+                                  location = "GB",
+                                  filter_original = TRUE) |>
+  collect_predictions() 
 
-# Updating Predictions
-df_updated <- update_predictions(df = df, methods = "cqr", models = model, locations = "GB",
-                                 horizons = 1)
-
-# Preprocessing the original DF
-preprocessed <- preprocess_df(df = df, models = model, locations = "GB",
-                                 horizons = 1)
-df_preprocessed <- preprocessed$df
-
-# Combining the updated and original DFs
-df_combined <- collect_predictions(original = df_preprocessed, cqr = df_updated)
 ```
+
+```{r}
+attr(df_combined,"cv_init_training")
+```
+
 
 #### Plotting one CI before and after updating for Cases
 
 ```{r}
-plot_intervals(df = df_combined, model = model, target_type = "Cases",
+plot_intervals(df = df_combined, model = "epiforecasts-EpiExpert", target_type = "Cases",
                            quantile = 0.05, horizon = 1)
 ```
 
@@ -68,132 +66,80 @@ plot_intervals(df = df_combined, model = model, target_type = "Cases",
 We evaluate the changes in the prediction intervals by using the "scoringutils" package. The main metric we look at is the interval_score. It is defined as: sharpness + underprediction + overprediction. We can see a slight improvement as the score drops.
 
 ```{r}
-scores_combined <- df_combined |>
-  filter(model == !!model) |>
-  eval_forecasts(summarise_by = c("method", "model", "target_type"))
-
-scores_combined |> 
+eval_forecasts(df_combined, summarise_by = c("method", "model", "target_type")) |>
   arrange(target_type, desc(method))
 ```
 
 
 #### Updating Forecasts using Cross Validation
 
-We again update our forecast but this time we use crossvalidation with a training set length of 5.
+We again update our forecast, however this time we use crossvalidation with a training set length of 5.
 
 ```{r}
-# Defining the Model
-model <- unique(df$model)[2]
-
-# Updating Predictions
-df_updated <- update_predictions(df = df, methods = "cqr", models = model, locations = "GB",
-                                 horizons = 1, cv_init_training = 5)
-
-# Preprocessing the original DF
-preprocessed <- preprocess_df(df = df, models = model, locations = "GB",
-                                 horizons = 1)
-df_preprocessed <- preprocessed$df
-
-# Combining the updated and original DFs
-df_combined <- collect_predictions(original = df_preprocessed, cqr = df_updated)
+df_combined <- update_predictions(df, 
+                                  methods = "cqr", 
+                                  model = "epiforecasts-EpiExpert", 
+                                  location = "GB",
+                                  cv_init_training = 5,
+                                  filter_original = TRUE) |>
+  collect_predictions() 
 ```
 
 
 #### Plotting one CI before and after updating for Cases
 
-We can clearly see that know all intervals are not updated by the same margin. Especially note how the intervals strongly increase after the last week of july where the observed cases are below the interval. This observed error leads CQR to increase the prediction intervals in the following time points.
+We can clearly see that now all intervals are not updated by the same margin. Especially note how the intervals strongly increase after the last week of july where the observed cases are below the interval. This observed error leads CQR to increase the prediction intervals in the following time points.
 
 ```{r}
-plot_intervals(df = df_combined, model = model, target_type = "Cases",
+plot_intervals(df = df_combined, model = "epiforecasts-EpiExpert", target_type = "Cases",
                            quantile = 0.05, horizon = 1)
 ```
 
 #### Evaluating Forecasting Updates
 
-We can see a slight worsening as the score increases. This is most likely due to the increasing of the intervals after the overestimation at the end of july. Furthermore this might also indicate a too small training sample, which seems reasonable as 1 observation outside the intervals, in a 5 observations training set, would lead all intervals larger than 80% to increase automatically.
+We can see that the forecasting intervals still improve in the validation set, allthough the improvement is smaller than in the prior case where CQR was trained on the full dataset.
 
 ```{r}
-# extract the dates of the validation set
-cv_init_training <- 5
+extract_validation_set <- function(df_combined){
+  # extract the length of the validation set
+  cv_init_training <- attr(df_combined,"cv_init_training")
+  
+  # based on the length of the validation set extract the dates of the validation set
+  sorted_unique_target_end_dates <- sort(as.Date(na.omit(unique(df_combined$target_end_date))))
+  validation_set_target_end_date <- sorted_unique_target_end_dates[seq(cv_init_training+1,length(sorted_unique_target_end_dates))]
+  
+  # Restricting the combined df to only include the validation set
+  df_combined$target_end_date <- as.Date(df_combined$target_end_date)
+  df_combined_val <- df_combined |>
+    filter(target_end_date %in% validation_set_target_end_date) 
+  
+  return(df_combined_val)
+  }
 
-validation_set_target_end_date <- unique(df_combined$target_end_date)[cv_init_training+1:length(unique(df_combined$target_end_date))]
-
-# Restricting the combined df to only include the validation set
-df_combined_val <- df_combined |>
-  filter(target_end_date %in% validation_set_target_end_date) 
-```
-
-```{r}
-scores_combined_val <- df_combined_val |>
-  filter(model == !!model) |>
-  eval_forecasts(summarise_by = c("method", "model", "target_type"))
-
-scores_combined_val |> 
+extract_validation_set(df_combined) |>
+  eval_forecasts( summarise_by = c("method", "model", "target_type")) |>
   arrange(target_type, desc(method))
 ```
 
 
 #### Examining Forecast update effect along the different parameters
 
-The results indicate that CQR works better for longer forecasting horizons as well as larger confidence intervals. For short horizons of 1 and 2 weeks it has a slightly undesired effect. For longer Periods of 3 and 4 weeks it has a desired effect of reducing interval score. For quantiles we see a clear drop in the interval score for intervals with an alpha roughly smaller 40%.
+The results indicate that CQR works better for longer forecasting horizons as well as larger confidence intervals. For short horizons of 1 and 2 weeks it has a slightly undesired effect. For longer Periods of 3 and 4 weeks it has a desired effect of reducing interval score. For quantiles we see that CQR improves larger Prediction intervalls much stronger as smaller ones.
 The plot exemplifies how uncertainty is strongly underestimated for larger quantiles and higher horizons. This seems to be where CQR provides a benefit, even for a small dataset.
 
 ```{r}
-# Defining the Model
-model <- unique(df$model)[2]
-
-# Updating Predictions
-df_updated <- update_predictions(df = df, methods = "cqr", models = model, locations = "GB", target_types = "Cases", cv_init_training = 5)
-
-# Preprocessing the original DF
-preprocessed <- preprocess_df(df = df, models = model, locations = "GB", target_types = "Cases")
-df_preprocessed <- preprocessed$df
-
-# Combining the updated and original DFs
-df_combined <- collect_predictions(original = df_preprocessed, cqr = df_updated)
-
-# extract the dates of the validation set
-cv_init_training <- 5
-
-validation_set_target_end_date <- unique(df_combined$target_end_date)[cv_init_training+1:length(unique(df_combined$target_end_date))]
-
-# Restricting the combined df to only include the validation set
-df_combined_val <- df_combined |>
-  filter(target_end_date %in% validation_set_target_end_date) 
-
-# aggregating allong horizons
-scores_combined_val <- df_combined_val |>
-  filter(model == !!model) |>
-  eval_forecasts(summarise_by = c("method", "model", "target_type", "horizon"))
-
-scores_combined_val |> 
+extract_validation_set(df_combined) |>
+  eval_forecasts( summarise_by = c("method", "model", "target_type", "horizon")) |>
   arrange(target_type, desc(horizon))
 ```
 
 ```{r}
-scores_combined_val <- df_combined_val |>
-  filter(model == !!model) |>
-  eval_forecasts(summarise_by = c("method", "model", "target_type", "quantile"))
-
-scores_combined_val |> 
+extract_validation_set(df_combined) |>
+  eval_forecasts( summarise_by = c("method", "model", "target_type", "quantile")) |>
   arrange(target_type, desc(quantile))
 ```
 
 ```{r}
-scores_combined_val_cqr <- scores_combined_val |> 
-  arrange(target_type, desc(quantile)) |>
-  filter(method == "cqr")
-  
-scores_combined_val_original <- scores_combined_val |> 
-  arrange(target_type, desc(quantile)) |>
-  filter(method == "original")
-
-scores_combined_val_cqr$interval_score - scores_combined_val_original$interval_score
-```
-
-
-
-```{r}
-plot_intervals(df = df_combined, model = model, target_type = "Cases",
+plot_intervals(df = df_combined, model = "epiforecasts-EpiExpert", target_type = "Cases",
                            quantile = 0.05, horizon = 4)
 ```

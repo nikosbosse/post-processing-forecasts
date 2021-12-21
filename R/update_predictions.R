@@ -108,7 +108,7 @@ update_subset <- function(df, method, model, location, target_type, horizon, qua
 update_predictions <- function(df, methods,
                                models = NULL, locations = NULL, target_types = NULL,
                                horizons = NULL, quantiles = NULL,
-                               cv_init_training = NULL, filter_original = FALSE) {
+                               cv_init_training = NULL, return_list = FALSE) {
   # stops function for invalid input values
   validate_inputs(df, models, locations, target_types, horizons, quantiles)
 
@@ -151,7 +151,7 @@ update_predictions <- function(df, methods,
   }
 
   # return list of original and all updated data frames (one for each method)
-  if (filter_original) {
+  if (return_list) {
     return(c(list(original = df_preprocessed), updated_list))
   }
 

@@ -47,6 +47,7 @@ df_combined <- update_predictions(df,
   filter_original = TRUE
 ) |>
   collect_predictions()
+# TODO: add extract_validation_set & train set (splitting function) that can be piped after collect predictions
 ```
 
 ```{r}
@@ -108,6 +109,14 @@ We can see that the forecasting intervals still improve in the validation set, a
 extract_validation_set <- function(df_combined) {
   # extract the length of the validation set
   cv_init_training <- attr(df_combined, "cv_init_training")
+  
+  # TODO: preprocess the target_end_date column from character to Date in update_predictions. make a warning
+  #       If target_end_date is a character column --> Date & give back a warning
+  #       helper function dafür die helper_date heißt.
+  #       makes plotting functions and cross validation much easier
+  #       Damit piping funktioniert eine extract train und eine extract validation  
+  #       function, beide rufen eine helper function auf da sie ja ähnlich sind
+  #       Im grunde muss nur das "-" weg in [-(1:cv_init_training)]
 
   # based on the length of the validation set extract the dates of the validation set
   sorted_unique_target_end_dates <- sort(as.Date(na.omit(unique(df_combined$target_end_date))))

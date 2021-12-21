@@ -12,7 +12,6 @@ plot_quantiles <- function(df, model = NULL, location = NULL, quantiles = c(0.05
   df |>
     filter_quantiles(quantiles) |>
     mutate_horizon() |>
-    change_to_date() |>
     ggplot2::ggplot(mapping = ggplot2::aes(x = .data$target_end_date)) +
     ggplot2::geom_line(
       mapping = ggplot2::aes(y = .data$prediction, color = factor(.data$quantile))
@@ -55,7 +54,6 @@ plot_intervals <- function(df, model = NULL, location = NULL,
     process_quantile_pair(quantile) |>
     filter_target_types(target) |>
     filter_horizons(horizon) |>
-    change_to_date() |>
     setup_intervals_plot() +
     ggplot2::labs(
       title = stringr::str_glue("Predicted {target} in {location_name} {h}"),
@@ -109,9 +107,7 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
     df <- facet_quantile(df, quantiles, horizon)
   }
 
-  p <- df |>
-    change_to_date() |>
-    setup_intervals_plot()
+  p <- setup_intervals_plot(df)
 
   if (highlight_cv) {
     p <- plot_training_end(p, df, type = "vline")

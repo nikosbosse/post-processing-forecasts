@@ -12,6 +12,7 @@ plot_quantiles <- function(df, model = NULL, location = NULL, quantiles = c(0.05
   df |>
     filter_quantiles(quantiles) |>
     mutate_horizon() |>
+    change_to_date(forecast = TRUE, target_end = TRUE) |>
     ggplot2::ggplot(mapping = ggplot2::aes(x = .data$target_end_date)) +
     ggplot2::geom_line(
       mapping = ggplot2::aes(y = .data$prediction, color = factor(.data$quantile))

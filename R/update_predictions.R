@@ -10,29 +10,6 @@ select_method <- function(method) {
 }
 
 
-collect_predictions <- function(...) {
-  df_combined <- dplyr::bind_rows(..., .id = "method")
-
-  # always convert to list to safely check for type of input '...'
-  df_list <- list(...)
-
-  # if input was already a list of dataframes, loop through input list
-  if (class(df_list[[1]]) == "list") {
-    df_list <- df_list[[1]]
-  }
-
-  # keep cv_init_training attribute from second input argument
-  for (df in df_list) {
-    cv_init_training <- attr(df, "cv_init_training")
-    if (!is.null(cv_init_training)) {
-      attr(df_combined, "cv_init_training") <- cv_init_training
-    }
-  }
-  return(df_combined)
-}
-
-
-
 
 update_subset <- function(df, method, model, location, target_type, horizon, quantile, cv_init_training) {
   method <- select_method(method = method)
@@ -103,8 +80,6 @@ update_subset <- function(df, method, model, location, target_type, horizon, qua
 
 
 
-
-
 update_predictions <- function(df, methods,
                                models = NULL, locations = NULL, target_types = NULL,
                                horizons = NULL, quantiles = NULL,
@@ -157,4 +132,27 @@ update_predictions <- function(df, methods,
 
   # return only first updated data frame (old behaviour unchanged)
   return(updated_list[[1]])
+}
+
+
+
+collect_predictions <- function(...) {
+  df_combined <- dplyr::bind_rows(..., .id = "method")
+
+  # always convert to list to safely check for type of input '...'
+  df_list <- list(...)
+
+  # if input was already a list of dataframes, loop through input list
+  if (class(df_list[[1]]) == "list") {
+    df_list <- df_list[[1]]
+  }
+
+  # keep cv_init_training attribute from second input argument
+  for (df in df_list) {
+    cv_init_training <- attr(df, "cv_init_training")
+    if (!is.null(cv_init_training)) {
+      attr(df_combined, "cv_init_training") <- cv_init_training
+    }
+  }
+  return(df_combined)
 }

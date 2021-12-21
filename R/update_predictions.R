@@ -86,6 +86,7 @@ update_predictions <- function(df, methods,
                                cv_init_training = NULL, return_list = FALSE) {
   # stops function for invalid input values
   validate_inputs(df, models, locations, target_types, horizons, quantiles)
+  df <- validate_dates(df)
 
   # Preprocessing the df and inputs
   preprocessed_list <- preprocess_df(

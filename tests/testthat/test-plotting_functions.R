@@ -1,8 +1,9 @@
 df <- read.csv("test-data/full-data-uk-challenge.csv")
 model <- "epiforecasts-EpiExpert"
 
-df_updated <- update_predictions(df, methods = "cqr", models = model)
-df_combined <- collect_predictions(original = df, cqr = df_updated)
+df_combined <- update_predictions(df, methods = "cqr", models = model, return_list = TRUE) |>
+  collect_predictions()
+
 
 # use expect_error() with second argument 'NA' to test for simple functionality
 # (function produces no error)
@@ -12,19 +13,16 @@ df_combined <- collect_predictions(original = df, cqr = df_updated)
 
 test_that("default arguments work", {
   expect_error(plot_quantiles(df, model), NA)
-  expect_error(plot_quantiles(df_updated, model), NA)
 })
 
 test_that("custom quantiles input works", {
   expect_error(plot_quantiles(df, model, quantiles = c(0.01, 0.025, 0.25)), NA)
-  expect_error(plot_quantiles(df_updated, model, quantiles = 0.1), NA)
 })
 
 
 
-
 #   ____________________________________________________________________________
-#   Tests for plot_intervals_grid()                                              ####
+#   Tests for plot_intervals_grid()                                         ####
 
 test_that("default arguments work", {
   expect_error(plot_intervals_grid(df_combined, model), NA)

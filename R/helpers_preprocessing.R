@@ -97,7 +97,7 @@ paste_horizon <- function(horizon) {
 }
 
 mutate_horizon <- function(df) {
-  df |> dplyr::mutate(horizon = paste_horizon(horizon))
+  df |> dplyr::mutate(horizon = paste_horizon(.data$horizon))
 }
 
 
@@ -114,8 +114,41 @@ filter_target_types <- function(df, target_types) {
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### date column                                                             ####
 
-change_to_date <- function(df) {
-  df |> dplyr::mutate(target_end_date = lubridate::ymd(target_end_date))
+# two functions to separate transformation from printing message to console
+# change_to_date() might be used in other contexts
+change_to_date <- function(df, forecast = FALSE, target_end = FALSE) {
+  if (forecast) {
+    df <- df |> dplyr::mutate(
+      forecast_date = lubridate::ymd(.data$forecast_date)
+    )
+  }
+  if (target_end) {
+    df <- df |> dplyr::mutate(
+      target_end_date = lubridate::ymd(.data$target_end_date)
+    )
+  }
+  return(df)
+}
+
+validate_dates <- function(df) {
+  forecast_class <- class(df$forecast_date)
+  target_end_class <- class(df$target_end_date)
+
+  if (forecast_class != "Date") {
+    df <- df |> change_to_date(forecast = TRUE)
+    message(stringr::str_glue(
+      "Changed column forecast_date from class {forecast_class} to Date"
+    ))
+  }
+
+  if (target_end_class != "Date") {
+    df <- df |> change_to_date(target_end = TRUE)
+    message(stringr::str_glue(
+      "Changed column target_end_date from class {target_end_class} to Date"
+    ))
+  }
+
+  return(df)
 }
 
 

@@ -80,6 +80,11 @@ test_that("updated data frame has cv_init_training attribute", {
   expect_equal(attr(df_updated, "cv_init_training"), 3)
 })
 
+test_that("date columns are transformed to class Date", {
+  expect_s3_class(df_updated$forecast_date, "Date")
+  expect_s3_class(df_updated$target_end_date, "Date")
+})
+
 
 test_that("error messages are triggered as intended", {
   expect_error(
@@ -133,7 +138,10 @@ test_that("cqr improves the quantiles in the training mode (no cv) for Cases as 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### collect_predictions()                                                   ####
 
-df_combined_old <- collect_predictions(original = df_preprocessed, cqr = df_updated)
+df_combined_old <- collect_predictions(
+  original = change_to_date(df_preprocessed, forecast = TRUE, target_end = TRUE),
+  cqr = df_updated
+)
 
 test_that("old and new data frames are vertically stacked", {
   expect_equal(nrow(df_combined_old), 2 * nrow(df_updated))

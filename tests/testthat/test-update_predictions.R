@@ -59,7 +59,7 @@ test_that("works for tibble object", {
 
 df_updated <- update_predictions(df,
   methods = "cqr", model, location, cv_init_training = 3,
-  filter_original = FALSE
+  return_list = FALSE
 )
 
 test_that("updated data frame is downsampled correctly", {
@@ -116,7 +116,7 @@ test_that("error messages are triggered as intended", {
 test_that("cqr improves the quantiles in the training mode (no cv) for Cases as well as Deaths", {
   df_combined <- update_predictions(df,
     method = "cqr", models = model, locations = location,
-    cv_init_training = NULL, filter_original = TRUE
+    cv_init_training = NULL, return_list = TRUE
   )
 
   # TODO: extract_validation_set must be in R file to be loaded with load_all()
@@ -163,7 +163,7 @@ test_that("attributes from updated data frame are transferred", {
 
 df_list <- update_predictions(df,
   methods = "cqr", model, location, cv_init_training = 3,
-  filter_original = TRUE
+  return_list = TRUE
 )
 
 test_that("return value is correctly named list", {

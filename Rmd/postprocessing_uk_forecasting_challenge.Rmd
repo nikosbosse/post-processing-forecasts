@@ -44,7 +44,7 @@ df_combined <- update_predictions(df,
   methods = "cqr",
   model = "epiforecasts-EpiExpert",
   location = "GB",
-  filter_original = TRUE
+  return_list = TRUE
 ) |>
   collect_predictions()
 # TODO: add extract_validation_set & train set (splitting function) that can be piped after collect predictions
@@ -84,7 +84,7 @@ df_combined <- update_predictions(df,
   model = "epiforecasts-EpiExpert",
   location = "GB",
   cv_init_training = 5,
-  filter_original = TRUE
+  return_list = TRUE
 ) |>
   collect_predictions()
 ```

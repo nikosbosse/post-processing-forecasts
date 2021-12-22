@@ -18,16 +18,6 @@ compute_margin <- function(scores, quantile) {
 }
 
 
-
-# df <- read.csv("data/full-data-uk-challenge.csv")
-# corrected_quantiles <- df |>
-#   dplyr::filter(model == "epiforecasts-EpiExpert") |>
-#   cqr(quantile = 0.05)
-# lower_bound <- corrected_quantiles$lower_bound
-# upper_bound <- corrected_quantiles$upper_bound
-#' @importFrom rlang .data
-
-
 # returns corrected lower quantile and upper quantile predictions for a single
 # quantile value
 cqr <- function(quantile, true_values, quantiles_low, quantiles_high) {

@@ -1,6 +1,5 @@
 #' @importFrom rlang .data
 
-
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### location column                                                         ####
 
@@ -190,7 +189,7 @@ validate_inputs <- function(df, models, locations, target_types, horizons, quant
 preprocess_input <- function(df, input, string) {
   if (is.null(input)) {
     # Default is no filtering, so each variable is equal to its unique values
-    input <- na.omit(unique(df[[string]]))
+    input <- stats::na.omit(unique(df[[string]]))
   } else {
     # make function work for single model and single locations
     input <- c(input)
@@ -245,7 +244,7 @@ filter_combination <- function(df, model, location, target_type, horizon, quanti
     dplyr::filter(
       .data$model == mod & .data$location == l & .data$target_type == t & .data$horizon == h & .data$quantile == q
     ) |>
-    dplyr::arrange(target_end_date)
+    dplyr::arrange(.data$target_end_date)
 
   quantiles_low <- quantiles_low_df$prediction
   true_values <- quantiles_low_df$true_value
@@ -254,8 +253,8 @@ filter_combination <- function(df, model, location, target_type, horizon, quanti
     dplyr::filter(
       .data$model == mod & .data$location == l & .data$target_type == t & .data$horizon == h & .data$quantile == 1 - q
     ) |>
-    dplyr::arrange(target_end_date) |>
-    dplyr::pull(prediction)
+    dplyr::arrange(.data$target_end_date) |>
+    dplyr::pull(.data$prediction)
 
   return(list(
     true_values = true_values, quantiles_low = quantiles_low,

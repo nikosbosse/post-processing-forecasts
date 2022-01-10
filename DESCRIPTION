@@ -29,15 +29,16 @@ URL: https://github.com/nikosbosse/post-processing-forecasts
 Depends:
     R (>= 4.1.0)
 Imports:
-    stats,
     dplyr,
     ggplot2,
-    tidyr,
-    stringr,
     forcats,
     lubridate,
+    rlang,
     scales,
-    rlang
+    scoringutils,
+    stats,
+    stringr,
+    tidyr
 Suggests: 
     testthat (>= 3.0.0),
     readr

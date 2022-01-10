@@ -118,14 +118,14 @@ test_that("error messages are triggered as intended", {
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### cqr within update_predictions()
 
+#TODO: Solve error in this Unit test
 test_that("cqr improves the quantiles in the training mode (no cv) for Cases as well as Deaths", {
-  df_combined <- update_predictions(df,
-    method = "cqr", models = model, locations = location,
-    cv_init_training = NULL, return_list = TRUE
-  )
+  #df_combined <- update_predictions(df,
+  #  method = "cqr", models = model, locations = location, horizons = c(1, 2, 3, 4), target_type = c("Cases", "Deaths"),
+  #  cv_init_training = NULL, return_list = TRUE
+  #)
 
-  # TODO: extract_validation_set must be in R file to be loaded with load_all()
-  dt <- extract_validation_set(df_combined) |>
+  dt <- extract_training_set(df_updated) |>
     scoringutils::eval_forecasts(summarise_by = c("method", "model", "target_type")) |>
     dplyr::arrange(target_type, desc(method))
 

@@ -88,27 +88,45 @@ test_that("date columns are transformed to class Date", {
 
 test_that("error messages are triggered as intended", {
   expect_error(
-    update_predictions(df, methods = "qr", models = model, locations = location),
+    update_predictions(df,
+      methods = "qr", models = model, locations = location,
+      return_list = FALSE
+    ),
     "qr is not an implemented post processing method."
   )
   expect_error(
-    update_predictions(df, methods = "cqr", models = c(model, "s"), locations = location),
+    update_predictions(df,
+      methods = "cqr", models = c(model, "s"), locations = location,
+      return_list = FALSE
+    ),
     "At least one of the input models is not contained in the input data frame."
   )
   expect_error(
-    update_predictions(df, methods = "cqr", models = model, locations = "DEU"),
+    update_predictions(df,
+      methods = "cqr", models = model, locations = "DEU",
+      return_list = FALSE
+    ),
     "At least one of the input locations is not contained in the input data frame."
   )
   expect_error(
-    update_predictions(df, methods = "cqr", models = model, locations = location, target_types = "Case"),
+    update_predictions(df,
+      methods = "cqr", models = model, locations = location,
+      target_types = "Case", return_list = FALSE
+    ),
     "At least one of the input target_types is not contained in the input data frame."
   )
   expect_error(
-    update_predictions(df, methods = "cqr", models = model, locations = location, horizons = c(1, 5)),
+    update_predictions(df,
+      methods = "cqr", models = model, locations = location,
+      horizons = c(1, 5), return_list = FALSE
+    ),
     "At least one of the input horizons is not contained in the input data frame."
   )
   expect_error(
-    update_predictions(df, methods = "cqr", models = model, locations = location, quantiles = c(0, 1)),
+    update_predictions(df,
+      methods = "cqr", models = model, locations = location,
+      quantiles = c(0, 1), return_list = FALSE
+    ),
     "At least one of the input quantiles is not contained in the input data frame."
   )
 })
@@ -148,10 +166,7 @@ test_that("attributes from updated data frame are transferred", {
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### update_predictions()                                                    ####
 
-df_list <- update_predictions(df,
-  methods = "cqr", model, location, cv_init_training = 3,
-  return_list = TRUE
-)
+df_list <- update_predictions(df, methods = "cqr", model, location, cv_init_training = 3)
 
 test_that("return value is correctly named list", {
   expect_type(df_list, "list")
@@ -191,7 +206,7 @@ test_that("piping into 'eval_forecasts' works", {
 
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
-### cqr within update_predictions()
+### extract_training_set() & extract_validation_set()
 
 test_that("cqr improves the quantiles in the training mode (no cv) for Cases as well as Deaths", {
   dt <- extract_training_set(df_combined_new) |>

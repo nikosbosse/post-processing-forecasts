@@ -54,13 +54,15 @@ plot_quantiles(df, model, location, quantiles = c(0.01, 0.05, 0.25, 0.5, 0.75, 0
 
 ```{r}
 # Option 1 (new)
-df_list <- update_predictions(df, methods = "cqr", model, location, cv_init_training = 3, return_list = TRUE)
+df_list <- update_predictions(df, methods = "cqr", model, location, cv_init_training = 3)
 df_combined_1 <- collect_predictions(df_list)
 ```
 
 ```{r}
 # Option 2 (old)
-df_updated <- update_predictions(df, methods = "cqr", model, location, cv_init_training = 3)
+df_updated <- update_predictions(df,
+  methods = "cqr", model, location, cv_init_training = 3, return_list = FALSE
+)
 preprocessed_list <- preprocess_df(df, model)
 df_combined_2 <- collect_predictions(original = preprocessed_list$df, cqr = df_updated)
 ```
@@ -72,14 +74,14 @@ all(df_combined_1 == df_combined_2)
 
 ```{r}
 # change allows for neat workflow without creating temporary variables
-update_predictions(df, methods = "cqr", model, location, cv_init_training = 3, return_list = TRUE) |>
+update_predictions(df, methods = "cqr", model, location, cv_init_training = 3) |>
   collect_predictions() |>
   eval_forecasts(summarise_by = c("method", "model", "target_type")) |>
   arrange(target_type, desc(method))
 ```
 
 ```{r}
-update_predictions(df, methods = "cqr", model, location, cv_init_training = 3, return_list = TRUE) |>
+update_predictions(df, methods = "cqr", model, location, cv_init_training = 3) |>
   collect_predictions() |>
   plot_intervals(model, location, target_type = "Cases", quantile = 0.05, horizon = 1)
 ```

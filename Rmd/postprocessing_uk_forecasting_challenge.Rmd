@@ -43,8 +43,7 @@ Our first step is to update forecasted (symmetric) prediction intervals using th
 df_combined <- update_predictions(df,
   methods = "cqr",
   model = "epiforecasts-EpiExpert",
-  location = "GB",
-  return_list = TRUE
+  location = "GB"
 ) |>
   collect_predictions()
 ```
@@ -82,8 +81,7 @@ df_combined <- update_predictions(df,
   methods = "cqr",
   model = "epiforecasts-EpiExpert",
   location = "GB",
-  cv_init_training = 5,
-  return_list = TRUE
+  cv_init_training = 5
 ) |>
   collect_predictions()
 ```

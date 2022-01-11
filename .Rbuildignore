@@ -1,11 +1,11 @@
-^Readme\.Rmd$
-^Readme\.md$
-^Readme\.pdf$
-^postforecasts.Rproj$
-^LICENSE\.md$
-^.*\.Rproj$
-^\.Rproj\.user$
 ^data$
 ^Rmd$
 ^presentations$
+^Readme_files$
+^Readme\.Rmd$
+^Readme\.md$
+^Readme\.pdf$
+^LICENSE\.md$
+^.*\.Rproj$
+^\.Rproj\.user$
 

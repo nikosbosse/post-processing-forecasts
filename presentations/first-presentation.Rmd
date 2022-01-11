@@ -347,7 +347,8 @@ df_updated <- update_predictions(
   df,
   methods = "cqr",
   models = "epiforecasts-EpiExpert",
-  locations = "GB"
+  locations = "GB",
+  return_list = FALSE
 )
 ```
 
@@ -426,7 +427,8 @@ df_updated <- update_predictions(
   methods = "cqr",
   models = "epiforecasts-EpiExpert",
   locations = "GB",
-  cv_init_training = 5
+  cv_init_training = 5,
+  return_list = FALSE
 )
 ```
 
@@ -489,7 +491,8 @@ df_updated <- update_predictions(
   models = "epiforecasts-EpiExpert",
   locations = "GB",
   target_types = "Cases", # if not specified, all time horizons are included
-  cv_init_training = 5
+  cv_init_training = 5,
+  return_list = FALSE
 )
 ```
 

@@ -6,6 +6,7 @@ location <- "GB"
 df_preprocessed <- preprocess_df(df, model)$df
 tbl_preprocessed <- preprocess_df(tbl, model)$df
 
+cv_init_training <- 5
 
 #   ____________________________________________________________________________
 #   Tests for update_subset()                                               ####
@@ -58,7 +59,7 @@ test_that("works for tibble object", {
 ### update_predictions()                                                    ####
 
 df_updated <- update_predictions(df,
-  methods = "cqr", model, location, cv_init_training = 3,
+  methods = "cqr", model, location, cv_init_training = cv_init_training,
   return_list = FALSE
 )
 
@@ -77,7 +78,7 @@ test_that("prediction column is updated", {
 })
 
 test_that("updated data frame has cv_init_training attribute", {
-  expect_equal(attr(df_updated, "cv_init_training"), 3)
+  expect_equal(attr(df_updated, "cv_init_training"), cv_init_training)
 })
 
 test_that("date columns are transformed to class Date", {
@@ -153,7 +154,7 @@ test_that("new 'method' column has correct values", {
 })
 
 test_that("attributes from updated data frame are transferred", {
-  expect_equal(attr(df_combined_old, "cv_init_training"), 3)
+  expect_equal(attr(df_combined_old, "cv_init_training"), cv_init_training)
 })
 
 
@@ -166,7 +167,7 @@ test_that("attributes from updated data frame are transferred", {
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### update_predictions()                                                    ####
 
-df_list <- update_predictions(df, methods = "cqr", model, location, cv_init_training = 3)
+df_list <- update_predictions(df, methods = "cqr", model, location, cv_init_training = cv_init_training)
 
 test_that("return value is correctly named list", {
   expect_type(df_list, "list")
@@ -174,7 +175,7 @@ test_that("return value is correctly named list", {
 })
 
 test_that("updated data frame has cv_init_training attribute", {
-  expect_equal(attr(df_list$cqr, "cv_init_training"), 3)
+  expect_equal(attr(df_list$cqr, "cv_init_training"), cv_init_training)
 })
 
 test_that("preprocessed original and updated data frame have the same shape", {
@@ -193,7 +194,7 @@ test_that("preprocessed separate inputs produce same output as list input", {
 })
 
 test_that("attributes from updated data frame are transferred", {
-  expect_equal(attr(df_combined_new, "cv_init_training"), 3)
+  expect_equal(attr(df_combined_new, "cv_init_training"), cv_init_training)
 })
 
 test_that("piping into 'eval_forecasts' works", {
@@ -208,11 +209,22 @@ test_that("piping into 'eval_forecasts' works", {
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### extract_training_set() & extract_validation_set()
 
+training_set <- extract_training_set(df_combined_new)
+validation_set <- extract_validation_set(df_combined_new)
+
+unique_training_dates <- cv_init_training
+unique_validation_dates <- dplyr::n_distinct(df_combined_new$target_end_date) - cv_init_training
+
 test_that("cqr improves the quantiles in the training mode (no cv) for Cases as well as Deaths", {
-  dt <- extract_training_set(df_combined_new) |>
+  dt <- training_set |>
     scoringutils::eval_forecasts(summarise_by = c("method", "model", "target_type")) |>
     dplyr::arrange(target_type, desc(method))
 
   expect_gt(dt$interval_score[1] - dt$interval_score[2], 0) # Cases
   expect_gt(dt$interval_score[3] - dt$interval_score[4], 0) # Deaths
+})
+
+test_that("sizes of training and validation set are correct", {
+  expect_equal(dplyr::n_distinct(training_set$target_end_date), unique_training_dates)
+  expect_equal(dplyr::n_distinct(validation_set$target_end_date), unique_validation_dates)
 })

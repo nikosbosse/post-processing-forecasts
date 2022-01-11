@@ -11,23 +11,26 @@ extract_set <- function(df_combined, set = c("train", "validation")) {
 
   # checking where target_end_date is a date variable, NA are omitted and all dates are unique
   # if not this is handled and a warning is returned
-  if (all((as.Date(stats::na.omit(unique(df_combined$target_end_date))) == df_combined$target_end_date))) {
-    warning("target_end_date may not be specifiyed correctly.
-            Check whether it is a date variable, NA are omitted and all dates are unique.")
-    sorted_target_end_dates <- sort(df_combined$target_end_date)
+  actual_dates <- unique(df_combined$target_end_date)
+  correct_dates <- lubridate::ymd(stats::na.omit(unique(df_combined$target_end_date)))
+
+  if (all(correct_dates == actual_dates)) {
+    sorted_target_end_dates <- sort(actual_dates)
   } else {
-    sorted_target_end_dates <- sort(as.Date(stats::na.omit(unique(df_combined$target_end_date))))
+    warning(paste0(
+      "target_end_date may not be specifiyed correctly.\n",
+      "Check whether it is a date variable, NA are omitted and all dates are unique."
+    ))
+    sorted_target_end_dates <- sort(correct_dates)
   }
 
-  # based on the length of the validation set extract the dates of the validation set
-  sorted_target_end_dates <- sort(df_combined$target_end_date)
-
   # extracting the target end dates of the set in question
-  set_target_end_date <- ifelse(
-    set == "train",
-    sorted_target_end_dates[(1:cv_init_training)],
-    sorted_target_end_dates[-(1:cv_init_training)]
-  )
+  # using ifelse in one line leads to strange behaviour
+  if (set == "train") {
+    set_target_end_date <- sorted_target_end_dates[(1:cv_init_training)]
+  } else {
+    set_target_end_date <- sorted_target_end_dates[-(1:cv_init_training)]
+  }
 
   # Restricting the combined df to only the set in question
   df_combined |>

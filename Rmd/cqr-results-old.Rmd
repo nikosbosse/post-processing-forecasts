@@ -1,0 +1,107 @@
+---
+title: "CQR Results for European Forecast Hub Data"
+output:
+  bookdown::html_document2:
+    theme: flatly
+    highlight: pygments
+    toc: TRUE
+    toc_float: TRUE
+    number_sections: FALSE
+    df_print: paged
+  bookdown::pdf_document2:
+    highlight: tango  
+    toc: FALSE
+    number_sections: FALSE
+    df_print: tibble
+    latex_engine: pdflatex
+    keep_tex: FALSE
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center",
+  out.width = "100%", dpi = 300, fig.asp = 0.618, collapse = TRUE
+)
+```
+
+```{r libraries}
+pacman::p_load(dplyr, scoringutils)
+devtools::load_all()
+```
+
+```{r}
+hub_data_1 <- readr::read_csv(here::here("data", "full-data-european-forecast-hub-1.csv"))
+hub_data_2 <- readr::read_csv(here::here("data", "full-data-european-forecast-hub-2.csv"))
+
+hub_data <- bind_rows(hub_data_1, hub_data_2)
+```
+
+```{r}
+# number of data points
+hub_data$target_end_date |> n_distinct()
+```
+
+## Choose Parameters of Interest
+
+```{r}
+models <- c(
+  "epiforecasts-EpiExpert", "epiforecasts-EpiNow2", "EuroCOVIDhub-baseline",
+  "EuroCOVIDhub-ensemble"
+)
+horizon <- 2
+location <- "DE"
+cv_init_training <- 10
+```
+
+## Fit Models and analyze Performance on Training and Validation Set separately
+
+```{r}
+full_results <- update_predictions(
+  hub_data,
+  methods = "cqr", models, location, horizon = horizon,
+  cv_init_training = cv_init_training
+) |>
+  collect_predictions()
+
+training_results <- full_results |>
+  extract_training_set() |>
+  eval_forecasts(summarise_by = c("method", "model", "target_type"))
+
+validation_results <- full_results |>
+  extract_validation_set() |>
+  eval_forecasts(summarise_by = c("method", "model", "target_type"))
+```
+
+```{r}
+# cqr improves interval score every model on the training set
+training_results |>
+  select(method:interval_score) |>
+  arrange(interval_score)
+```
+
+```{r}
+# mixed results on the validation set
+validation_results |>
+  select(method:interval_score) |>
+  arrange(interval_score)
+```
+
+## Visualize CQR - Adjustments for Covid-19 Cases and Deaths
+
+```{r}
+model <- "epiforecasts-EpiExpert"
+
+plot_intervals(
+  full_results, model, location,
+  target_type = "Cases", quantile = 0.05, horizon = horizon
+)
+```
+
+```{r}
+plot_intervals(
+  full_results, model, location,
+  target_type = "Deaths", quantile = 0.05, horizon = horizon
+)
+```

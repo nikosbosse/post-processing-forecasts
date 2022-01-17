@@ -176,7 +176,7 @@ For Deaths however there are no series missing so apparently looking at cases is
 for (m in unique(incomplete_series_table["model"])[[1]]){
   print(m)
   print(nrow(incomplete_series_table %>% 
-          filter(model == m, target_type == "Cases")) )
+          filter(model == m, target_type == "Deaths")) )
 }
 ```
 

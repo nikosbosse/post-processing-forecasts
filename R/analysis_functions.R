@@ -23,3 +23,34 @@ cqr_change_by_categories <- function(df_combined, categories) {
       names_from = .data[[categories[2]]], values_from = relative_change
     )
 }
+
+geometric_mean <- function(x) {
+  prod(x)^(1 / length(x))
+}
+
+add_row_average <- function(df) {
+  average_change <- df |>
+    # values are percentage changes => add one to get multiplicative changes
+    dplyr::mutate(dplyr::across(.cols = -1, .fns = ~ .x + 1)) |>
+    dplyr::rowwise() |>
+    # calculate geometric mean of multiplicative factors in each row and
+    # subtract one again to get percentage change
+    dplyr::summarise(
+      average_change = geometric_mean(dplyr::c_across(cols = -1)) - 1
+    ) |>
+    dplyr::pull(average_change)
+
+  df |> dplyr::mutate(average_change = average_change)
+}
+
+add_col_average <- function(df) {
+  average_change <- df |>
+    # calculate geometric mean of multiplicative factors in each column
+    dplyr::mutate(dplyr::across(.cols = -1, .fns = ~ .x + 1)) |>
+    dplyr::summarise(dplyr::across(.cols = -1, .fns = geometric_mean) - 1)
+
+  # add as new row to dataframe, surprisingly difficult to add rows to df
+  df[nrow(df) + 1, ] <- c(NA, as.numeric(average_change[1, ])) |> as.list()
+
+  return(df)
+}

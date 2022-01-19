@@ -47,3 +47,19 @@ cqr_change_by_categories(df_combined, categories = c("model", "target_type"))
 cqr_change_by_categories(df_combined, categories = c("model", "horizon"))
 cqr_change_by_categories(df_combined, categories = c("horizon", "target_type"))
 ```
+
+```{r}
+result_df <- cqr_change_by_categories(
+  df_combined,
+  categories = c("horizon", "target_type")
+)
+
+result_df |>
+  add_col_average() |>
+  add_row_average()
+
+# same result independent of order
+result_df |>
+  add_row_average() |>
+  add_col_average()
+```

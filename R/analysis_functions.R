@@ -7,7 +7,7 @@ cqr_change_by_categories <- function(df_combined, categories) {
     dplyr::mutate(relative_change = (cqr - original) / original) |>
     dplyr::select(-c(cqr, original))
 
-  # if one categories are specified
+  # if one category is specified
   if (length(c(categories)) == 1) {
     return(one_category_result |> dplyr::arrange(relative_change))
   }

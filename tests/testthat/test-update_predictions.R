@@ -28,11 +28,22 @@ test_that("works for cv_init_training = NULL", {
   expect_false(all(df_preprocessed$prediction == df_subset$prediction))
 })
 
-test_that("works for cv_init_training != NULL", {
+test_that("works for integer cv_init_training", {
   df_subset <- update_subset(
     df_preprocessed,
     method = "cqr", model, location, target_type = "Cases", horizon = 1,
     quantile = 0.01, cv_init_training = 5
+  )
+
+  expect_equal(dim(df_preprocessed), dim(df_subset))
+  expect_false(all(df_preprocessed$prediction == df_subset$prediction))
+})
+
+test_that("works for fraction cv_init_training", {
+  df_subset <- update_subset(
+    df_preprocessed,
+    method = "cqr", model, location, target_type = "Cases", horizon = 1,
+    quantile = 0.01, cv_init_training = 0.5
   )
 
   expect_equal(dim(df_preprocessed), dim(df_subset))
@@ -185,4 +196,22 @@ test_that("cqr improves the quantiles in the training mode (no cv) for Cases as 
 test_that("sizes of training and validation set are correct", {
   expect_equal(dplyr::n_distinct(training_set$target_end_date), unique_training_dates)
   expect_equal(dplyr::n_distinct(validation_set$target_end_date), unique_validation_dates)
+})
+
+
+df_list <- update_predictions(
+  df,
+  methods = "cqr", model, location, cv_init_training = 0.5
+)
+df_combined_new <- collect_predictions(df_list)
+
+training_set <- extract_training_set(df_combined_new)
+validation_set <- extract_validation_set(df_combined_new)
+
+training_length <- dplyr::n_distinct(training_set$target_end_date)
+validation_length <- dplyr::n_distinct(validation_set$target_end_date)
+
+test_that("cv_init_training = 0.5 creates equally sized data splits", {
+  # sizes differ at most by one time point
+  expect_lt(abs(training_length - validation_length), 2)
 })

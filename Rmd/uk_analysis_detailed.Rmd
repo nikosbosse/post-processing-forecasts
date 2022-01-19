@@ -1,0 +1,49 @@
+---
+title: "Detailed UK-Data Analysis"
+author: "Joel Beck"
+output:
+  bookdown::pdf_document2:
+    highlight: tango
+    toc: FALSE
+    number_sections: FALSE
+    df_print: tibble
+    latex_engine: pdflatex
+    keep_tex: FALSE
+  bookdown::html_document2:
+    theme: flatly
+    highlight: pygments
+    toc: TRUE
+    toc_float: TRUE
+    number_sections: FALSE
+    df_print: tibble
+urlcolor: blue
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center",
+  out.width = "100%", dpi = 300, fig.asp = 0.618, collapse = TRUE
+)
+```
+
+```{r}
+devtools::load_all()
+df_combined <- readr::read_rds(here::here("data_results", "uk_cqr.rds"))
+```
+
+## By single category
+
+```{r}
+cqr_change_by_categories(df_combined, categories = "model")
+cqr_change_by_categories(df_combined, categories = "target_type")
+cqr_change_by_categories(df_combined, categories = "horizon")
+cqr_change_by_categories(df_combined, categories = "quantile")
+```
+
+## By combination of two categories
+
+```{r}
+cqr_change_by_categories(df_combined, categories = c("model", "target_type"))
+cqr_change_by_categories(df_combined, categories = c("model", "horizon"))
+cqr_change_by_categories(df_combined, categories = c("horizon", "target_type"))
+```

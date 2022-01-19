@@ -8,6 +8,7 @@ tbl_preprocessed <- preprocess_df(tbl, model)$df
 
 cv_init_training <- 5
 
+
 #   ____________________________________________________________________________
 #   Tests for update_subset()                                               ####
 
@@ -87,50 +88,7 @@ test_that("date columns are transformed to class Date", {
 })
 
 
-test_that("error messages are triggered as intended", {
-  expect_error(
-    update_predictions(df,
-      methods = "qr", models = model, locations = location,
-      return_list = FALSE
-    ),
-    "qr is not an implemented post processing method."
-  )
-  expect_error(
-    update_predictions(df,
-      methods = "cqr", models = c(model, "s"), locations = location,
-      return_list = FALSE
-    ),
-    "At least one of the input models is not contained in the input data frame."
-  )
-  expect_error(
-    update_predictions(df,
-      methods = "cqr", models = model, locations = "DEU",
-      return_list = FALSE
-    ),
-    "At least one of the input locations is not contained in the input data frame."
-  )
-  expect_error(
-    update_predictions(df,
-      methods = "cqr", models = model, locations = location,
-      target_types = "Case", return_list = FALSE
-    ),
-    "At least one of the input target_types is not contained in the input data frame."
-  )
-  expect_error(
-    update_predictions(df,
-      methods = "cqr", models = model, locations = location,
-      horizons = c(1, 5), return_list = FALSE
-    ),
-    "At least one of the input horizons is not contained in the input data frame."
-  )
-  expect_error(
-    update_predictions(df,
-      methods = "cqr", models = model, locations = location,
-      quantiles = c(0, 1), return_list = FALSE
-    ),
-    "At least one of the input quantiles is not contained in the input data frame."
-  )
-})
+
 
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..

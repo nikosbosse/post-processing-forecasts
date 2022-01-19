@@ -88,6 +88,8 @@ update_predictions <- function(df, methods,
   validate_inputs(df, models, locations, target_types, horizons, quantiles)
   df <- validate_dates(df)
 
+  cv_init_training <- validate_cv_init(df, cv_init_training)
+
   # Preprocessing the df and inputs
   preprocessed_list <- preprocess_df(
     df, models, locations, target_types, horizons, quantiles

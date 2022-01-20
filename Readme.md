@@ -438,8 +438,9 @@ examining forecast calibration
 Forecasts can be evaluated in R using the `scoringutils` package.
 
 ``` r
-scores <- eval_forecasts(uk_data, 
-                         summarise_by = c("model", "target_type"))
+scores <- uk_data |> 
+  scoringutils::score() |> 
+  scoringutils::summarise_scores(by = c("model", "target_type"))
 
 scores
 ```
@@ -447,8 +448,9 @@ scores
 Example plot for empirical vs. nominal coverage
 
 ``` r
-scores <- eval_forecasts(uk_data, 
-                         summarise_by = c("model", "target_type", "range"))[]
+scores <- uk_data |> 
+  scoringutils::score() |> 
+  scoringutils::summarise_scores(by = c("model", "target_type", "range"))[]
 
 scores[model == "seb"] |>
   ggplot(aes(y = coverage, x = range)) +

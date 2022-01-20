@@ -1,11 +1,16 @@
+#' @importFrom rlang .data
+
 eval_by_one <- function(df_combined, summarise_by) {
   df_combined |>
     extract_validation_set() |>
-    scoringutils::eval_forecasts(summarise_by = c("method", summarise_by)) |>
-    dplyr::select(method:interval_score) |>
-    tidyr::pivot_wider(names_from = method, values_from = interval_score) |>
-    dplyr::mutate(relative_change = (cqr - original) / original) |>
-    dplyr::select(-c(cqr, original))
+    scoringutils::score() |>
+    scoringutils::summarise_scores(by = c("method", summarise_by)) |>
+    dplyr::select(.data$method:.data$interval_score) |>
+    tidyr::pivot_wider(
+      names_from = .data$method, values_from = .data$interval_score
+    ) |>
+    dplyr::mutate(relative_change = (.data$cqr - .data$original) / .data$original) |>
+    dplyr::select(-c(.data$cqr, .data$original))
 }
 
 convert_row_types <- function(df, new_row) {
@@ -50,7 +55,7 @@ add_row_averages <- function(df) {
     dplyr::summarise(
       average_change = geometric_mean(dplyr::c_across(cols = -1)) - 1
     ) |>
-    dplyr::pull(average_change)
+    dplyr::pull(.data$average_change)
 
   df |> dplyr::mutate(average_change = average_change)
 }
@@ -89,7 +94,7 @@ eval_cqr <- function(df_combined, summarise_by, margins = FALSE,
     return(
       result_long_format |>
         # output only sorted for single category
-        dplyr::arrange(relative_change) |>
+        dplyr::arrange(.data$relative_change) |>
         # output is always rounded in last step to not impact intermediary
         # calculations
         round_output(round_digits)
@@ -98,20 +103,20 @@ eval_cqr <- function(df_combined, summarise_by, margins = FALSE,
 
   # display horizon in increasing order for two-dimensional display
   if ("horizon" %in% summarise_by) {
-    result_long_format <- result_long_format |> dplyr::arrange(horizon)
+    result_long_format <- result_long_format |> dplyr::arrange(.data$horizon)
   }
 
   result_wide_format <- result_long_format |>
     tidyr::pivot_wider(
-      names_from = .data[[summarise_by[2]]], values_from = relative_change
+      names_from = .data[[summarise_by[2]]], values_from = .data$relative_change
     )
 
   # either margins or table averages can be added
   if (margins) {
     row_margins <- eval_by_one(df_combined, summarise_by = summarise_by[1]) |>
-      dplyr::pull(relative_change)
+      dplyr::pull(.data$relative_change)
     col_margins <- eval_by_one(df_combined, summarise_by = summarise_by[2]) |>
-      dplyr::pull(relative_change)
+      dplyr::pull(.data$relative_change)
 
     return(
       add_margins(result_wide_format, row_margins, col_margins) |>

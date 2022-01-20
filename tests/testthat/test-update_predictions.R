@@ -166,9 +166,10 @@ test_that("attributes from updated data frame are transferred", {
   expect_equal(attr(df_combined_new, "cv_init_training"), cv_init_training)
 })
 
-test_that("piping into 'eval_forecasts' works", {
+test_that("piping into scoringutils::score() works", {
   result <- df_combined_new |>
-    scoringutils::eval_forecasts(summarise_by = c("method", "model", "target_type"))
+    scoringutils::score() |>
+    scoringutils::summarise_scores(by = c("method", "model", "target_type"))
 
   expect_equal(dim(result), c(4, 10))
   expect_equal(unique(result$method), c("cqr", "original"))
@@ -186,7 +187,8 @@ unique_validation_dates <- dplyr::n_distinct(df_combined_new$target_end_date) - 
 
 test_that("cqr improves the quantiles in the training mode (no cv) for Cases as well as Deaths", {
   dt <- training_set |>
-    scoringutils::eval_forecasts(summarise_by = c("method", "model", "target_type")) |>
+    scoringutils::score() |>
+    scoringutils::summarise_scores(by = c("method", "model", "target_type")) |>
     dplyr::arrange(target_type, desc(method))
 
   expect_gt(dt$interval_score[1] - dt$interval_score[2], 0) # Cases

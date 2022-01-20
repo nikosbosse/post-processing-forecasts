@@ -36,54 +36,54 @@ df_combined <- readr::read_rds(here::here("data_results", "uk_cqr.rds"))
 ## By single category
 
 ```{r}
-cqr_change_by_categories(df_combined, categories = "model")
-cqr_change_by_categories(df_combined, categories = "target_type")
-cqr_change_by_categories(df_combined, categories = "horizon")
-cqr_change_by_categories(df_combined, categories = "quantile")
+eval_cqr(df_combined, summarise_by = "model")
+eval_cqr(df_combined, summarise_by = "target_type")
+eval_cqr(df_combined, summarise_by = "horizon")
+eval_cqr(df_combined, summarise_by = "quantile")
 ```
 
 ## By combination of two categories
 
 ```{r}
-cqr_change_by_categories(df_combined, categories = c("model", "target_type"))
-cqr_change_by_categories(df_combined, categories = c("model", "horizon"))
-cqr_change_by_categories(df_combined, categories = c("horizon", "target_type"))
+eval_cqr(df_combined, summarise_by = c("model", "target_type"))
+eval_cqr(df_combined, summarise_by = c("model", "horizon"))
+eval_cqr(df_combined, summarise_by = c("horizon", "target_type"))
 ```
 
 ## Add marginal relative changes
 
 ```{r}
-# not really informative, since marginals are dominated by category with largest
+# not really informative, since margins are dominated by category with largest
 # values, here "Cases"
-# => these marginals are almost identical to one row / column of table
+# => these margins are almost identical to one row / column of table
 
 # sorted by increasing relative changes
-cqr_change_by_categories(df_combined, categories = "model")
-cqr_change_by_categories(df_combined, categories = "target_type")
+eval_cqr(df_combined, summarise_by = "model")
+eval_cqr(df_combined, summarise_by = "target_type")
 
 # not sorted by relative changes
-cqr_change_by_categories(
+eval_cqr(
   df_combined,
-  categories = c("model", "target_type"), marginals = TRUE
+  summarise_by = c("model", "target_type"), margins = TRUE
 )
 ```
 
 ## Add 'average' (geometric mean) relative changes of rows and columns
 
 ```{r}
-cqr_change_by_categories(
+eval_cqr(
   df_combined,
-  categories = c("horizon", "target_type"), row_averages = TRUE
+  summarise_by = c("horizon", "target_type"), row_averages = TRUE
 )
 
-cqr_change_by_categories(
+eval_cqr(
   df_combined,
-  categories = c("horizon", "target_type"), col_averages = TRUE
+  summarise_by = c("horizon", "target_type"), col_averages = TRUE
 )
 
-cqr_change_by_categories(
+eval_cqr(
   df_combined,
-  categories = c("horizon", "target_type"), row_averages = TRUE,
+  summarise_by = c("horizon", "target_type"), row_averages = TRUE,
   col_averages = TRUE
 )
 ```

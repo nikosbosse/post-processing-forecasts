@@ -17,6 +17,8 @@ output:
     number_sections: FALSE
     df_print: tibble
 urlcolor: blue
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
@@ -47,6 +49,26 @@ cqr_change_by_categories(df_combined, categories = c("model", "target_type"))
 cqr_change_by_categories(df_combined, categories = c("model", "horizon"))
 cqr_change_by_categories(df_combined, categories = c("horizon", "target_type"))
 ```
+
+## Add marginal relative changes
+
+```{r}
+# not really informative, since marginals are dominated by category with largest
+# values, here "Cases"
+# => these marginals are almost identical to one row / column of table
+
+# sorted by increasing relative changes
+cqr_change_by_categories(df_combined, categories = "model")
+cqr_change_by_categories(df_combined, categories = "target_type")
+
+# not sorted by relative changes
+cqr_change_by_categories(
+  df_combined,
+  categories = c("model", "target_type"), marginals = TRUE
+)
+```
+
+## Add 'average' (geometric mean) relative changes of rows and columns
 
 ```{r}
 cqr_change_by_categories(

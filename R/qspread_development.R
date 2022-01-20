@@ -1,6 +1,5 @@
 # temporary and not recommended way, library(postforecasts) imports only functions with @export tag
 # => requires more complete documentation
-devtools::load_all(".")
 library(scoringutils)
 library(dplyr)
 
@@ -60,15 +59,26 @@ update_predictions <- function(df, methods,
   return(updated_list[[1]])
 }
 
+model <- "epiforecasts-EpiExpert"
+location <- "GB"
+target_type <- "Cases"
+horizon <- 1
+cv_init_training <- 10
+
 
 update_subset <- function(df, method, model, location, target_type, horizon, cv_init_training) {
   method <- select_method(method = method)
   
+  # The version below gives out a long list with all the quantiles and the true values
   quantiles_list <- filter_combination(df, model, location, target_type, horizon, quantile)
   
   true_values <- quantiles_list$true_values
-  quantiles_low <- quantiles_list$quantiles_low
-  quantiles_high <- quantiles_list$quantiles_high
+  # Next:
+  # Write a function that multiplies all values by a factor and returns them
+  # Then through that into the WIS function
+  # Then use optimizer on that
+  # finally integrate the whole thing into the time series crossvalidation scheme below
+  
   
   if (is.null(cv_init_training)) {
     # By default cv_init_training is equal to NULL and therefore equal to the complete data.
@@ -129,36 +139,37 @@ update_subset <- function(df, method, model, location, target_type, horizon, cv_
 
 
 
-filter_combination <- function(df, model, location, target_type, horizon, quantile) {
+filter_combination <- function(df, model, location, target_type, horizon) {
   # for nicer function input names,
   # input names equal to column names are a little painful with tidyverse functions
   # => temporary variables with different names
   mod <- model
   t <- target_type
   h <- horizon
-  q <- quantile
   l <- location
   
   # To make sure that the predictions and true_values are in the correct order we also arrange by the target_end_date
-  quantiles_low_df <- df |>
+  true_values <- df |>
     dplyr::filter(
-      .data$model == mod & .data$location == l & .data$target_type == t & .data$horizon == h & .data$quantile == q
+      .data$model == mod & .data$location == l & .data$target_type == t & .data$horizon == h & .data$quantile == 0.01
     ) |>
     dplyr::arrange(.data$target_end_date)
   
-  quantiles_low <- quantiles_low_df$prediction
-  true_values <- quantiles_low_df$true_value
+  true_values <- true_values$predictions
   
-  quantiles_high <- df |>
-    dplyr::filter(
-      .data$model == mod & .data$location == l & .data$target_type == t & .data$horizon == h & .data$quantile == 1 - q
-    ) |>
-    dplyr::arrange(.data$target_end_date) |>
-    dplyr::pull(.data$prediction)
+  return_list <- list(true_values = true_values)
   
-  return(list(
-    true_values = true_values, quantiles_low = quantiles_low,
-    quantiles_high = quantiles_high
-  ))
+  for (q in na.omit(unique(df$quantile))){
+    quantile <- df |>
+      dplyr::filter(
+        .data$model == mod & .data$location == l & .data$target_type == t & .data$horizon == h & .data$quantile == 0.01
+      ) |>
+      dplyr::arrange(.data$target_end_date) |>
+      dplyr::pull(.data$prediction)
+    print(quantile)
+    return_list[[paste0("quantile ", q)]] <- quantile
+  }
+  
+  return(return_list)
 }
 

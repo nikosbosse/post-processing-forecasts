@@ -67,7 +67,9 @@ plot_intervals(
 We evaluate the changes in the prediction intervals by using the "scoringutils" package. The main metric we look at is the interval_score. It is defined as: sharpness + underprediction + overprediction. We can see a slight improvement as the score drops.
 
 ```{r}
-eval_forecasts(df_combined, summarise_by = c("method", "model", "target_type")) |>
+df_combined |>
+  score() |>
+  summarise_scores(by = c("method", "model", "target_type")) |>
   arrange(target_type, desc(method))
 ```
 
@@ -104,12 +106,14 @@ We can see that the forecasting intervals still improve in the validation set, a
 
 ```{r}
 extract_validation_set(df_combined) |>
-  eval_forecasts(summarise_by = c("method", "model", "target_type")) |>
+  score() |>
+  summarise_scores(by = c("method", "model", "target_type")) |>
   arrange(target_type, desc(method))
 ```
 ```{r}
 extract_training_set(df_combined) |>
-  eval_forecasts(summarise_by = c("method", "model", "target_type")) |>
+  score() |>
+  summarise_scores(by = c("method", "model", "target_type")) |>
   arrange(target_type, desc(method))
 ```
 
@@ -120,13 +124,15 @@ The plot exemplifies how uncertainty is strongly underestimated for larger quant
 
 ```{r}
 extract_validation_set(df_combined) |>
-  eval_forecasts(summarise_by = c("method", "model", "target_type", "horizon")) |>
+  score() |>
+  summarise_scores(by = c("method", "model", "target_type", "horizon")) |>
   arrange(target_type, desc(horizon))
 ```
 
 ```{r}
 extract_validation_set(df_combined) |>
-  eval_forecasts(summarise_by = c("method", "model", "target_type", "quantile")) |>
+  score() |>
+  summarise_scores(by = c("method", "model", "target_type", "quantile")) |>
   arrange(target_type, desc(quantile))
 ```
 

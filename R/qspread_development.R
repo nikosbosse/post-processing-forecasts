@@ -1,9 +1,86 @@
+#Neue Syntax:
+devtools::install_github("epiforecasts/scoringutils@major-update")
+library(scoringutils)
+
 # temporary and not recommended way, library(postforecasts) imports only functions with @export tag
 # => requires more complete documentation
-library(scoringutils)
 library(dplyr)
 
+# Loading data 
 df <- read.csv(here::here("data", "full-data-uk-challenge.csv"))
+
+#Defining the specific series to forecast and getting it from the total data
+m <- "epiforecasts-EpiExpert"
+l <- "GB"
+t <- "Cases"
+h <- 1
+#cv_init_training <- 10
+subset <- dplyr::filter(df, model == m & location == l & target_type == t & horizon == h)
+
+
+
+
+# Computing the quantile spread adjustment
+quantile_spreads_adjustment <- function(subset, spread_factor){
+  # copy of subset to fill with updates
+  subset_updated <- subset
+  
+  # extracting all quantiles that arnt the median
+  quantiles_list <- na.omit(unique(subset$quantile))
+  quantiles_list_no_median <- quantiles_list[!quantiles_list == 0.50]
+  
+  # extracting the median
+  median_vals <- subset |>
+    dplyr::filter(.data$quantile == 0.50) |>
+    dplyr::arrange(.data$target_end_date) |>
+    dplyr::pull(.data$prediction)
+  
+  # calculate all quantile spreads as differences between median and the repsective quantile q at each target_end_date
+  for (q in quantiles_list_no_median){
+    quantile <- subset |>
+      dplyr::filter(.data$quantile == q) |>
+      dplyr::arrange(.data$target_end_date) |>
+      dplyr::pull(.data$prediction)
+
+    # getting quantile spread
+    quantile_spread <- quantile - median_vals
+
+    # computing absolute adjustment based on spread factor 
+    absolute_quantile_adjustments <- quantile_spread * spread_factor - quantile_spread
+
+    # updating the subset
+    subset_updated <- subset_updated |>
+      dplyr::mutate(prediction = replace(.data$prediction, 
+                                         .data$quantile == q,
+                                         values = absolute_quantile_adjustments))
+  }
+  
+  return(subset_updated)
+}
+
+
+
+
+wis <- function(spread_factor, subset){
+  
+  
+  
+  #Calculating the score for the adjusted series
+  res <- subset |> 
+    score() |>
+    summarise_scores(by = c("model"))
+  
+  wis <- res$interval_score
+  
+  return(wis)
+}
+
+
+optim(start_value, wis, data=subset, method="BFGS") #, hessian=T)
+
+
+
+
 
 
 update_predictions <- function(df, methods,
@@ -149,15 +226,15 @@ filter_combination <- function(df, model, location, target_type, horizon) {
   l <- location
   
   # To make sure that the predictions and true_values are in the correct order we also arrange by the target_end_date
-  true_values <- df |>
-    dplyr::filter(
-      .data$model == mod & .data$location == l & .data$target_type == t & .data$horizon == h & .data$quantile == 0.01
-    ) |>
-    dplyr::arrange(.data$target_end_date)
+  #true_values <- df |>
+  #  dplyr::filter(
+  #    .data$model == mod & .data$location == l & .data$target_type == t & .data$horizon == h & .data$quantile == 0.01
+  #  ) |>
+  #  dplyr::arrange(.data$target_end_date)
+  #
+  #true_values <- true_values$predictions
   
-  true_values <- true_values$predictions
-  
-  return_list <- list(true_values = true_values)
+  return_list <- list()
   
   for (q in na.omit(unique(df$quantile))){
     quantile <- df |>

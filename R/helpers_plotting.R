@@ -58,3 +58,30 @@ plot_training_end <- function(p, df, type = c("segment", "vline")) {
   }
   return(p)
 }
+
+plot_heatmap <- function(df_plot, first_colname, max_value, xlabel, ylabel) {
+  # to use columns as strings in aes(), encode string first to symbol with sym()
+  # and then decode / unquote it with !! inside of aes()
+  first_colname <- rlang::sym(first_colname)
+
+  df_plot |>
+    ggplot2::ggplot(mapping = ggplot2::aes(
+      y = !!first_colname, x = colnames, fill = values
+    )) +
+    ggplot2::geom_tile() +
+    ggplot2::scale_y_discrete(limits = rev, expand = c(0, 0)) +
+    ggplot2::scale_fill_distiller(
+      palette = "RdBu", limits = c(-max_value, max_value)
+    ) +
+    ggplot2::labs(
+      x = xlabel, y = ylabel, fill = NULL,
+      title = "Relative Changes in Weighted Interval Score after CQR Adjustments",
+      subtitle = paste(
+        "- Negative values indicate a lower (better) Score,",
+        "positive values a higher (worse) Score -"
+      )
+    ) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+    ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5))
+}

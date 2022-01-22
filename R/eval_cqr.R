@@ -97,7 +97,9 @@ eval_cqr <- function(df_combined, summarise_by, margins = FALSE,
         dplyr::arrange(.data$relative_change) |>
         # output is always rounded in last step to not impact intermediary
         # calculations
-        round_output(round_digits)
+        round_output(round_digits) |>
+        # plot_eval() needs to know original colnames after pivoting
+        `attr<-`("summarise_by", summarise_by)
     )
   }
 
@@ -120,7 +122,8 @@ eval_cqr <- function(df_combined, summarise_by, margins = FALSE,
 
     return(
       add_margins(result_wide_format, row_margins, col_margins) |>
-        round_output(round_digits)
+        round_output(round_digits) |>
+        `attr<-`("summarise_by", summarise_by)
     )
   }
 
@@ -132,5 +135,10 @@ eval_cqr <- function(df_combined, summarise_by, margins = FALSE,
     result_wide_format <- result_wide_format |> add_col_averages()
   }
 
-  return(result_wide_format |> round_output(round_digits))
+
+  return(
+    result_wide_format |>
+      round_output(round_digits) |>
+      `attr<-`("summarise_by", summarise_by)
+  )
 }

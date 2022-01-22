@@ -148,19 +148,19 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
 }
 
 plot_eval <- function(df_eval) {
-  # keep value order of the first column the same in plot as in the
-  # input dataframe
+  # keep y-axis order the same as in input dataframe
   df_eval[[1]] <- factor(df_eval[[1]], levels = df_eval[[1]])
+
 
   # use attributes for axis labels
   orig_columns <- attr(df_eval, which = "summarise_by")
   first_colname <- orig_columns[1]
-  ylabels <- first_colname
+  ylabel <- first_colname
 
   if (length(orig_columns) == 2) {
-    xlabels <- orig_columns[2]
+    xlabel <- orig_columns[2]
   } else {
-    xlabels <- NULL
+    xlabel <- NULL
   }
 
   # for limits of colour pallette
@@ -174,26 +174,14 @@ plot_eval <- function(df_eval) {
       cols = -1, names_to = "colnames", values_to = "values"
     )
 
+  # keep x-axis order the same as in input dataframe
+  x_order <- colnames(df_eval)[-1]
+  df_plot$colnames <- factor(df_plot$colnames, levels = x_order)
+
   # when there are no categories on x-axis, do not display any name
   if (dplyr::n_distinct(df_plot[[2]]) == 1) {
     df_plot[[2]] <- ""
   }
 
-  df_plot |>
-    ggplot2::ggplot(mapping = ggplot2::aes(
-      y = !!dplyr::ensym(first_colname), x = colnames, fill = values
-    )) +
-    ggplot2::geom_tile() +
-    ggplot2::scale_y_discrete(limits = rev, expand = c(0, 0)) +
-    ggplot2::scale_fill_distiller(
-      palette = "RdBu", limits = c(-max_value, max_value)
-    ) +
-    ggplot2::labs(
-      x = xlabels, y = ylabels, fill = NULL,
-      title = "Relative Changes in Weighted Interval Score after CQR Adjustments",
-      subtitle = "- Negative Values indicate a lower (better) Score, positive Values a higher (worse) Score -"
-    ) +
-    ggplot2::theme_minimal() +
-    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
-    ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5))
+  plot_heatmap(df_plot, first_colname, max_value, xlabel, ylabel)
 }

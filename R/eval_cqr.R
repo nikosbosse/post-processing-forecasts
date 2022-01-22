@@ -80,6 +80,7 @@ round_output <- function(df, round_digits) {
   return(df)
 }
 
+
 eval_cqr <- function(df_combined, summarise_by, margins = FALSE,
                      row_averages = FALSE, col_averages = FALSE,
                      round_digits = 4) {
@@ -89,23 +90,18 @@ eval_cqr <- function(df_combined, summarise_by, margins = FALSE,
 
   result_long_format <- eval_by_one(df_combined, summarise_by)
 
+  # sort first column in increasing order, surprisingly this works
+  result_long_format <- result_long_format |>
+    dplyr::arrange(result_long_format[[1]])
+
   # if only one category is specified
   if (length(c(summarise_by)) == 1) {
     return(
       result_long_format |>
-        # output only sorted for single category
-        dplyr::arrange(.data$relative_change) |>
-        # output is always rounded in last step to not impact intermediary
-        # calculations
         round_output(round_digits) |>
         # plot_eval() needs to know original colnames after pivoting
         `attr<-`("summarise_by", summarise_by)
     )
-  }
-
-  # display horizon in increasing order for two-dimensional display
-  if ("horizon" %in% summarise_by) {
-    result_long_format <- result_long_format |> dplyr::arrange(.data$horizon)
   }
 
   result_wide_format <- result_long_format |>
@@ -134,7 +130,6 @@ eval_cqr <- function(df_combined, summarise_by, margins = FALSE,
   if (col_averages) {
     result_wide_format <- result_wide_format |> add_col_averages()
   }
-
 
   return(
     result_wide_format |>

@@ -36,15 +36,15 @@ df_combined <- readr::read_rds(here::here("data_results", "uk_cqr.rds"))
 ## By single category
 
 ```{r}
-# TODO: Add unit tests that attribute summarise_by is set correctly by eval_cqr()
-
-eval_cqr(df_combined, summarise_by = "model")
+df_eval <- eval_cqr(df_combined, summarise_by = "model")
 eval_cqr(df_combined, summarise_by = "target_type")
 eval_cqr(df_combined, summarise_by = "horizon")
+eval_cqr(df_combined, summarise_by = "quantile")
 
-df_eval <- eval_cqr(df_combined, summarise_by = "quantile")
 plot_eval(df_eval)
+plot_eval(df_eval, heatmap = FALSE)
 ```
+
 
 ## By combination of two categories
 
@@ -83,7 +83,6 @@ df_eval <- eval_cqr(
   df_combined,
   summarise_by = c("horizon", "target_type"), row_averages = TRUE
 )
-# TODO: Fix order of x labels
 plot_eval(df_eval)
 
 df_eval <- eval_cqr(
@@ -97,6 +96,5 @@ df_eval <- eval_cqr(
   summarise_by = c("horizon", "target_type"), row_averages = TRUE,
   col_averages = TRUE
 )
-# TODO: Fix order of x labels
 plot_eval(df_eval)
 ```

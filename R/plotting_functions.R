@@ -148,16 +148,14 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
 }
 
 plot_eval <- function(df_eval) {
-  # make ggplot work with positional column specification
-  first_colname <- colnames(df_eval)[1]
-
   # keep value order of the first column the same in plot as in the
   # input dataframe
   df_eval[[1]] <- factor(df_eval[[1]], levels = df_eval[[1]])
 
   # use attributes for axis labels
   orig_columns <- attr(df_eval, which = "summarise_by")
-  ylabels <- orig_columns[1]
+  first_colname <- orig_columns[1]
+  ylabels <- first_colname
 
   if (length(orig_columns) == 2) {
     xlabels <- orig_columns[2]
@@ -171,12 +169,19 @@ plot_eval <- function(df_eval) {
     abs() |>
     max(na.rm = TRUE)
 
-  df_eval |>
+  df_plot <- df_eval |>
     tidyr::pivot_longer(
-      cols = -1, names_to = "colnames", values_to = "relative_change"
-    ) |>
+      cols = -1, names_to = "colnames", values_to = "values"
+    )
+
+  # when there are no categories on x-axis, do not display any name
+  if (dplyr::n_distinct(df_plot[[2]]) == 1) {
+    df_plot[[2]] <- ""
+  }
+
+  df_plot |>
     ggplot2::ggplot(mapping = ggplot2::aes(
-      y = !!dplyr::ensym(first_colname), x = colnames, fill = relative_change
+      y = !!dplyr::ensym(first_colname), x = colnames, fill = values
     )) +
     ggplot2::geom_tile() +
     ggplot2::scale_y_discrete(limits = rev, expand = c(0, 0)) +

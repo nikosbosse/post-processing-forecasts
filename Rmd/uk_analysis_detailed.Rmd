@@ -18,7 +18,7 @@ output:
     df_print: tibble
 urlcolor: blue
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -36,10 +36,15 @@ df_combined <- readr::read_rds(here::here("data_results", "uk_cqr.rds"))
 ## By single category
 
 ```{r}
+# TODO: Add unit tests that attribute summarise_by is set correctly by eval_cqr()
+
 eval_cqr(df_combined, summarise_by = "model")
 eval_cqr(df_combined, summarise_by = "target_type")
 eval_cqr(df_combined, summarise_by = "horizon")
-eval_cqr(df_combined, summarise_by = "quantile")
+df_eval <- eval_cqr(df_combined, summarise_by = "quantile")
+attributes(df_eval)
+# TODO: Fix x-label
+plot_eval(df_eval)
 ```
 
 ## By combination of two categories
@@ -47,7 +52,9 @@ eval_cqr(df_combined, summarise_by = "quantile")
 ```{r}
 eval_cqr(df_combined, summarise_by = c("model", "target_type"))
 eval_cqr(df_combined, summarise_by = c("model", "horizon"))
-eval_cqr(df_combined, summarise_by = c("horizon", "target_type"))
+df_eval <- eval_cqr(df_combined, summarise_by = c("horizon", "target_type"))
+attributes(df_eval)
+plot_eval(df_eval)
 ```
 
 ## Add marginal relative changes
@@ -62,11 +69,14 @@ eval_cqr(df_combined, summarise_by = "model")
 eval_cqr(df_combined, summarise_by = "target_type")
 
 # not sorted by relative changes
-eval_cqr(
+df_eval <- eval_cqr(
   df_combined,
   summarise_by = c("model", "target_type"), margins = TRUE
 )
+attributes(df_eval)
+plot_eval(df_eval)
 ```
+
 
 ## Add 'average' (geometric mean) relative changes of rows and columns
 
@@ -81,9 +91,12 @@ eval_cqr(
   summarise_by = c("horizon", "target_type"), col_averages = TRUE
 )
 
-eval_cqr(
+df_eval <- eval_cqr(
   df_combined,
   summarise_by = c("horizon", "target_type"), row_averages = TRUE,
   col_averages = TRUE
 )
+attributes(df_eval)
+# TODO: Fix order of x labels
+plot_eval(df_eval)
 ```

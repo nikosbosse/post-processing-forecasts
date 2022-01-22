@@ -146,3 +146,49 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
 
   return(p)
 }
+
+plot_eval <- function(df_eval) {
+  # make ggplot work with positional column specification
+  first_colname <- colnames(df_eval)[1]
+
+  # keep value order of the first column the same in plot as in the
+  # input dataframe
+  df_eval[[1]] <- factor(df_eval[[1]], levels = df_eval[[1]])
+
+  # use attributes for axis labels
+  orig_columns <- attr(df_eval, which = "summarise_by")
+  ylabels <- orig_columns[1]
+
+  if (length(orig_columns) == 2) {
+    xlabels <- orig_columns[2]
+  } else {
+    xlabels <- NULL
+  }
+
+  # for limits of colour pallette
+  max_value <- df_eval |>
+    dplyr::select(where(is.numeric)) |>
+    abs() |>
+    max(na.rm = TRUE)
+
+  df_eval |>
+    tidyr::pivot_longer(
+      cols = -1, names_to = "colnames", values_to = "relative_change"
+    ) |>
+    ggplot2::ggplot(mapping = ggplot2::aes(
+      y = !!dplyr::ensym(first_colname), x = colnames, fill = relative_change
+    )) +
+    ggplot2::geom_tile() +
+    ggplot2::scale_y_discrete(limits = rev, expand = c(0, 0)) +
+    ggplot2::scale_fill_distiller(
+      palette = "RdBu", limits = c(-max_value, max_value)
+    ) +
+    ggplot2::labs(
+      x = xlabels, y = ylabels, fill = NULL,
+      title = "Relative Changes in Weighted Interval Score after CQR Adjustments",
+      subtitle = "- Negative Values indicate a lower (better) Score, positive Values a higher (worse) Score -"
+    ) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+    ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5))
+}

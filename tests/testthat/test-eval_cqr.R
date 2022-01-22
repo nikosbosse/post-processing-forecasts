@@ -23,6 +23,13 @@ test_that("works for single category", {
 
   expect_equal(dim(eval_quantiles), c(23, 2))
   expect_equal(colnames(eval_quantiles), c("quantile", "relative_change"))
+
+  expect_equal(attr(eval_models, "summarise_by"), "model")
+})
+
+test_that("plot works for single category", {
+  expect_error(plot_eval(eval_models), NA)
+  expect_error(plot_eval(eval_models, heatmap = FALSE), NA)
 })
 
 
@@ -48,6 +55,22 @@ test_that("works for two categories", {
   expect_equal(dim(eval_models_horizons), c(6, 5))
   expect_equal(dim(eval_models_target_types), c(6, 3))
   expect_equal(dim(eval_horizons_target_types), c(4, 3))
+  expect_equal(attr(eval_models_horizons, "summarise_by"), c("model", "horizon"))
+})
+
+test_that("plot works for two categories", {
+  expect_error(plot_eval(eval_models_horizons), NA)
+})
+
+test_that("argument heatmap = FALSE triggers error correctly", {
+  expect_error(
+    plot_eval(eval_models_horizons, heatmap = FALSE),
+    paste(
+      "Barplot is only available in one dimension",
+      "(1 input to 'summarise_by' in eval_cqr())"
+    ),
+    fixed = TRUE
+  )
 })
 
 
@@ -64,7 +87,15 @@ col_margins <- margins_models_horizons[nrow(margins_models_horizons), ]
 
 test_that("margins are added correctly", {
   expect_equal(sum(row_margins, na.rm = TRUE), sum(eval_models$relative_change))
-  expect_equal(sum(as.numeric(col_margins), na.rm = TRUE), sum(eval_horizons$relative_change))
+  expect_equal(
+    sum(as.numeric(col_margins), na.rm = TRUE),
+    sum(eval_horizons$relative_change)
+  )
+  expect_equal(attr(margins_models_horizons, "summarise_by"), c("model", "horizon"))
+})
+
+test_that("plot works for margins = TRUE", {
+  expect_error(plot_eval(margins_models_horizons), NA)
 })
 
 
@@ -89,8 +120,25 @@ row_col_horizon_target_type <- eval_cqr(
 
 test_that("row and column averages work", {
   expect_equal(dim(row_horizon_target_type), c(4, 4))
+  expect_equal(
+    attr(row_horizon_target_type, "summarise_by"), c("horizon", "target_type")
+  )
+
   expect_equal(dim(col_horizon_target_type), c(5, 3))
+  expect_equal(
+    attr(col_horizon_target_type, "summarise_by"), c("horizon", "target_type")
+  )
+
   expect_equal(dim(row_col_horizon_target_type), c(5, 4))
+  expect_equal(
+    attr(row_col_horizon_target_type, "summarise_by"), c("horizon", "target_type")
+  )
+})
+
+test_that("plot works for averages = TRUE", {
+  expect_error(plot_eval(row_horizon_target_type), NA)
+  expect_error(plot_eval(col_horizon_target_type), NA)
+  expect_error(plot_eval(row_col_horizon_target_type), NA)
 })
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..

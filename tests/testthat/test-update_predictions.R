@@ -19,7 +19,7 @@ test_that("works for cv_init_training = NULL", {
     df_preprocessed,
     method = "cqr", model, location, target_type = "Cases", horizon = 1,
     quantile = 0.01, cv_init_training = NULL
-  )
+  ) |> suppressMessages()
 
   # dimensions of updated data frame are correct
   expect_equal(dim(df_preprocessed), dim(df_subset))
@@ -33,7 +33,7 @@ test_that("works for integer cv_init_training", {
     df_preprocessed,
     method = "cqr", model, location, target_type = "Cases", horizon = 1,
     quantile = 0.01, cv_init_training = 5
-  )
+  ) |> suppressMessages()
 
   expect_equal(dim(df_preprocessed), dim(df_subset))
   expect_false(all(df_preprocessed$prediction == df_subset$prediction))
@@ -44,7 +44,7 @@ test_that("works for fraction cv_init_training", {
     df_preprocessed,
     method = "cqr", model, location, target_type = "Cases", horizon = 1,
     quantile = 0.01, cv_init_training = 0.5
-  )
+  ) |> suppressMessages()
 
   expect_equal(dim(df_preprocessed), dim(df_subset))
   expect_false(all(df_preprocessed$prediction == df_subset$prediction))
@@ -55,7 +55,7 @@ test_that("works for tibble object", {
     tbl_preprocessed,
     method = "cqr", model, location, target_type = "Cases", horizon = 1,
     quantile = 0.01, cv_init_training = NULL
-  )
+  ) |> suppressMessages()
 
   expect_equal(dim(tbl_preprocessed), dim(tbl_subset))
 })
@@ -73,7 +73,7 @@ test_that("works for tibble object", {
 df_updated <- update_predictions(df,
   methods = "cqr", model, location, cv_init_training = cv_init_training,
   return_list = FALSE
-)
+) |> suppressMessages()
 
 test_that("updated data frame is downsampled correctly", {
   expect_lt(nrow(df_updated), nrow(df))
@@ -108,7 +108,7 @@ test_that("date columns are transformed to class Date", {
 df_combined_old <- collect_predictions(
   original = change_to_date(df_preprocessed, forecast = TRUE, target_end = TRUE),
   cqr = df_updated
-)
+) |> suppressMessages()
 
 test_that("old and new data frames are vertically stacked", {
   expect_equal(nrow(df_combined_old), 2 * nrow(df_updated))
@@ -136,7 +136,11 @@ test_that("attributes from updated data frame are transferred", {
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### update_predictions()                                                    ####
 
-df_list <- update_predictions(df, methods = "cqr", model, location, cv_init_training = cv_init_training)
+df_list <- update_predictions(
+  df,
+  methods = "cqr", model, location, cv_init_training = cv_init_training
+) |>
+  suppressMessages()
 
 test_that("return value is correctly named list", {
   expect_type(df_list, "list")
@@ -204,7 +208,8 @@ test_that("sizes of training and validation set are correct", {
 df_list <- update_predictions(
   df,
   methods = "cqr", model, location, cv_init_training = 0.5
-)
+) |> suppressMessages()
+
 df_combined_new <- collect_predictions(df_list)
 
 training_set <- extract_training_set(df_combined_new)

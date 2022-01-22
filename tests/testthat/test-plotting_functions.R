@@ -2,7 +2,8 @@ df <- read.csv("test-data/full-data-uk-challenge.csv")
 model <- "epiforecasts-EpiExpert"
 
 df_combined <- update_predictions(df, methods = "cqr", models = model) |>
-  collect_predictions()
+  collect_predictions() |>
+  suppressMessages()
 
 
 # use expect_error() with second argument 'NA' to test for simple functionality
@@ -12,11 +13,15 @@ df_combined <- update_predictions(df, methods = "cqr", models = model) |>
 #   Tests for plot_quantiles()                                              ####
 
 test_that("default arguments work", {
-  expect_error(plot_quantiles(df, model), NA)
+  expect_error(plot_quantiles(df, model) |> suppressMessages(), NA)
 })
 
 test_that("custom quantiles input works", {
-  expect_error(plot_quantiles(df, model, quantiles = c(0.01, 0.025, 0.25)), NA)
+  expect_error(
+    plot_quantiles(df, model, quantiles = c(0.01, 0.025, 0.25)) |>
+      suppressMessages(),
+    NA
+  )
 })
 
 

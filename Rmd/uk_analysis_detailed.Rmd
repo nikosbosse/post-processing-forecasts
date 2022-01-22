@@ -41,9 +41,8 @@ df_combined <- readr::read_rds(here::here("data_results", "uk_cqr.rds"))
 eval_cqr(df_combined, summarise_by = "model")
 eval_cqr(df_combined, summarise_by = "target_type")
 eval_cqr(df_combined, summarise_by = "horizon")
+
 df_eval <- eval_cqr(df_combined, summarise_by = "quantile")
-attributes(df_eval)
-# TODO: Fix x-label
 plot_eval(df_eval)
 ```
 
@@ -52,8 +51,8 @@ plot_eval(df_eval)
 ```{r}
 eval_cqr(df_combined, summarise_by = c("model", "target_type"))
 eval_cqr(df_combined, summarise_by = c("model", "horizon"))
+
 df_eval <- eval_cqr(df_combined, summarise_by = c("horizon", "target_type"))
-attributes(df_eval)
 plot_eval(df_eval)
 ```
 
@@ -73,7 +72,6 @@ df_eval <- eval_cqr(
   df_combined,
   summarise_by = c("model", "target_type"), margins = TRUE
 )
-attributes(df_eval)
 plot_eval(df_eval)
 ```
 
@@ -81,22 +79,24 @@ plot_eval(df_eval)
 ## Add 'average' (geometric mean) relative changes of rows and columns
 
 ```{r}
-eval_cqr(
+df_eval <- eval_cqr(
   df_combined,
   summarise_by = c("horizon", "target_type"), row_averages = TRUE
 )
+# TODO: Fix order of x labels
+plot_eval(df_eval)
 
-eval_cqr(
+df_eval <- eval_cqr(
   df_combined,
   summarise_by = c("horizon", "target_type"), col_averages = TRUE
 )
+plot_eval(df_eval)
 
 df_eval <- eval_cqr(
   df_combined,
   summarise_by = c("horizon", "target_type"), row_averages = TRUE,
   col_averages = TRUE
 )
-attributes(df_eval)
 # TODO: Fix order of x labels
 plot_eval(df_eval)
 ```

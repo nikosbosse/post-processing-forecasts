@@ -1,7 +1,7 @@
 ################ Quantile Spread applied to example Data ################ 
 
 #TODO: write flexibel quantile spread with one factor per quantile spread: symmetric, non symmetric, with peanalisation for divergence
-
+# optim linkl: https://cran.r-project.org/web/packages/fitdistrplus/vignettes/Optimalgo.html
 
 #Neue Syntax:
 devtools::install_github("epiforecasts/scoringutils@major-update")

@@ -135,7 +135,7 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
     dplyr::arrange(.data$quantile, .data$target_end_date) |> 
     dplyr::mutate(prediction = replace(
       .data$prediction,
-      .data$model == mod & .data$location == l & .data$target_type == t & .data$horizon == h, #no quantile specified in quantile spread post processing
+      .data$model == m & .data$location == l & .data$target_type == t & .data$horizon == h, #no quantile specified in quantile spread post processing
       values = subset_updated$prediction
     ))
   
@@ -176,31 +176,33 @@ update_predictions <- function(df, methods,
     # start with original data frame for each method
     df_updated <- df_preprocessed
     
+    #TODO: Discuss that now the nested loop is within the method condition
     # specifically for cqr select only quantiles below median
     if (method == "cqr") {
       quantiles <- quantiles[quantiles < 0.5]
-    }
-    for (model in models) {
-      for (location in locations) {
-        for (target_type in target_types) {
-          for (horizon in horizons) {
-            for (quantile in quantiles) {
-              df_updated <- update_subset(df_updated, method, model, location, target_type, horizon, quantile, cv_init_training)
+      
+      for (model in models) {
+        for (location in locations) {
+          for (target_type in target_types) {
+            for (horizon in horizons) {
+              for (quantile in quantiles) {
+                df_updated <- update_subset(df_updated, method, model, location, target_type, horizon, quantile, cv_init_training)
+              }
             }
           }
         }
       }
     }
-    
     # specifically for qsa select only quantiles below median
     if (method == "qsa") {
       quantiles <- quantiles[quantiles < 0.5]
-    }
-    for (model in models) {
-      for (location in locations) {
-        for (target_type in target_types) {
-          for (horizon in horizons) {
-            update_subset_qsa(df_updated, method, model, location, target_type, horizon, cv_init_training) #no quantile is passed
+    
+      for (model in models) {
+        for (location in locations) {
+          for (target_type in target_types) {
+            for (horizon in horizons) {
+              update_subset_qsa(df_updated, method, model, location, target_type, horizon, cv_init_training) #no quantile is passed
+            }
           }
         }
       }

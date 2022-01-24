@@ -122,7 +122,17 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
   
   #TODO: adjust the replace_combination function for the subset we get from quantile spreads
   # The below function should work if df and subset_updated are sorted the same way. Check this
-  df |>
+  
+  #TODO: write unit test for this part of the code
+  
+  # Make sure the updated subset is arranged by quantiles and then target end dates 
+  # That way we can pass its prediction column to the updated df directly
+  subset_updated <- subset_updated |> 
+    dplyr::arrange(.data$quantile, .data$target_end_date)
+  
+  # Again we first arrange the data to make we can pass the prediction column to the updated df directly
+  df_updated <- df |> 
+    dplyr::arrange(.data$quantile, .data$target_end_date) |> 
     dplyr::mutate(prediction = replace(
       .data$prediction,
       .data$model == mod & .data$location == l & .data$target_type == t & .data$horizon == h, #no quantile specified in quantile spread post processing
@@ -190,7 +200,7 @@ update_predictions <- function(df, methods,
       for (location in locations) {
         for (target_type in target_types) {
           for (horizon in horizons) {
-            
+            update_subset_qsa(df_updated, method, model, location, target_type, horizon, cv_init_training) #no quantile is passed
           }
         }
       }

@@ -21,6 +21,11 @@ t <- "Cases"
 h <- 1
 #cv_init_training <- 10
 
+update_predictions(df, methods = "qsa",
+                   models = m, locations = l, target_types = t,
+                   horizons = h, quantiles = NULL,
+                   cv_init_training = NULL, return_list = TRUE)
+
 
 subset <- dplyr::filter(df, model == m & location == l & target_type == t & horizon == h)
 

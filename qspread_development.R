@@ -21,7 +21,13 @@ t <- "Cases"
 h <- 1
 #cv_init_training <- 10
 
+#qsa works
 update_predictions(df, methods = "qsa",
+                   models = m, locations = l, target_types = t,
+                   horizons = h, quantiles = NULL,
+                   cv_init_training = NULL, return_list = TRUE)
+# cqr still works
+update_predictions(df, methods = "cqr",
                    models = m, locations = l, target_types = t,
                    horizons = h, quantiles = NULL,
                    cv_init_training = NULL, return_list = TRUE)

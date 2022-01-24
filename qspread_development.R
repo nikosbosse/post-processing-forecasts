@@ -1,8 +1,5 @@
 ################ Quantile Spread applied to example Data ################ 
 
-#TODO: write flexibel quantile spread with one factor per quantile spread: symmetric, non symmetric, with peanalisation for divergence
-# optim linkl: https://cran.r-project.org/web/packages/fitdistrplus/vignettes/Optimalgo.html
-
 #Neue Syntax:
 devtools::install_github("epiforecasts/scoringutils@major-update")
 library(scoringutils)
@@ -110,7 +107,6 @@ wrapper <- function(spread_factor, subset){
 # We can get a hessian if we want but it takes additional compute time
 optim_results <- optim(par=1, fn=wrapper, subset=subset, gr=NULL, method="BFGS")#, hessian=T)
 optimal_spread_factor <- optim_results$par
-#TODO: Decide if it is makes sense to write a gradient function that gives back the gradient dependent on the subset at that time point
 
 #function to apply optimal spread factor to data
 subset_updated <- quantile_spreads_adjustment(subset=subset,spread_factor= optimal_spread_factor)

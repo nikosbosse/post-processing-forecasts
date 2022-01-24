@@ -79,9 +79,18 @@ update_subset <- function(df, method, model, location, target_type, horizon, qua
 
 
 
+
+# Can do it myself
+#TODO: get crossvalidation working for qsa
+#TODO: write flexibel quantile spread with one factor per quantile spread: symmetric, non symmetric, with peanalisation for divergence
+# optim linkl: https://cran.r-project.org/web/packages/fitdistrplus/vignettes/Optimalgo.html
+
+# Need to talk to Joel
 # TODO: discuss how to structure package as qsa needs a separate update_subset function. We could for example exchange the update_subset function by a update_subset_qsa and a update_subset_cqr function. Or we could merge them together somehow, but how to then solve the different requirement of a qunatile or not a quantile
 # TODO: after discussing package structure put functionality within update_subset_qsa into smaller functions
 # TODO: after having multiple funciotns for qsa write unit tests
+
+
 update_subset_qsa <- function(df, method, model, location, target_type, horizon, cv_init_training) {
   method <- select_method(method = method)
   

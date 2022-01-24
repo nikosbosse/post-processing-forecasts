@@ -1,0 +1,76 @@
+---
+title: "postprocessing_qsa_method"
+author: "Matthias Herp"
+date: "24/01/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Post Processing package with quantile spread adjustment
+
+This document presents results of post processing forecasting using the quantile spread adjustment on the data from the UK Forecasting Challenge. its main purpose is for testing, e.g. proof of concept.
+
+#### Loading Packages and Data
+
+We have the following variable columns in the data determining a forecasting series:
+- models: all different forecasters
+- target_type: Cases or Deaths
+- horizons: 1,2,3,4 weeks ahead
+- quantiles: 11 quantile pairs, omitting the median estimate
+
+```{r}
+# temporary and not recommended way, library(postforecasts) imports only functions with @export tag
+# => requires more complete documentation
+devtools::load_all(".")
+library(scoringutils)
+library(dplyr)
+
+df <- read.csv(here::here("data", "full-data-uk-challenge.csv"))
+```
+
+
+
+```{r}
+#Defining the specific series to forecast and getting it from the total data
+m <- "epiforecasts-EpiExpert"
+l <- "GB"
+t <- "Cases"
+h <- 1
+#cv_init_training <- 10
+```
+
+# QSA
+
+QSA works without cross validation.
+
+```{r}
+update_predictions(df, methods = "qsa",
+                   models = m, locations = l, target_types = t,
+                   horizons = h, quantiles = NULL,
+                   cv_init_training = NULL, return_list = TRUE)
+```
+
+
+
+# CQR
+
+CQR still works.
+
+```{r}
+update_predictions(df, methods = "cqr",
+                   models = m, locations = l, target_types = t,
+                   horizons = h, quantiles = NULL,
+                   cv_init_training = NULL, return_list = TRUE)
+```
+
+
+
+```{r}
+
+```
+
+
+

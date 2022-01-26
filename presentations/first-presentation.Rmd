@@ -155,9 +155,9 @@ class: inverse, center, middle
 
 ```{r,echo=FALSE}
 ## Methods
-#Many post-processing methods available, including
+# Many post-processing methods available, including
 #<!--M: I wouldn't discuss the methods in detail. An example intorduction is done later when we talk about CQR.
-#Either go over the slide fast or ommit it and add a bullet point with the three methods to the slide before + #Verlinkung zum Repository-->
+# Either go over the slide fast or ommit it and add a bullet point with the three methods to the slide before + #Verlinkung zum Repository-->
 #--
 #
 #- **Conformalized Quantile Regression**: <br>
@@ -166,21 +166,21 @@ class: inverse, center, middle
 #--
 #
 #- **Quantile Regression Averaging**: <br>
-#  For given quantile level $\alpha$, new prediction is a weighted average of multiple existing predictions from #different models. 
+#  For given quantile level $\alpha$, new prediction is a weighted average of multiple existing predictions from #different models.
 #    The oindividual contributions, i.e. the weights, are chosen to minimize a custom loss function.
-#    
+#
 #--
 #
 #- **Quantile Spread Adjustment**: <br>
 #  Assumes multiplicative relationship between quantile levels, e.g. $q_{0.9} = \lambda_{0.9} \cdot q_{0.8} = #\lambda_{0.8} \cdot q_{0.8}$ with potentially different factors $\lambda_{\alpha}$. <br>
-#  Too conservative quantile predictions can thus be corrected by choosing larger multiplicative factors in the #tails of the predictive distribution. 
+#  Too conservative quantile predictions can thus be corrected by choosing larger multiplicative factors in the #tails of the predictive distribution.
 #<!--the indices of the multiplication looks wrong here.-->
 #
 #--
 #
 #- More detailed overview given in **README** Page of Project's GitHub Repository<sup>1</sup>
 #
-#.footnote[[1] https://github.com/nikosbosse/post-processing-forecasts]
+# .footnote[[1] https://github.com/nikosbosse/post-processing-forecasts]
 #
 ```
 
@@ -370,7 +370,8 @@ round_output <- function(df, digits) {
 
 ```{r, echo=FALSE}
 df_combined |>
-  eval_forecasts(summarise_by = c("method", "model", "target_type")) |>
+  score() |>
+  summarise_scores(by = c("method", "model", "target_type")) |>
   select(method, target_type:overprediction) |>
   arrange(target_type, desc(method)) |>
   round_output(digits = 3) |>
@@ -445,8 +446,11 @@ df_combined <- collect_predictions(original = preprocessed$df, cqr = df_updated)
 
 ```{r, echo=FALSE}
 df_combined |>
-  filter(target_end_date %in% unique(df_combined$target_end_date)[-(1:cv_init_training)]) |>
-  eval_forecasts(summarise_by = c("method", "model", "target_type")) |>
+  filter(target_end_date %in% unique(
+    df_combined$target_end_date
+  )[-(1:cv_init_training)]) |>
+  score() |>
+  summarise_scores(by = c("method", "model", "target_type")) |>
   select(method, target_type:overprediction) |>
   arrange(target_type, desc(method)) |>
   round_output(digits = 3) |>
@@ -503,8 +507,11 @@ df_combined <- collect_predictions(original = preprocessed$df, cqr = df_updated)
 
 ```{r, echo=FALSE}
 df_combined |>
-  filter(target_end_date %in% unique(df_combined$target_end_date)[-(1:cv_init_training)]) |>
-  eval_forecasts(summarise_by = c("method", "model", "horizon")) |>
+  filter(target_end_date %in% unique(
+    df_combined$target_end_date
+  )[-(1:cv_init_training)]) |>
+  score() |>
+  summarise_scores(by = c("method", "model", "horizon")) |>
   select(method, horizon:overprediction) |>
   arrange(horizon, desc(method)) |>
   round_output(digits = 3) |>

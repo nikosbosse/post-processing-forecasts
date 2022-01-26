@@ -13,6 +13,7 @@ select_method <- function(method) {
 
 update_subset <- function(df, method, model, location, target_type, horizon, quantile, cv_init_training) {
   method <- select_method(method = method)
+  cv_init_training <- validate_cv_init(df, cv_init_training)
 
   quantiles_list <- filter_combination(df, model, location, target_type, horizon, quantile)
 

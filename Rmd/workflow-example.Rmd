@@ -76,7 +76,8 @@ all(df_combined_1 == df_combined_2)
 # change allows for neat workflow without creating temporary variables
 update_predictions(df, methods = "cqr", model, location, cv_init_training = 3) |>
   collect_predictions() |>
-  eval_forecasts(summarise_by = c("method", "model", "target_type")) |>
+  score() |>
+  summarise_scores(by = c("method", "model", "target_type")) |>
   arrange(target_type, desc(method))
 ```
 
@@ -91,7 +92,8 @@ update_predictions(df, methods = "cqr", model, location, cv_init_training = 3) |
 
 ```{r}
 df_combined_1 |>
-  eval_forecasts(summarise_by = c("method", "model", "target_type")) |>
+  score() |>
+  summarise_scores(by = c("method", "model", "target_type")) |>
   arrange(target_type, desc(method))
 ```
 

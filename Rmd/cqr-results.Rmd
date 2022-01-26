@@ -67,11 +67,13 @@ full_results <- update_predictions(
 
 training_results <- full_results |>
   extract_training_set() |>
-  eval_forecasts(summarise_by = c("method", "model", "target_type"))
+  score() |>
+  summarise_scores(by = c("method", "model", "target_type"))
 
 validation_results <- full_results |>
   extract_validation_set() |>
-  eval_forecasts(summarise_by = c("method", "model", "target_type"))
+  score() |>
+  summarise_scores(by = c("method", "model", "target_type"))
 ```
 
 ```{r}

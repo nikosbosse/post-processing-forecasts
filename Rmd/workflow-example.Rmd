@@ -39,7 +39,7 @@ library(dplyr)
 # Original Dataframe
 
 ```{r}
-df <- read.csv(here::here("data", "full-data-uk-challenge.csv"))
+df <- readr::read_csv(here::here("data_modified", "uk_data_incidences.csv"))
 ```
 
 # Plot Original Predictions

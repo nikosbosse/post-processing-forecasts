@@ -11,7 +11,9 @@ transform_to_incidences <- function(df) {
 ### UK Data                                                                 ####
 
 uk_data <- readr::read_csv(here::here("data", "full-data-uk-challenge.csv"))
-uk_data_modified <- transform_to_incidences(uk_data)
+
+uk_data_modified <- transform_to_incidences(uk_data) |> 
+  dplyr::select(-c(population, target, expert))
 
 readr::write_csv(
   uk_data_modified,
@@ -39,13 +41,13 @@ hub_data <- hub_data |>
   dplyr::left_join(country_info) |>
   dplyr::select(
     location, location_name, target_end_date, target_type, true_value,
-    population, forecast_date, quantile, prediction, model, horizon
+    forecast_date, quantile, prediction, model, horizon, population
   )
 
-hub_data_modified <- transform_to_incidences(hub_data)
+hub_data_modified <- transform_to_incidences(hub_data) |> 
+  dplyr::select(-population)
 
 # split in 3 data frames to keep file sizes below github limit of 100MB
-
 num_rows <- 700000
 
 hub_data_modified_1 <- hub_data_modified |>

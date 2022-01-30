@@ -31,8 +31,13 @@ knitr::opts_chunk$set(
 
 ```{r}
 devtools::load_all()
+library(patchwork)
+
 uk_combined <- readr::read_rds(here::here("data_results", "uk_cqr.rds"))
-hub_combined <- readr::read_rds(here::here("data_results", "hub_cqr.rds"))
+
+hub_1 <- readr::read_rds(here::here("data_results", "hub_cqr_1.rds"))
+hub_2 <- readr::read_rds(here::here("data_results", "hub_cqr_2.rds"))
+hub_combined <- dplyr::bind_rows(hub_1, hub_2)
 ```
 
 # UK Data
@@ -118,16 +123,18 @@ hub_combined <- hub_combined |>
 
 ```{r}
 df_eval <- eval_cqr(hub_combined, summarise_by = "location_name")
-plot_eval(df_eval, heatmap = FALSE) + ggplot2::labs(y = NULL)
+p1 <- plot_eval(df_eval, heatmap = FALSE, base_size = 8) + ggplot2::labs(y = NULL)
 
 df_eval <- eval_cqr(hub_combined, summarise_by = "target_type")
-plot_eval(df_eval, heatmap = FALSE) + ggplot2::labs(y = NULL)
+p2 <- plot_eval(df_eval, heatmap = FALSE, base_size = 8) + ggplot2::labs(y = NULL)
 
 df_eval <- eval_cqr(hub_combined, summarise_by = "horizon")
-plot_eval(df_eval, heatmap = FALSE)
+p3 <- plot_eval(df_eval, heatmap = FALSE, base_size = 8)
 
 df_eval <- eval_cqr(hub_combined, summarise_by = "quantile")
-plot_eval(df_eval)
+p4 <- plot_eval(df_eval, base_size = 8)
+
+(p1 + p2) / (p3 + p4)
 ```
 
 ## By two categories

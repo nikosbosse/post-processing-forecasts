@@ -60,7 +60,7 @@ plot_training_end <- function(p, df, type = c("segment", "vline")) {
 }
 
 
-plot_bars <- function(df_eval, first_colname, max_value) {
+plot_bars <- function(df_eval, first_colname, max_value, base_size) {
   first_colname <- rlang::sym(first_colname)
   
   df_eval |>
@@ -82,12 +82,12 @@ plot_bars <- function(df_eval, first_colname, max_value) {
       title = "Relative Changes in Weighted Interval Score after CQR Adjustments",
     ) +
     ggplot2::guides(color = "none") + 
-    ggplot2::theme_minimal() + 
+    ggplot2::theme_minimal(base_size = base_size) + 
     ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 }
 
 
-plot_heatmap <- function(df_plot, first_colname, max_value, xlabel) {
+plot_heatmap <- function(df_plot, first_colname, max_value, xlabel, base_size) {
   # to use columns as strings in aes(), encode string first to symbol with sym()
   # and then decode / unquote it with !! inside of aes()
   first_colname <- rlang::sym(first_colname)
@@ -110,7 +110,7 @@ plot_heatmap <- function(df_plot, first_colname, max_value, xlabel) {
         "positive values a higher (worse) Score -"
       )
     ) +
-    ggplot2::theme_minimal() +
+    ggplot2::theme_minimal(base_size = base_size) +
     ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
     ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5))
 }

@@ -147,7 +147,7 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
   return(p)
 }
 
-plot_eval <- function(df_eval, heatmap = TRUE) {
+plot_eval <- function(df_eval, heatmap = TRUE, base_size = 9) {
   # use attributes for axis labels
   orig_columns <- attr(df_eval, which = "summarise_by")
   first_colname <- orig_columns[1]
@@ -179,7 +179,7 @@ plot_eval <- function(df_eval, heatmap = TRUE) {
   df_eval[[1]] <- factor(df_eval[[1]], levels = df_eval[[1]])
 
   if (!heatmap) {
-    return(plot_bars(df_eval, first_colname, max_value))
+    return(plot_bars(df_eval, first_colname, max_value, base_size))
   }
 
   # this part belongs to heatmap plot
@@ -197,5 +197,5 @@ plot_eval <- function(df_eval, heatmap = TRUE) {
     df_plot[[2]] <- ""
   }
 
-  plot_heatmap(df_plot, first_colname, max_value, xlabel)
+  plot_heatmap(df_plot, first_colname, max_value, xlabel, base_size)
 }

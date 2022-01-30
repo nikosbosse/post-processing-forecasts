@@ -39,7 +39,7 @@ fit_single_date <- function(qra_forecasts, qra_data, target_date) {
     qra_forecasts, qra_data,
     target_date = target_date,
     per_quantile_weights = TRUE, noncross = FALSE,
-    intercept = TRUE, enforce_normalisation = FALSE
+    intercept = TRUE, enforce_normalisation = FALSE, sort = FALSE
   )
 
   res$ensemble
@@ -89,9 +89,10 @@ qra_to_score <- function(result_df, qra_data_input, model) {
 
 qra_forecasts <- uk_data |>
   as_qra_forecasts() |>
-  dplyr::filter(model == mod)
+  dplyr::filter(model == mod, forecast_horizon == 2)
 
-qra_data <- uk_data |> as_qra_data()
+qra_data <- uk_data |>
+  as_qra_data()
 
 # execute qra() for all dates in data set (except first one which leads to error)
 all_dates <- unique(qra_forecasts$creation_date)
@@ -100,10 +101,13 @@ qra_df <- fit_all_dates(qra_forecasts, qra_data, all_dates)
 
 qra_predictions <- qra_df |>
   qra_to_score(qra_data_input = qra_data, model = mod) |>
-  add_first_date(original_df = uk_data, first_date = all_dates[1])
+  add_first_date(
+    original_df = uk_data |> dplyr::filter(horizon == 2),
+    first_date = all_dates[1]
+  )
 
 original_predictions <- uk_data |>
-  dplyr::filter(model == mod)
+  dplyr::filter(model == mod, horizon == 2)
 
 # original predictions and qra predictions have the same shape and only differ in the updated prediction column
 dplyr::all_equal(

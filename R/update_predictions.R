@@ -84,23 +84,24 @@ update_subset <- function(df, method, model, location, target_type, horizon, qua
 update_predictions <- function(df, methods,
                                models = NULL, locations = NULL, target_types = NULL,
                                horizons = NULL, quantiles = NULL,
-                               cv_init_training = NULL, return_list = TRUE) {
+                               cv_init_training = NULL, return_list = TRUE,
+                               verbose = FALSE) {
   # stops function for invalid input values
   validate_inputs(df, models, locations, target_types, horizons, quantiles)
   df <- validate_dates(df)
-
+  
   # Preprocessing the df and inputs
   preprocessed_list <- preprocess_df(
     df, models, locations, target_types, horizons, quantiles
   )
-
+  
   df_preprocessed <- preprocessed_list$df
   models <- preprocessed_list$models
   locations <- preprocessed_list$locations
   target_types <- preprocessed_list$target_types
   horizons <- preprocessed_list$horizons
   quantiles <- preprocessed_list$quantiles
-
+  
   # store updated dataframes for all methods in list
   updated_list <- list()
 
@@ -114,6 +115,9 @@ update_predictions <- function(df, methods,
     }
     for (model in models) {
       for (location in locations) {
+        if (verbose) {
+          cat("method = ", method, " | model = ", model, " | location = ", location, "\n", sep = "")
+        }
         for (target_type in target_types) {
           for (horizon in horizons) {
             for (quantile in quantiles) {

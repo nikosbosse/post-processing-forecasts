@@ -13,9 +13,11 @@ complete_models <- uk_data |>
   dplyr::filter(n == max(n)) |>
   dplyr::pull(model)
 
-df_combined <- update_predictions(
+df_updated <- update_predictions(
   df = uk_data, methods = "cqr", models = complete_models,
-  cv_init_training = cv_init_training
-) |> collect_predictions()
+  cv_init_training = cv_init_training, verbose = TRUE
+)
+
+df_combined <- df_updated |> collect_predictions()
 
 readr::write_rds(df_combined, file = here::here("data_results", "uk_cqr.rds"))

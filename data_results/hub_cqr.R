@@ -45,4 +45,15 @@ df_updated <- update_predictions(
 
 df_combined <- df_updated |> collect_predictions()
 
-readr::write_rds(df_combined, file = here::here("data_results", "hub_cqr.rds"))
+
+# split in 2 data frames to keep file sizes below github limit of 100MB
+num_rows <- as.integer(nrow(df_combined) / 2)
+
+df_combined_1 <- df_combined |>
+  dplyr::slice(1:num_rows)
+
+df_combined_2 <- df_combined |>
+  dplyr::slice((num_rows + 1):nrow(df_combined))
+
+readr::write_rds(df_combined_1, file = here::here("data_results", "hub_cqr_1.rds"))
+readr::write_rds(df_combined_2, file = here::here("data_results", "hub_cqr_2.rds"))

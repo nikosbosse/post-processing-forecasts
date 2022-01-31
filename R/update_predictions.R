@@ -82,7 +82,6 @@ update_subset <- function(df, method, model, location, target_type, horizon, qua
 
 # Can do it myself
 #TODO: get crossvalidation working for qsa
-#TODO: write flexibel quantile spread with one factor per quantile spread: symmetric, non symmetric, with peanalisation for divergence
 # optim linkl: https://cran.r-project.org/web/packages/fitdistrplus/vignettes/Optimalgo.html
 
 # Need to talk to Joel

@@ -1,5 +1,5 @@
 # Computing the quantile spread adjustment
-quantile_spreads_adjustment <- function(subset, spread_factor){
+quantile_spreads_adjustment <- function(subset, spread_factor_vec, method){
   # copy of subset to fill with updates
   subset_updated <- subset
   
@@ -24,7 +24,19 @@ quantile_spreads_adjustment <- function(subset, spread_factor){
     quantile_spread <- quantile - median_vals
     
     # computing absolute adjustment based on spread factor 
-    absolute_quantile_adjustments <- quantile_spread * spread_factor - quantile_spread
+    if (method == "qsa_uniform") {
+      
+      absolute_quantile_adjustments <- quantile_spread * spread_factor_vec - quantile_spread
+      
+      
+    } else if (method == "qsa_flexibel") {
+      
+      absolute_quantile_adjustments <- quantile_spread * spread_factor_vec - quantile_spread
+      
+    } else if (method == "qsa_flexibel_symmetric") {
+      
+      absolute_quantile_adjustments <- quantile_spread * spread_factor_vec - quantile_spread
+    }
     
     # updating the subset
     subset_updated <- subset_updated |>

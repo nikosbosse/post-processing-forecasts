@@ -28,6 +28,8 @@ devtools::load_all(".")
 library(scoringutils)
 library(dplyr)
 
+######## Run the qspread_package script so that the functions get into the environment
+
 df <- read.csv(here::here("data", "full-data-uk-challenge.csv"))
 ```
 
@@ -47,11 +49,73 @@ h <- 1
 QSA works without cross validation.
 
 ```{r}
-update_predictions(df, methods = "qsa",
+update_predictions(df, methods = "qsa_uniform",
+                   models = m, locations = l, target_types = t,
+                   horizons = h, quantiles = NULL,
+                   cv_init_training = NULL, penalty_weight=NULL, return_list = TRUE)
+```
+
+```{r}
+update_predictions(df, methods = "qsa_uniform",
+                   models = m, locations = l, target_types = t,
+                   horizons = h, quantiles = NULL,
+                   cv_init_training = 10, penalty_weight=NULL, return_list = TRUE)
+```
+
+
+```{r}
+update_predictions(df, methods = "qsa_flexibel",
                    models = m, locations = l, target_types = t,
                    horizons = h, quantiles = NULL,
                    cv_init_training = NULL, return_list = TRUE)
 ```
+
+```{r}
+update_predictions(df, methods = "qsa_flexibel_symmetric",
+                   models = m, locations = l, target_types = t,
+                   horizons = h, quantiles = NULL,
+                   cv_init_training = NULL, return_list = TRUE)
+```
+
+All three QSA flavors work. Note however that the flexible methods takes quite some time to optimize. The symmetric is much faster and the unique is quite fast. We tested for one series so if we do it for multiple ones the computational burden might be quite high for flexible and symmetric flavors.
+
+
+
+
+```{r}
+update_predictions(df, methods = "qsa_flexibel_symmetric",
+                   models = m, locations = l, target_types = t,
+                   horizons = h, quantiles = NULL,
+                   cv_init_training = NULL, penalty_weight=10,return_list = TRUE)
+```
+
+
+```{r}
+update_predictions(df, methods = "qsa_uniform",
+                   models = m, locations = l, target_types = t,
+                   horizons = h, quantiles = NULL,
+                   cv_init_training = 10, return_list = TRUE)
+```
+
+
+```{r}
+training_length <- 10
+target_end_date_subset <-  sort(unique(df$target_end_date))[0:training_length]
+# gets subset for training length
+s <- dplyr::filter(df, model == m & location == l & target_type == t & horizon == h)
+
+target_end_date_subset <-  sort(unique(s$target_end_date))[0:training_length]
+
+s <- dplyr::filter(s, target_end_date %in% target_end_date_subset)
+
+print(sort(unique(s$target_end_date)))
+print(target_end_date_subset)
+
+bind_rows(setNames(target_end_date_subset))[0, ]
+t <- as_tibble(sapply(target_end_date_subset, function(x) character()),)
+t      
+```
+
 
 
 

@@ -1,4 +1,6 @@
 ^data$
+^data_modified$
+^data_results$
 ^Rmd$
 ^presentations$
 ^Readme_files$

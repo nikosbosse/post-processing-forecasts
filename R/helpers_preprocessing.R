@@ -183,6 +183,30 @@ validate_inputs <- function(df, models, locations, target_types, horizons, quant
   }
 }
 
+validate_cv_init <- function(df, cv_init_training) {
+  num_dates <- dplyr::n_distinct(df$target_end_date)
+
+  # if input cv_init_training is NULL, function returns NULL again
+  if (!is.null(cv_init_training)) {
+    if (cv_init_training < 0 || cv_init_training > num_dates) {
+      stop(
+        paste(
+          "'cv_init_training' must be positive and not greater than",
+          "the number of unique dates in the data set."
+        )
+      )
+    }
+
+    if (cv_init_training < 1) {
+      # input is fraction
+      return(as.integer(cv_init_training * num_dates))
+    } else {
+      # input is absolute number of dates
+      return(as.integer(cv_init_training))
+    }
+  }
+}
+
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### preprocess inputs                                                       ####
 

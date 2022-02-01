@@ -146,3 +146,56 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
 
   return(p)
 }
+
+plot_eval <- function(df_eval, heatmap = TRUE, base_size = 9) {
+  # use attributes for axis labels
+  orig_columns <- attr(df_eval, which = "summarise_by")
+  first_colname <- orig_columns[1]
+
+  if (length(orig_columns) == 2 && !heatmap) {
+    stop(paste(
+      "Barplot is only available in one dimension",
+      "(1 input to 'summarise_by' in eval_cqr())"
+    ))
+  }
+
+  if (length(orig_columns) == 2) {
+    xlabel <- orig_columns[2]
+  } else {
+    xlabel <- NULL
+  }
+
+  # for limits of color palette
+  max_value <- df_eval |>
+    # exclude numeric quantile column when taking max of dataframe
+    # where() leads to warning in RCMDCHECK, prefixing with tidyselect:::where()
+    # does not solve it, discussed here:
+    # https://github.com/r-lib/tidyselect/issues/201
+    dplyr::select(-1 & tidyselect:::where(is.numeric)) |>
+    abs() |>
+    max(na.rm = TRUE)
+
+  # keep y-axis order the same as in input dataframe
+  df_eval[[1]] <- factor(df_eval[[1]], levels = df_eval[[1]])
+
+  if (!heatmap) {
+    return(plot_bars(df_eval, first_colname, max_value, base_size))
+  }
+
+  # this part belongs to heatmap plot
+  df_plot <- df_eval |>
+    tidyr::pivot_longer(
+      cols = -1, names_to = "colnames", values_to = "values"
+    )
+
+  # keep x-axis order the same as in input dataframe
+  x_order <- colnames(df_eval)[-1]
+  df_plot$colnames <- factor(df_plot$colnames, levels = x_order)
+
+  # when there are no categories on x-axis, do not display any name
+  if (dplyr::n_distinct(df_plot[[2]]) == 1) {
+    df_plot[[2]] <- ""
+  }
+
+  plot_heatmap(df_plot, first_colname, max_value, xlabel, base_size)
+}

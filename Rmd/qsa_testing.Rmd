@@ -91,14 +91,9 @@ update_predictions(df, methods = "qsa_flexibel_symmetric",
 
 
 ```{r}
-update_predictions(df, methods = "qsa_uniform",
-                   models = m, locations = l, target_types = t,
-                   horizons = h, quantiles = NULL,
-                   cv_init_training = 10, return_list = TRUE)
-```
+#TODo. generate dummy data to test each of the three qsa methods
 
 
-```{r}
 training_length <- 10
 target_end_date_subset <-  sort(unique(df$target_end_date))[0:training_length]
 # gets subset for training length

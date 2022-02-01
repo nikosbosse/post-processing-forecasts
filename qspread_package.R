@@ -72,26 +72,26 @@ quantile_spreads_adjustment <- function(subset, spread_factor_vec, method){
 }
 
 
-wis <- function(subset, spread_factor_vec, penality_weight){
+wis <- function(subset, spread_factor_vec, penalty_weight){
   
   #Calculating the score for the adjusted series
   res <- subset |> 
     score() |>
     summarise_scores(by = c("model"))
   
-  if (is.null(penality_weight)){
+  if (is.null(penalty_weight)){
     wis <- res$interval_score
   } else {
     # We penalize by the sum of squared differences between spread factors to penalize differences between them
-    # Note: penality_weight default is zero and thus there is no penalization
-    wis <- res$interval_score + penality_weight * sum( (spread_factor_vec - mean(spread_factor_vec) )^2 )
+    # Note: penalty_weight default is zero and thus there is no penalization
+    wis <- res$interval_score + penalty_weight * sum( (spread_factor_vec - mean(spread_factor_vec) )^2 )
   }
   
   return(wis)
 }
 
 #Note: called method method_pp as otim has an arguement called method
-wrapper <- function(spread_factor_vec, subset, method_pp, penality_weight){
+wrapper <- function(spread_factor_vec, subset, method_pp, penalty_weight){
   # applies the quantile spread adjustment
   updates_matrix <- quantile_spreads_adjustment(subset,spread_factor_vec, method_pp)
   
@@ -112,7 +112,7 @@ wrapper <- function(spread_factor_vec, subset, method_pp, penality_weight){
   }
   
   # calculates its weighted intervall score
-  interval_score <- wis(subset_updated, spread_factor_vec, penality_weight)
+  interval_score <- wis(subset_updated, spread_factor_vec, penalty_weight)
   
   return(interval_score)
 }
@@ -121,7 +121,7 @@ wrapper <- function(spread_factor_vec, subset, method_pp, penality_weight){
 #############################################################################################
 
 
-update_subset_qsa <- function(df, method, model, location, target_type, horizon, cv_init_training, penality_weight) {
+update_subset_qsa <- function(df, method, model, location, target_type, horizon, cv_init_training, penalty_weight) {
   #TODO: add qsa and its flavors to methods, discuss whether each variety of cqr, qsa etc is another method?
   #method <- select_method(method = method)
   
@@ -139,7 +139,7 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
     
     if (method == "qsa_uniform") {
       
-      optim_results <- optim(par=c(1), fn=wrapper, subset=subset, method_pp=method, penality_weight=penality_weight, gr=NULL, method="BFGS")#, hessian=T)
+      optim_results <- optim(par=c(1), fn=wrapper, subset=subset, method_pp=method, penalty_weight=penalty_weight, gr=NULL, method="BFGS")#, hessian=T)
       optimal_spread_factor <- optim_results$par
       
       
@@ -147,7 +147,7 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
       #getting number of spreads as: number of quantiles without the mean
       num_spreads <- length(na.omit(unique(df$quantile))) - 1 #-1 due to mean
       
-      optim_results <- optim(par=rep(1,num_spreads), fn=wrapper, subset=subset, method_pp=method, penality_weight=penality_weight, gr=NULL, method="BFGS")#, hessian=T)
+      optim_results <- optim(par=rep(1,num_spreads), fn=wrapper, subset=subset, method_pp=method, penalty_weight=penalty_weight, gr=NULL, method="BFGS")#, hessian=T)
       optimal_spread_factor <- optim_results$par
       
     } else if (method == "qsa_flexibel_symmetric") {
@@ -155,7 +155,7 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
       num_spreads <- length(na.omit(unique(df$quantile))) - 1 #-1 due to mean
       num_of_params <- num_spreads/2
       
-      optim_results <- optim(par=rep(1,num_of_params), fn=wrapper, subset=subset, method_pp=method, penality_weight=penality_weight, gr=NULL, method="BFGS")#, hessian=T)
+      optim_results <- optim(par=rep(1,num_of_params), fn=wrapper, subset=subset, method_pp=method, penalty_weight=penalty_weight, gr=NULL, method="BFGS")#, hessian=T)
       optimal_spread_factor <- optim_results$par
       
     }
@@ -190,18 +190,18 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
     # gets subset of the data
     subset <- dplyr::filter(df, model == m & location == l & target_type == t & horizon == h)
     # then extract the sorted list of target end dates and from there the training target end dates
-    target_end_date_subset <-  sort(unique(subset$target_end_date))[0:training_length]
+    target_end_date_train <-  sort(unique(subset$target_end_date))[0:cv_init_training]
     # reduce subset to the training period
-    subset <- dplyr::filter(subset, target_end_date %in% target_end_date_subset)
+    subset_train <- dplyr::filter(subset, target_end_date %in% target_end_date_train)
     
     # target end date for val
-    target_end_date_val <-  sort(unique(subset$target_end_date))[training_length+1]
+    target_end_date_val <-  sort(unique(subset$target_end_date))[cv_init_training+1]
     # subset for one step ahead prediction
     subset_val <- dplyr::filter(subset, target_end_date == target_end_date_val)
     
     if (method == "qsa_uniform") {
       
-      optim_results <- optim(par=c(1), fn=wrapper, subset=subset, method_pp=method, penality_weight=penality_weight, gr=NULL, method="BFGS")#, hessian=T)
+      optim_results <- optim(par=c(1), fn=wrapper, subset=subset_train, method_pp=method, penalty_weight=penalty_weight, gr=NULL, method="BFGS")#, hessian=T)
       optimal_spread_factor <- optim_results$par
       
       
@@ -209,7 +209,7 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
       #getting number of spreads as: number of quantiles without the mean
       num_spreads <- length(na.omit(unique(df$quantile))) - 1 #-1 due to mean
       
-      optim_results <- optim(par=rep(1,num_spreads), fn=wrapper, subset=subset, method_pp=method, penality_weight=penality_weight, gr=NULL, method="BFGS")#, hessian=T)
+      optim_results <- optim(par=rep(1,num_spreads), fn=wrapper, subset=subset_train, method_pp=method, penalty_weight=penalty_weight, gr=NULL, method="BFGS")#, hessian=T)
       optimal_spread_factor <- optim_results$par
       
     } else if (method == "qsa_flexibel_symmetric") {
@@ -217,7 +217,7 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
       num_spreads <- length(na.omit(unique(df$quantile))) - 1 #-1 due to mean
       num_of_params <- num_spreads/2
       
-      optim_results <- optim(par=rep(1,num_of_params), fn=wrapper, subset=subset, method_pp=method, penality_weight=penality_weight, gr=NULL, method="BFGS")#, hessian=T)
+      optim_results <- optim(par=rep(1,num_of_params), fn=wrapper, subset=subset_train, method_pp=method, penalty_weight=penalty_weight, gr=NULL, method="BFGS")#, hessian=T)
       optimal_spread_factor <- optim_results$par
       
     }
@@ -234,13 +234,13 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
     #    and computes the next validation set
     #    prediction. This is done by rerunning cqr with the new observations set and extracting the margin.
     #    Then with the new margin the one horizon step ahead prediction is updated.
-    for (training_length in (cv_init_training + 1):(length(true_values) - 1)) {
+    for (training_length in (cv_init_training + 1):(length(unique(subset$target_end_date)) - 1)) {
       
       #TODO: explain that this is required as there is the (real) risk that subsets differ in there starting point and time length of dataset
       # gets subset of the data
       subset <- dplyr::filter(df, model == m & location == l & target_type == t & horizon == h)
-      target_end_date_subset <-  sort(unique(subset$target_end_date))[0:training_length]
-      subset <- dplyr::filter(subset, target_end_date %in% target_end_date_subset)
+      target_end_date_train <-  sort(unique(subset$target_end_date))[0:training_length]
+      subset_train <- dplyr::filter(subset, target_end_date %in% target_end_date_train)
       
       target_end_date_val <-  sort(unique(subset$target_end_date))[training_length+1]
       subset_val <- dplyr::filter(subset, target_end_date == target_end_date_val)
@@ -248,7 +248,7 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
       # for faster computation it starts optimization at the optimal spread factor of the last iteration
       if (method == "qsa_uniform") {
         
-        optim_results <- optim(par=optimal_spread_factor, fn=wrapper, subset=subset, method_pp=method, penality_weight=penality_weight, gr=NULL, method="BFGS")#, hessian=T)
+        optim_results <- optim(par=optimal_spread_factor, fn=wrapper, subset=subset_train, method_pp=method, penalty_weight=penalty_weight, gr=NULL, method="BFGS")#, hessian=T)
         optimal_spread_factor <- optim_results$par
         
         
@@ -256,7 +256,7 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
         #getting number of spreads as: number of quantiles without the mean
         num_spreads <- length(na.omit(unique(df$quantile))) - 1 #-1 due to mean
         
-        optim_results <- optim(par=optimal_spread_factor, fn=wrapper, subset=subset, method_pp=method, penality_weight=penality_weight, gr=NULL, method="BFGS")#, hessian=T)
+        optim_results <- optim(par=optimal_spread_factor, fn=wrapper, subset=subset_train, method_pp=method, penalty_weight=penalty_weight, gr=NULL, method="BFGS")#, hessian=T)
         optimal_spread_factor <- optim_results$par
         
       } else if (method == "qsa_flexibel_symmetric") {
@@ -264,7 +264,7 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
         num_spreads <- length(na.omit(unique(df$quantile))) - 1 #-1 due to mean
         num_of_params <- num_spreads/2
         
-        optim_results <- optim(par=optimal_spread_factor, fn=wrapper, subset=subset, method_pp=method, penality_weight=penality_weight, gr=NULL, method="BFGS")#, hessian=T)
+        optim_results <- optim(par=optimal_spread_factor, fn=wrapper, subset=subset_train, method_pp=method, penalty_weight=penalty_weight, gr=NULL, method="BFGS")#, hessian=T)
         optimal_spread_factor <- optim_results$par
         
       }
@@ -320,6 +320,7 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
   attr(df_updated, "cv_init_training") <- cv_init_training
   
   return(df_updated)
+  }
 }
 
 
@@ -329,7 +330,8 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
 update_predictions <- function(df, methods,
                                models = NULL, locations = NULL, target_types = NULL,
                                horizons = NULL, quantiles = NULL,
-                               cv_init_training = NULL, penality_weight=NULL, return_list = TRUE) {
+                               cv_init_training = NULL, penalty_weight = NULL, 
+                               return_list = TRUE) {
   # stops function for invalid input values
   validate_inputs(df, models, locations, target_types, horizons, quantiles)
   df <- validate_dates(df)
@@ -377,7 +379,7 @@ update_predictions <- function(df, methods,
         for (location in locations) {
           for (target_type in target_types) {
             for (horizon in horizons) {
-              update_subset_qsa(df_updated, method, model, location, target_type, horizon, cv_init_training, penality_weight) #no quantile is passed
+              df_updated <- update_subset_qsa(df_updated, method, model, location, target_type, horizon, cv_init_training, penalty_weight) #no quantile is passed
             }
           }
         }
@@ -394,7 +396,6 @@ update_predictions <- function(df, methods,
   
   # return only first updated data frame (old behaviour unchanged)
   return(updated_list[[1]])
-  }
 }
 
 

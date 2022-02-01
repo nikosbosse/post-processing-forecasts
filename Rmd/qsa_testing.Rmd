@@ -91,7 +91,7 @@ update_predictions(df, methods = "qsa_flexibel_symmetric",
 
 
 ```{r}
-#TODo. generate dummy data to test each of the three qsa methods
+#TODO: generate dummy data to test each of the three qsa methods
 
 
 training_length <- 10

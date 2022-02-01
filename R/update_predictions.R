@@ -17,7 +17,7 @@ update_predictions <- function(df, methods,
                                models = NULL, locations = NULL, target_types = NULL,
                                horizons = NULL, quantiles = NULL,
                                cv_init_training = NULL, penalty_weight = NULL,
-                               return_list = TRUE) {
+                               return_list = TRUE, verbose = FALSE) {
   # stops function for invalid input values
   validate_inputs(df, models, locations, target_types, horizons, quantiles)
   df <- validate_dates(df)
@@ -43,6 +43,9 @@ update_predictions <- function(df, methods,
 
     for (model in models) {
       for (location in locations) {
+        if (verbose) {
+          cat("method = ", method, " | model = ", model, " | location = ", location, "\n", sep = "")
+        }
         for (target_type in target_types) {
           for (horizon in horizons) {
 

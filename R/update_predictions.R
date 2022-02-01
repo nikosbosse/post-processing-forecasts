@@ -1,7 +1,9 @@
 select_method <- function(method) {
   # add all methods as named vector
-  implemented_methods <- c(cqr = cqr, 
-                           qsa_uniform = "qsa_uniform", qsa_flexibel = "qsa_flexibel", qsa_flexibel_symmetric = "qsa_flexibel_symmetric")
+  implemented_methods <- c(
+    cqr = cqr,
+    qsa_uniform = "qsa_uniform", qsa_flexibel = "qsa_flexibel", qsa_flexibel_symmetric = "qsa_flexibel_symmetric"
+  )
 
   if (!(method %in% names(implemented_methods))) {
     stop(stringr::str_glue("{method} is not an implemented post processing method."))
@@ -14,63 +16,69 @@ select_method <- function(method) {
 update_predictions <- function(df, methods,
                                models = NULL, locations = NULL, target_types = NULL,
                                horizons = NULL, quantiles = NULL,
-                               cv_init_training = NULL, penalty_weight = NULL, 
+                               cv_init_training = NULL, penalty_weight = NULL,
                                return_list = TRUE) {
   # stops function for invalid input values
   validate_inputs(df, models, locations, target_types, horizons, quantiles)
   df <- validate_dates(df)
-  
+
   # Preprocessing the df and inputs
   preprocessed_list <- preprocess_df(
     df, models, locations, target_types, horizons, quantiles
   )
-  
+
   df_preprocessed <- preprocessed_list$df
   models <- preprocessed_list$models
   locations <- preprocessed_list$locations
   target_types <- preprocessed_list$target_types
   horizons <- preprocessed_list$horizons
   quantiles <- preprocessed_list$quantiles
-  
+
   # store updated dataframes for all methods in list
   updated_list <- list()
-  
+
   for (method in c(methods)) {
     # start with original data frame for each method
     df_updated <- df_preprocessed
-    
+
     for (model in models) {
       for (location in locations) {
         for (target_type in target_types) {
           for (horizon in horizons) {
-            
-            # destinction of which method we use at this step in the nested loop as cqr loops over qunatiles but qsa uses all quantiles in one run
+
+            # distinction of which method we use at this step in the nested loop
+            # as cqr loops over qunatiles but qsa uses all quantiles in one run
             if (method == "cqr") {
               quantiles <- quantiles[quantiles < 0.5]
-              
+
               for (quantile in quantiles) {
-                df_updated <- update_subset_cqr(df_updated, method, model, location, target_type, horizon, quantile, cv_init_training)
+                df_updated <- update_subset_cqr(
+                  df_updated, method, model, location, target_type, horizon,
+                  quantile, cv_init_training
+                )
               }
             }
-            
-            if (method == "qsa_uniform" || method == "qsa_flexibel" || method == "qsa_flexibel_symmetric") {
-              df_updated <- update_subset_qsa(df_updated, method, model, location, target_type, horizon, cv_init_training, penalty_weight) #no quantile is passed
+
+            if (stringr::str_detect(method, "qsa")) {
+              df_updated <- update_subset_qsa(
+                df_updated, method, model, location, target_type, horizon,
+                cv_init_training, penalty_weight
+              ) # no quantile is passed
             }
-            
           }
         }
       }
     }
-    
+
     # updated data frames are named after corresponding method
     updated_list[[method]] <- df_updated
   }
-  
+
   # return list of original and all updated data frames (one for each method)
   if (return_list) {
     return(c(list(original = df_preprocessed), updated_list))
   }
-  
+
   # return only first updated data frame (old behaviour unchanged)
   return(updated_list[[1]])
 }

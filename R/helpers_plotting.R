@@ -16,6 +16,7 @@ facet_quantile <- function(df, quantiles, horizon) {
 setup_intervals_plot <- function(df) {
   df |>
     tidyr::pivot_wider(names_from = .data$quantile, values_from = .data$prediction) |>
+    dplyr::mutate(method = factor(.data$method) |> forcats::fct_inorder()) |> 
     ggplot2::ggplot(mapping = ggplot2::aes(x = .data$target_end_date)) +
     ggplot2::geom_point(ggplot2::aes(y = .data$true_value), size = 1) +
     ggplot2::geom_line(ggplot2::aes(y = .data$true_value)) +

@@ -232,7 +232,6 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
     #    Then with the new margin the one horizon step ahead prediction is updated.
     for (training_length in (cv_init_training + 1):(length(unique(subset$target_end_date)) - 1)) {
       
-      #TODO: explain that this is required as there is the (real) risk that subsets differ in there starting point and time length of dataset
       # gets subset of the data
       subset <- dplyr::filter(df, model == m & location == l & target_type == t & horizon == h)
       target_end_date_train <-  sort(unique(subset$target_end_date))[0:training_length]
@@ -289,11 +288,6 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
                                            values = updates_matrix[,which(quantiles_list_no_median == q)]))
       
     }
-    
-    #TODO: adjust the replace_combination function for the subset we get from quantile spreads
-    # The below function should work if df and subset_updated are sorted the same way. Check this
-    
-    #TODO: write unit test for this part of the code
     
     # Make sure the updated subset is arranged by quantiles and then target end dates 
     # That way we can pass its prediction column to the updated df directly

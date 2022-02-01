@@ -217,6 +217,11 @@ preprocess_df <- function(df, models = NULL, locations = NULL, target_types = NU
     filter_target_types(target_types) |>
     filter_horizons(horizons) |>
     filter_quantile_pairs(quantiles)
+  
+  #TODO: show joel
+  #arranging dataframe by target_type to make sure it is sorted correctly for further processing
+  df <- df |>
+    dplyr::arrange(.data$target_end_date)
 
   return(list(
     df = df, models = models, locations = locations,
@@ -262,7 +267,6 @@ filter_combination <- function(df, model, location, target_type, horizon, quanti
   ))
 }
 
-#TODO: Discuss if we should add arange before we mutate un the pipeline to make sure the target end dates are sorted correctly? See qspread package as an example
 replace_combination <- function(df, model, location, target_type, horizon, quantile,
                                 quantiles_low_updated, quantiles_high_updated) {
   mod <- model

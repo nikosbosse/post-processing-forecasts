@@ -54,7 +54,7 @@ plot_intervals <- function(df, model = NULL, location = NULL,
   p <- df |>
     process_quantile_pair(quantile) |>
     filter_target_types(target) |>
-    filter_horizons(horizon) |>
+    filter_horizons(horizon) |> 
     setup_intervals_plot() +
     ggplot2::labs(
       title = stringr::str_glue("Predicted {target} in {location_name} {h}"),

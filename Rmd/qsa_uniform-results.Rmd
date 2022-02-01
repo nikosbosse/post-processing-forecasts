@@ -32,6 +32,7 @@ knitr::opts_chunk$set(
 ```{r}
 devtools::load_all()
 library(patchwork)
+library(dplyr)
 
 #uk_combined <- readr::read_rds(here::here("data_results", "uk_cqr.rds"))
 
@@ -56,14 +57,17 @@ location <- "GB"
 #saveRDS(df_combined_1, file = "data_results/uk_qsa_uniform_nopen.rds")
 
 df_combined_1 <- readr::read_rds("data_results/uk_qsa_uniform_nopen.rds")
+df_combined_cqr <- readr::read_rds("data_results/uk_cqr.rds")
+
+df_combined_both <- dplyr::full_join(df_combined_1, df_combined_cqr) 
 ```
 
 # Numerical Analysis
 
 ```{r}
 df_combined_1 |>
-  score() |>
-  summarise_scores(by = c("method", "model", "target_type")) |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model", "target_type")) |>
   arrange(target_type, desc(method))
 ```
 
@@ -92,6 +96,10 @@ validation_results
 #TODO: why is the method in blue and the original data in red?
 #TODO: add the spread factors as attributes to df updated
 plot_intervals(df_combined_1, model, location, target_type = "Cases", quantile = 0.05, horizon = 1)
+plot_intervals(df_combined_cqr, model, location, target_type = "Cases", quantile = 0.05, horizon = 1)
+
+# not useful right now since true value equals incidences for cqr and absolute cases for qsa
+plot_intervals(df_combined_both, model, location, target_type = "Cases", quantile = 0.05, horizon = 1)
 ```
 
 ## for given `model`, `location` and `quantile` and different `horizons`
@@ -115,10 +123,10 @@ plot_intervals_grid(df_combined_1, model, facet_by = "quantile", highlight_cv = 
 ## By single category
 
 ```{r}
-df_eval <- eval_cqr(uk_combined, summarise_by = "model")
-eval_cqr(uk_combined, summarise_by = "target_type")
-eval_cqr(uk_combined, summarise_by = "horizon")
-eval_cqr(uk_combined, summarise_by = "quantile")
+eval_methods(df_combined_1, summarise_by = "model")
+eval_methods(df_combined_1, summarise_by = "target_type")
+eval_methods(df_combined_1, summarise_by = "horizon")
+df_eval <- eval_methods(df_combined_1, summarise_by = "quantile")
 
 plot_eval(df_eval)
 plot_eval(df_eval, heatmap = FALSE)
@@ -128,10 +136,10 @@ plot_eval(df_eval, heatmap = FALSE)
 ## By combination of two categories
 
 ```{r}
-eval_cqr(uk_combined, summarise_by = c("model", "target_type"))
-eval_cqr(uk_combined, summarise_by = c("model", "horizon"))
+eval_methods(df_combined_1, summarise_by = c("model", "target_type"))
+eval_methods(df_combined_1, summarise_by = c("model", "horizon"))
 
-df_eval <- eval_cqr(uk_combined, summarise_by = c("horizon", "target_type"))
+df_eval <- eval_methods(df_combined_1, summarise_by = c("horizon", "target_type"))
 plot_eval(df_eval)
 ```
 
@@ -143,12 +151,12 @@ plot_eval(df_eval)
 # => these margins are almost identical to one row / column of table
 
 # sorted by increasing relative changes
-eval_cqr(uk_combined, summarise_by = "model")
-eval_cqr(uk_combined, summarise_by = "target_type")
+eval_methods(df_combined_1, summarise_by = "model")
+eval_methods(df_combined_1, summarise_by = "target_type")
 
 # not sorted by relative changes
-df_eval <- eval_cqr(
-  uk_combined,
+df_eval <- eval_methods(
+  df_combined_1,
   summarise_by = c("model", "target_type"), margins = TRUE
 )
 plot_eval(df_eval)
@@ -158,20 +166,20 @@ plot_eval(df_eval)
 ## Add 'average' (geometric mean) relative changes of rows and columns
 
 ```{r}
-df_eval <- eval_cqr(
-  uk_combined,
+df_eval <- eval_methods(
+  df_combined_1,
   summarise_by = c("horizon", "target_type"), row_averages = TRUE
 )
 plot_eval(df_eval)
 
-df_eval <- eval_cqr(
-  uk_combined,
+df_eval <- eval_methods(
+  df_combined_1,
   summarise_by = c("horizon", "target_type"), col_averages = TRUE
 )
 plot_eval(df_eval)
 
-df_eval <- eval_cqr(
-  uk_combined,
+df_eval <- eval_methods(
+  df_combined_1,
   summarise_by = c("horizon", "target_type"), row_averages = TRUE,
   col_averages = TRUE
 )

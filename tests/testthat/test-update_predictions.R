@@ -10,14 +10,14 @@ cv_init_training <- 5
 
 
 #   ____________________________________________________________________________
-#   Tests for update_subset()                                               ####
+#   Tests for update_subset_cqr()                                               ####
 
-# input of update_subset() is preprocessed / filtered data frame
+# input of update_subset_cqr() is preprocessed / filtered data frame
 
 test_that("works for cv_init_training = NULL", {
-  df_subset <- update_subset(
+  df_subset <- update_subset_cqr(
     df_preprocessed,
-    method = "cqr", model, location, target_type = "Cases", horizon = 1,
+    model, location, target_type = "Cases", horizon = 1,
     quantile = 0.01, cv_init_training = NULL
   ) |> suppressMessages()
 
@@ -29,9 +29,9 @@ test_that("works for cv_init_training = NULL", {
 })
 
 test_that("works for integer cv_init_training", {
-  df_subset <- update_subset(
+  df_subset <- update_subset_cqr(
     df_preprocessed,
-    method = "cqr", model, location, target_type = "Cases", horizon = 1,
+    model, location, target_type = "Cases", horizon = 1,
     quantile = 0.01, cv_init_training = 5
   ) |> suppressMessages()
 
@@ -40,9 +40,9 @@ test_that("works for integer cv_init_training", {
 })
 
 test_that("works for fraction cv_init_training", {
-  df_subset <- update_subset(
+  df_subset <- update_subset_cqr(
     df_preprocessed,
-    method = "cqr", model, location, target_type = "Cases", horizon = 1,
+    model, location, target_type = "Cases", horizon = 1,
     quantile = 0.01, cv_init_training = 0.5
   ) |> suppressMessages()
 
@@ -51,9 +51,9 @@ test_that("works for fraction cv_init_training", {
 })
 
 test_that("works for tibble object", {
-  tbl_subset <- update_subset(
+  tbl_subset <- update_subset_cqr(
     tbl_preprocessed,
-    method = "cqr", model, location, target_type = "Cases", horizon = 1,
+    model, location, target_type = "Cases", horizon = 1,
     quantile = 0.01, cv_init_training = NULL
   ) |> suppressMessages()
 

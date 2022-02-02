@@ -155,7 +155,7 @@ plot_eval <- function(df_eval, heatmap = TRUE, base_size = 9) {
   if (length(orig_columns) == 2 && !heatmap) {
     stop(paste(
       "Barplot is only available in one dimension",
-      "(1 input to 'summarise_by' in eval_cqr())"
+      "(1 input to 'summarise_by' in eval_methods())"
     ))
   }
 

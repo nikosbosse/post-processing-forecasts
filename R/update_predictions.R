@@ -1,8 +1,11 @@
-update_predictions <- function(df, methods,
-                               models = NULL, locations = NULL, target_types = NULL,
-                               horizons = NULL, quantiles = NULL,
-                               cv_init_training = NULL, penalty_weight = NULL,
-                               return_list = TRUE, verbose = FALSE) {
+update_predictions <- function(df, methods = c(
+                                 "cqr", "qsa_uniform",
+                                 "qsa_flexibel", "qsa_flexibel_symmetric"
+                               ), models = NULL, locations = NULL,
+                               target_types = NULL, horizons = NULL,
+                               quantiles = NULL, cv_init_training = NULL,
+                               penalty_weight = NULL, return_list = TRUE,
+                               verbose = FALSE) {
   # stops function for invalid input values
   validate_inputs(df, methods, models, locations, target_types, horizons, quantiles)
   df <- validate_dates(df)
@@ -40,7 +43,7 @@ update_predictions <- function(df, methods,
               quantiles <- quantiles[quantiles < 0.5]
 
               for (quantile in quantiles) {
-                # only one method => does not require 'method' argument 
+                # only one method => does not require 'method' argument
                 df_updated <- update_subset_cqr(
                   df_updated, model, location, target_type, horizon,
                   quantile, cv_init_training

@@ -187,6 +187,19 @@ validate_cv_init <- function(df, cv_init_training) {
   }
 }
 
+validate_methods <- function(methods) {
+  implemented_methods <- c(
+    "cqr", "qsa_uniform", "qsa_flexibel", "qsa_flexibel_symmetric"
+  )
+
+  if (!all(methods %in% implemented_methods)) {
+    stop(stringr::str_glue(
+      "{methods} is not an implemented post processing method."
+    ))
+  }
+}
+
+
 validate_input <- function(df, input, string) {
   if (!all(input %in% unique(df[[string]]))) {
     stop(stringr::str_glue(
@@ -197,7 +210,7 @@ validate_input <- function(df, input, string) {
 
 
 validate_inputs <- function(df, methods, models, locations, target_types, horizons, quantiles) {
-  rlang::arg_match(methods, values = c("cqr", "qsa_uniform", "qsa_flexibel", "qsa_flexibel_symmetric"))
+  validate_methods(methods)
 
   input_mapping <- list(
     model = models, location = locations, target_type = target_types,

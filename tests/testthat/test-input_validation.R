@@ -5,6 +5,13 @@ location <- "GB"
 test_that("error messages are triggered as intended", {
   expect_error(
     update_predictions(df,
+      methods = "qr", models = model, locations = location,
+      return_list = FALSE
+    ) |> suppressMessages(),
+    "qr is not an implemented post processing method."
+  )
+  expect_error(
+    update_predictions(df,
       methods = "cqr", models = c(model, "s"), locations = location,
       return_list = FALSE
     ) |> suppressMessages(),

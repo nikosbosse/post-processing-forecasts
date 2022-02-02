@@ -34,7 +34,11 @@ devtools::load_all()
 library(patchwork)
 
 uk_cqr <- readr::read_rds(here::here("data_results", "uk_cqr.rds"))
+<<<<<<< HEAD
 uk_qsa <- readr::read_rds(here::here("data_results", "uk_qsa_uniform_nopen.rds"))
+=======
+uk_qsa <- readr::read_rds(here::here("data_results", "uk_qsa_uniform_nopen.rds")) |> dplyr::as_tibble() |> tidyr::drop_na()
+>>>>>>> master
 
 hub_1 <- readr::read_rds(here::here("data_results", "hub_cqr_1.rds"))
 hub_2 <- readr::read_rds(here::here("data_results", "hub_cqr_2.rds"))
@@ -110,6 +114,22 @@ plot_eval(df_eval)
 ```
 
 ## For multiple methods
+
+```{r}
+df <- readr::read_csv(here::here("data_modified", "uk_data_incidences.csv"))
+model <- unique(df$model)[2]
+target_type = "Cases"
+
+df_combined <- update_predictions(
+  df, methods = c("cqr", "qsa_uniform"), models = model, target_types = target_type, verbose = TRUE
+)
+
+df_combined <- dplyr::left_join(uk_qsa, uk_cqr)
+df_combined |> dplyr::count(method)
+summarise_by <- "target_type"
+
+eval_one_category(df_combined, summarise_by)
+```
 
 
 # European Forecast Hub Data

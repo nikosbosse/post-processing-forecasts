@@ -163,26 +163,6 @@ filter_methods <- function(df, methods) {
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### validate inputs                                                         ####
 
-validate_input <- function(df, input, string) {
-  if (!all(input %in% unique(df[[string]]))) {
-    stop(stringr::str_glue(
-      "At least one of the input {string}s is not contained in the input data frame."
-    ))
-  }
-}
-
-
-validate_inputs <- function(df, models, locations, target_types, horizons, quantiles) {
-  input_mapping <- list(
-    model = models, location = locations, target_type = target_types,
-    horizon = horizons, quantile = quantiles
-  )
-
-  for (i in seq_along(input_mapping)) {
-    validate_input(df, input = input_mapping[[i]], string = names(input_mapping[i]))
-  }
-}
-
 validate_cv_init <- function(df, cv_init_training) {
   num_dates <- dplyr::n_distinct(df$target_end_date)
 
@@ -206,6 +186,29 @@ validate_cv_init <- function(df, cv_init_training) {
     }
   }
 }
+
+validate_input <- function(df, input, string) {
+  if (!all(input %in% unique(df[[string]]))) {
+    stop(stringr::str_glue(
+      "At least one of the input {string}s is not contained in the input data frame."
+    ))
+  }
+}
+
+
+validate_inputs <- function(df, methods, models, locations, target_types, horizons, quantiles) {
+  rlang::arg_match(methods, values = c("cqr", "qsa_uniform", "qsa_flexibel", "qsa_flexibel_symmetric"))
+
+  input_mapping <- list(
+    model = models, location = locations, target_type = target_types,
+    horizon = horizons, quantile = quantiles
+  )
+
+  for (i in seq_along(input_mapping)) {
+    validate_input(df, input = input_mapping[[i]], string = names(input_mapping[i]))
+  }
+}
+
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### preprocess inputs                                                       ####
@@ -241,9 +244,9 @@ preprocess_df <- function(df, models = NULL, locations = NULL, target_types = NU
     filter_target_types(target_types) |>
     filter_horizons(horizons) |>
     filter_quantile_pairs(quantiles)
-  
-  #TODO: show joel
-  #arranging dataframe by target_type to make sure it is sorted correctly for further processing
+
+  # TODO: show joel
+  # arranging dataframe by target_type to make sure it is sorted correctly for further processing
   df <- df |>
     dplyr::arrange(.data$target_end_date)
 

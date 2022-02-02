@@ -32,9 +32,10 @@ cqr <- function(quantile, true_values, quantiles_low, quantiles_high) {
 }
 
 
-update_subset_cqr <- function(df, method, model, location, target_type, horizon, quantile, cv_init_training) {
-  method <- select_method(method = method)
-  
+update_subset_cqr <- function(df, model, location, target_type, horizon, quantile, cv_init_training) {
+  # must be placed on filtered data frame (i.e. lowest level, not in
+  # update_predictions()) such that fractional inputs can be correctly converted
+  cv_init_training <- validate_cv_init(df, cv_init_training)
   quantiles_list <- filter_combination(df, model, location, target_type, horizon, quantile)
   
   true_values <- quantiles_list$true_values
@@ -44,18 +45,18 @@ update_subset_cqr <- function(df, method, model, location, target_type, horizon,
   if (is.null(cv_init_training)) {
     # By default cv_init_training is equal to NULL and therefore equal to the complete data.
     # e.g. by default no split in training and validation set
-    result <- method(quantile * 2, true_values, quantiles_low, quantiles_high)
+    result <- cqr(quantile * 2, true_values, quantiles_low, quantiles_high)
     
     margin <- result$margin
     quantiles_low_updated <- result$lower_bound
     quantiles_high_updated <- result$upper_bound
   } else {
     # This Section runs the Time Series Cross validation.
-    # 1. It runs the method on the training set and updates all values of the training set.
+    # 1. It runs cqr on the training set and updates all values of the training set.
     #    Then by using the margin it makes the first prediction in the validation set.
     #    The training values and the first adjusted validation set valued are stored in the lists
     #    quantiles_low_updated and quantiles_high_updated. The following section appends to these vectors.
-    results <- method(
+    results <- cqr(
       quantile * 2,
       true_values[1:cv_init_training],
       quantiles_low[1:cv_init_training],
@@ -74,7 +75,7 @@ update_subset_cqr <- function(df, method, model, location, target_type, horizon,
     #    prediction. This is done by rerunning cqr with the new observations set and extracting the margin.
     #    Then with the new margin the one horizon step ahead prediction is updated.
     for (training_length in (cv_init_training + 1):(length(true_values) - 1)) {
-      results <- method(
+      results <- cqr(
         quantile * 2,
         true_values[1:training_length],
         quantiles_low[1:training_length],

@@ -293,3 +293,4 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
     return(df_updated)
   }
 }
+#TODO: write helper function that computes the applied optimal spread parameters of a qsa approach as well as the actual absolute adjustment. this is a nice way to compare the different adjustments different methods do

@@ -112,10 +112,27 @@ plot_eval(df_eval)
 ## For multiple methods
 
 ```{r}
-eval_one_category(uk_cqr_qsa, summarise_by = "model")
-eval_one_category(uk_cqr_qsa, summarise_by = "target_type")
-eval_one_category(uk_cqr_qsa, summarise_by = "horizon")
-eval_one_category(uk_cqr_qsa, summarise_by = "quantile")
+eval_methods(uk_cqr_qsa, summarise_by = "model")
+eval_methods(uk_cqr_qsa, summarise_by = "target_type")
+eval_methods(uk_cqr_qsa, summarise_by = "horizon")
+eval_methods(uk_cqr_qsa, summarise_by = "quantile")
+```
+
+
+```{r}
+df_eval <- eval_methods(uk_cqr_qsa, summarise_by = "model")
+p1 <- plot_eval(df_eval, base_size = 8) + ggplot2::labs(y = NULL)
+
+df_eval <- eval_methods(uk_cqr_qsa, summarise_by = "target_type")
+p2 <- plot_eval(df_eval, base_size = 8) + ggplot2::labs(y = NULL)
+
+df_eval <- eval_methods(uk_cqr_qsa, summarise_by = "horizon")
+p3 <- plot_eval(df_eval, base_size = 8)
+
+df_eval <- eval_methods(uk_cqr_qsa, summarise_by = "quantile")
+p4 <- plot_eval(df_eval, base_size = 8)
+
+(p1 + p2) / (p3 + p4)
 ```
 
 

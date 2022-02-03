@@ -31,15 +31,12 @@ knitr::opts_chunk$set(
 # temporary and not recommended way, library(postforecasts) imports only functions with @export tag
 # => requires more complete documentation
 devtools::load_all(".")
-
-library(scoringutils)
-library(dplyr)
 ```
 
 # Original Dataframe
 
 ```{r}
-df <- read.csv(here::here("data", "full-data-uk-challenge.csv"))
+df <- readr::read_csv(here::here("data", "full-data-uk-challenge.csv"))
 ```
 
 # Plot Original Predictions
@@ -52,49 +49,24 @@ plot_quantiles(df, model, location, quantiles = c(0.01, 0.05, 0.25, 0.5, 0.75, 0
 
 # Update Predictions
 
-```{r}
-# Option 1 (new)
-df_list <- update_predictions(df, methods = "cqr", model, location, cv_init_training = 3)
+```{r, eval=FALSE}
+# takes a bit of time
+df_list <- update_predictions(methods = c("cqr", "qsa_uniform"), model, location, cv_init_training = 0.5)
 df_combined_1 <- collect_predictions(df_list)
 ```
-
-```{r}
-# Option 2 (old)
-df_updated <- update_predictions(df,
-  methods = "cqr", model, location, cv_init_training = 3, return_list = FALSE
-)
-preprocessed_list <- preprocess_df(df, model)
-df_combined_2 <- collect_predictions(original = preprocessed_list$df, cqr = df_updated)
-```
-
-```{r}
-# same behaviour for single method
-all(df_combined_1 == df_combined_2)
-```
-
-```{r}
-# change allows for neat workflow without creating temporary variables
-update_predictions(df, methods = "cqr", model, location, cv_init_training = 3) |>
-  collect_predictions() |>
-  score() |>
-  summarise_scores(by = c("method", "model", "target_type")) |>
-  arrange(target_type, desc(method))
-```
-
-```{r}
-update_predictions(df, methods = "cqr", model, location, cv_init_training = 3) |>
-  collect_predictions() |>
-  plot_intervals(model, location, target_type = "Cases", quantile = 0.05, horizon = 1)
-```
-
 
 # Numerical Analysis
 
 ```{r}
-df_combined_1 |>
-  score() |>
-  summarise_scores(by = c("method", "model", "target_type")) |>
-  arrange(target_type, desc(method))
+# use prefitted data
+uk_cqr_qsa <- readr::read_rds(here::here("data_results", "uk_cqr_qsa_uniform.rds"))
+```
+
+```{r}
+uk_cqr_qsa |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model", "target_type")) |>
+  dplyr::arrange(target_type, desc(method))
 ```
 
 # Graphical Analysis
@@ -102,17 +74,17 @@ df_combined_1 |>
 ## for given `model`, `location`, `target_type`, `quantile` and `horizon`
 
 ```{r}
-plot_intervals(df_combined_1, model, location, target_type = "Cases", quantile = 0.05, horizon = 1)
+plot_intervals(uk_cqr_qsa, model, location, target_type = "Cases", quantile = 0.05, horizon = 1)
 ```
 
 ## for given `model`, `location` and `quantile` and different `horizons`
 
 ```{r}
-plot_intervals_grid(df_combined_1, model, facet_by = "horizon", highlight_cv = TRUE)
+plot_intervals_grid(uk_cqr_qsa, model, facet_by = "horizon", highlight_cv = TRUE)
 ```
 
 ## for given `model`, `location` and `horizon` and different `quantiles`
 
 ```{r}
-plot_intervals_grid(df_combined_1, model, facet_by = "quantile", highlight_cv = TRUE)
+plot_intervals_grid(uk_cqr_qsa, model, facet_by = "quantile", highlight_cv = TRUE)
 ```

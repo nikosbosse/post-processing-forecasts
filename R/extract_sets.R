@@ -3,11 +3,14 @@
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### extract set function used for the training and validation set
 
-extract_set <- function(df_combined, set = c("train", "validation")) {
+extract_set <- function(df_combined, set = c("train", "validation"),
+                        cv_init_training) {
   rlang::arg_match(arg = set, values = c("train", "validation"))
 
   # extract the length of the validation set
-  cv_init_training <- attr(df_combined, "cv_init_training")
+  if (is.null(cv_init_training)) {
+    cv_init_training <- attr(df_combined, "cv_init_training")
+  }
 
   # checking where target_end_date is a date variable, NA are omitted and all dates are unique
   # if not this is handled and a warning is returned
@@ -42,14 +45,14 @@ extract_set <- function(df_combined, set = c("train", "validation")) {
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### extracting the validation set from the combined dataset
 
-extract_validation_set <- function(df_combined) {
-  extract_set(df_combined, set = "validation")
+extract_validation_set <- function(df_combined, cv_init_training = NULL) {
+  extract_set(df_combined, set = "validation", cv_init_training = cv_init_training)
 }
 
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### extracting the training set from the combined dataset
 
-extract_training_set <- function(df_combined) {
-  extract_set(df_combined, set = "train")
+extract_training_set <- function(df_combined, cv_init_training = NULL) {
+  extract_set(df_combined, set = "train", cv_init_training = cv_init_training)
 }

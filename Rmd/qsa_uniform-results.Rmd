@@ -77,14 +77,14 @@ df_combined_1 |>
 
 training_results <- df_combined_1 |>
   extract_training_set() |>
-  score() |>
-  summarise_scores(by = c("method", "model", "target_type"))
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model", "target_type"))
 training_results
 
 validation_results <- df_combined_1 |>
   extract_validation_set() |>
-  score() |>
-  summarise_scores(by = c("method", "model", "target_type"))
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model", "target_type"))
 validation_results
 ```
 
@@ -93,12 +93,12 @@ validation_results
 ## for given `model`, `location`, `target_type`, `quantile` and `horizon`
 
 ```{r}
-#TODO: why is the method in blue and the original data in red?
 #TODO: add the spread factors as attributes to df updated
 plot_intervals(df_combined_1, model, location, target_type = "Cases", quantile = 0.05, horizon = 1)
 plot_intervals(df_combined_cqr, model, location, target_type = "Cases", quantile = 0.05, horizon = 1)
 
 # not useful right now since true value equals incidences for cqr and absolute cases for qsa
+#TODO: The plot below generates weird black lines connecting dots.
 plot_intervals(df_combined_both, model, location, target_type = "Cases", quantile = 0.05, horizon = 1)
 ```
 
@@ -160,6 +160,7 @@ df_eval <- eval_methods(
   summarise_by = c("model", "target_type"), margins = TRUE
 )
 plot_eval(df_eval)
+#TODO: why is there an NA in the second row of the heatmap. what is meant by margins, how can the WIS adjust with marginsß
 ```
 
 
@@ -184,6 +185,7 @@ df_eval <- eval_methods(
   col_averages = TRUE
 )
 plot_eval(df_eval)
+#TODO: why do we have an NA in the rows of all these plots? DO we need to clean the data?
 ```
 
 

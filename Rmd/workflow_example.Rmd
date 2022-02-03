@@ -60,14 +60,12 @@ df_combined_1 <- collect_predictions(df_list)
 ```{r}
 # use prefitted data
 uk_cqr_qsa <- readr::read_rds(here::here("data_results", "uk_cqr_qsa_uniform.rds"))
-
-df_extended <- uk_cqr_qsa |>
-  dplyr::filter(model == models) |>
-  add_ensemble(per_quantile_weights = TRUE, verbose = TRUE)
+uk_cqr_qsa_ensemble <- readr::read_rds(
+  here::here("data_results", "uk_cqr_qsa_uniform_ensemble.rds"))
 ```
 
 ```{r}
-df_extended |>
+uk_cqr_qsa_ensemble |>
   extract_validation_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method")) |>
@@ -80,17 +78,17 @@ df_extended |>
 ## for given `model`, `location`, `target_type`, `quantile` and `horizon`
 
 ```{r}
-plot_intervals(df_extended, models, locations, target_type = "Cases", quantile = 0.01, horizon = 1)
+plot_intervals(uk_cqr_qsa, models, locations, target_type = "Cases", quantile = 0.01, horizon = 1)
 ```
 
 ## for given `model`, `location` and `quantile` and different `horizons`
 
 ```{r}
-plot_intervals_grid(df_extended, models, facet_by = "horizon", highlight_cv = TRUE)
+plot_intervals_grid(uk_cqr_qsa, models, facet_by = "horizon", highlight_cv = TRUE)
 ```
 
 ## for given `model`, `location` and `horizon` and different `quantiles`
 
 ```{r}
-plot_intervals_grid(df_extended, models, facet_by = "quantile", highlight_cv = TRUE)
+plot_intervals_grid(uk_cqr_qsa, models, facet_by = "quantile", highlight_cv = TRUE)
 ```

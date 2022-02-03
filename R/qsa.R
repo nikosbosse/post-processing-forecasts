@@ -112,6 +112,47 @@ wrapper <- function(spread_factor_vec, subset, method_pp, penalty_weight) {
   return(interval_score)
 }
 
+optimize_spread_factor <- function(method,subset,penalty_weight,par=NULL){
+  # TODO: Decide if it is makes sense to write a gradient function that gives back the gradient dependent on the subset at that time point
+  
+  # optim minimizes the wrapper function
+  # We can get a hessian if we want but it takes additional compute time
+  # starts with spread factor of 1 e.g. no spread necessary
+  if (method == "qsa_uniform") {
+    if (is.null(par)) {par <- c(1)}
+    
+    optim_results <- optim(
+      par = par, fn = wrapper, subset = subset, method_pp = method, penalty_weight = penalty_weight,
+      gr = NULL, method = "BFGS"
+    ) # , hessian=T)
+    optimal_spread_factor <- optim_results$par
+    
+  } else if (method == "qsa_flexibel") {
+    if (is.null(par)) {par <- rep(1, num_spreads)}
+    # getting number of spreads as: number of quantiles without the mean
+    num_spreads <- length(na.omit(unique(subset$quantile))) - 1 #-1 due to mean
+    
+    optim_results <- optim(
+      par = par, fn = wrapper, subset = subset, method_pp = method,
+      penalty_weight = penalty_weight, gr = NULL, method = "BFGS"
+    ) # , hessian=T)
+    optimal_spread_factor <- optim_results$par
+    
+  } else if (method == "qsa_flexibel_symmetric") {
+    if (is.null(par)) {par <- rep(1, num_of_params)}
+    # getting number of spreads as: number of quantiles without the mean
+    num_spreads <- length(na.omit(unique(subset$quantile))) - 1 #-1 due to mean
+    num_of_params <- num_spreads / 2
+    
+    optim_results <- optim(
+      par = par, fn = wrapper, subset = subset, method_pp = method,
+      penalty_weight = penalty_weight, gr = NULL, method = "BFGS"
+    ) # , hessian=T)
+    optimal_spread_factor <- optim_results$par
+  }
+  return(optimal_spread_factor)
+}
+
 
 update_subset_qsa <- function(df, method, model, location, target_type, horizon, cv_init_training, penalty_weight) {
   # must be placed on filtered data frame (i.e. lowest level, not in
@@ -131,38 +172,9 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
 
     subset <- dplyr::filter(df, model == m & location == l & target_type == t & horizon == h)
 
-    # optim minimizes the wrapper function
-    # We can get a hessian if we want but it takes additional compute time
-    # starts with spread factor of 1 e.g. no spread necessary
-
-    if (method == "qsa_uniform") {
-      optim_results <- optim(
-        par = c(1), fn = wrapper, subset = subset, method_pp = method, penalty_weight = penalty_weight,
-        gr = NULL, method = "BFGS"
-      ) # , hessian=T)
-      optimal_spread_factor <- optim_results$par
-    } else if (method == "qsa_flexibel") {
-      # getting number of spreads as: number of quantiles without the mean
-      num_spreads <- length(na.omit(unique(df$quantile))) - 1 #-1 due to mean
-
-      optim_results <- optim(
-        par = rep(1, num_spreads), fn = wrapper, subset = subset, method_pp = method,
-        penalty_weight = penalty_weight, gr = NULL, method = "BFGS"
-      ) # , hessian=T)
-      optimal_spread_factor <- optim_results$par
-    } else if (method == "qsa_flexibel_symmetric") {
-      # getting number of spreads as: number of quantiles without the mean
-      num_spreads <- length(na.omit(unique(df$quantile))) - 1 #-1 due to mean
-      num_of_params <- num_spreads / 2
-
-      optim_results <- optim(
-        par = rep(1, num_of_params), fn = wrapper, subset = subset, method_pp = method,
-        penalty_weight = penalty_weight, gr = NULL, method = "BFGS"
-      ) # , hessian=T)
-      optimal_spread_factor <- optim_results$par
-    }
-    # TODO: Decide if it is makes sense to write a gradient function that gives back the gradient dependent on the subset at that time point
-
+    # Run optimization to get the optimal spread factor
+    optimal_spread_factor <- optimize_spread_factor(method = method,subset = subset,
+                                                    penalty_weight = penalty_weight, par = NULL)
 
     # function to apply optimal spread factor to data
     # We return a matrix containing the updates of the quantiles
@@ -203,32 +215,10 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
     # subset for one step ahead prediction
     subset_val <- dplyr::filter(subset, target_end_date == target_end_date_val)
 
-    if (method == "qsa_uniform") {
-      optim_results <- optim(
-        par = c(1), fn = wrapper, subset = subset_train, method_pp = method,
-        penalty_weight = penalty_weight, gr = NULL, method = "BFGS"
-      ) # , hessian=T)
-      optimal_spread_factor <- optim_results$par
-    } else if (method == "qsa_flexibel") {
-      # getting number of spreads as: number of quantiles without the mean
-      num_spreads <- length(na.omit(unique(df$quantile))) - 1 #-1 due to mean
-
-      optim_results <- optim(
-        par = rep(1, num_spreads), fn = wrapper, subset = subset_train,
-        method_pp = method, penalty_weight = penalty_weight, gr = NULL,
-        method = "BFGS"
-      ) # , hessian=T)
-
-      optimal_spread_factor <- optim_results$par
-    } else if (method == "qsa_flexibel_symmetric") {
-      # getting number of spreads as: number of quantiles without the mean
-      num_spreads <- length(na.omit(unique(df$quantile))) - 1 #-1 due to mean
-      num_of_params <- num_spreads / 2
-
-      optim_results <- optim(par = rep(1, num_of_params), fn = wrapper, subset = subset_train, method_pp = method, penalty_weight = penalty_weight, gr = NULL, method = "BFGS") # , hessian=T)
-      optimal_spread_factor <- optim_results$par
-    }
-
+    # Run optimization to get the optimal spread factor
+    optimal_spread_factor <- optimize_spread_factor(method = method, subset = subset,
+                                                    penalty_weight = penalty_weight, par = NULL)
+    
     # training set
     updates_matrix <- qsa(subset = subset, spread_factor = optimal_spread_factor, method = method)
     # one step ahead prediction adjustment
@@ -252,37 +242,10 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
       subset_val <- dplyr::filter(subset, target_end_date == target_end_date_val)
 
       # for faster computation it starts optimization at the optimal spread factor of the last iteration
-      if (method == "qsa_uniform") {
-        optim_results <- optim(
-          par = optimal_spread_factor, fn = wrapper, subset = subset_train,
-          method_pp = method, penalty_weight = penalty_weight, gr = NULL,
-          method = "BFGS"
-        ) # , hessian=T)
-        optimal_spread_factor <- optim_results$par
-      } else if (method == "qsa_flexibel") {
-        # getting number of spreads as: number of quantiles without the mean
-        num_spreads <- length(na.omit(unique(df$quantile))) - 1 #-1 due to mean
-
-        optim_results <- optim(
-          par = optimal_spread_factor, fn = wrapper, subset = subset_train,
-          method_pp = method, penalty_weight = penalty_weight, gr = NULL, method = "BFGS"
-        ) # , hessian=T)
-
-        optimal_spread_factor <- optim_results$par
-      } else if (method == "qsa_flexibel_symmetric") {
-        # getting number of spreads as: number of quantiles without the mean
-        num_spreads <- length(na.omit(unique(df$quantile))) - 1 #-1 due to mean
-        num_of_params <- num_spreads / 2
-
-        optim_results <- optim(
-          par = optimal_spread_factor, fn = wrapper, subset = subset_train,
-          method_pp = method, penalty_weight = penalty_weight, gr = NULL,
-          method = "BFGS"
-        ) # , hessian=T)
-
-        optimal_spread_factor <- optim_results$par
-      }
-
+      # Run optimization to get the optimal spread factor
+      optimal_spread_factor <- optimize_spread_factor(method = method,subset = subset,
+                                                      penalty_weight = penalty_weight, par = optimal_spread_factor)
+      
       # For the iteration forward we only need the validation set prediction
       val_row <- qsa(subset = subset_val, spread_factor = optimal_spread_factor, method = method)
 

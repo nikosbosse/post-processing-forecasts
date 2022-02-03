@@ -4,6 +4,8 @@
 
 CQR <- FALSE
 QSA_UNIFORM <- FALSE
+QSA_FLEXIBEL <- FALSE
+QSA_FLEXIBEL_SYMMETRIC <- FALSE
 CQR_QSA_UNIFORM <- FALSE
 CQR_QSA_UNIFORM_ENSEMBLE <- FALSE
 
@@ -42,6 +44,34 @@ if (QSA_UNIFORM) {
   readr::write_rds(
     df_combined,
     file = here::here("data_results", "uk_qsa_uniform.rds")
+  )
+}
+
+if (QSA_FLEXIBEL) {
+  df_updated <- update_predictions(
+    df = uk_data, methods = "qsa_flexibel", models = complete_models,
+    cv_init_training = cv_init_training, verbose = TRUE
+  )
+  
+  df_combined <- df_updated |> collect_predictions()
+  
+  readr::write_rds(
+    df_combined,
+    file = here::here("data_results", "uk_qsa_flexibel.rds")
+  )
+}
+
+if (QSA_FLEXIBEL_SYMMETRIC) {
+  df_updated <- update_predictions(
+    df = uk_data, methods = "qsa_flexibel_symmetric", models = complete_models,
+    cv_init_training = cv_init_training, verbose = TRUE
+  )
+  
+  df_combined <- df_updated |> collect_predictions()
+  
+  readr::write_rds(
+    df_combined,
+    file = here::here("data_results", "uk_qsa_flexibel_symmetric.rds")
   )
 }
 

@@ -1,5 +1,5 @@
 ---
-title: "Detailed UK-Data Analysis"
+title: "Examples of `eval_methods()` and `plot_eval()` Functions"
 author: "Joel Beck"
 output:
   bookdown::pdf_document2:

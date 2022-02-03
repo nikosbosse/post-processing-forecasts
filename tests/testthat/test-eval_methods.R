@@ -1,15 +1,16 @@
 #   ____________________________________________________________________________
 #   Tests for UK Data                                                       ####
 
-df_combined <- readr::read_rds("test-data/uk_cqr.rds")
+uk_cqr <- readr::read_rds("test-data/uk_cqr.rds")
+uk_cqr_qsa <- readr::read_rds(here::here("data_results", "uk_cqr_qsa_uniform.rds"))
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### Tests for single category                                               ####
 
-eval_models <- eval_methods(df_combined, summarise_by = "model")
-eval_target_types <- eval_methods(df_combined, summarise_by = "target_type")
-eval_horizons <- eval_methods(df_combined, summarise_by = "horizon")
-eval_quantiles <- eval_methods(df_combined, summarise_by = "quantile")
+eval_models <- eval_methods(uk_cqr, summarise_by = "model")
+eval_target_types <- eval_methods(uk_cqr, summarise_by = "target_type")
+eval_horizons <- eval_methods(uk_cqr, summarise_by = "horizon")
+eval_quantiles <- eval_methods(uk_cqr, summarise_by = "quantile")
 
 test_that("works for single category", {
   expect_equal(dim(eval_models), c(6, 2))
@@ -34,20 +35,83 @@ test_that("plot works for single category", {
 
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### Tests for multiple methods                                              ####
+
+eval_models_multiple_methods <- eval_methods(uk_cqr_qsa, summarise_by = "model")
+eval_target_types_multiple_methods <- eval_methods(
+  uk_cqr_qsa,
+  summarise_by = "target_type"
+)
+eval_horizons_multiple_methods <- eval_methods(uk_cqr_qsa, summarise_by = "horizon")
+eval_quantiles_multiple_methods <- eval_methods(uk_cqr_qsa, summarise_by = "quantile")
+
+test_that("works for multiple methods", {
+  expect_equal(dim(eval_models_multiple_methods), c(6, 3))
+  expect_equal(
+    colnames(eval_models_multiple_methods),
+    c("model", "cqr", "qsa_uniform")
+  )
+
+  expect_equal(dim(eval_target_types_multiple_methods), c(2, 3))
+  expect_equal(
+    colnames(eval_target_types_multiple_methods),
+    c("target_type", "cqr", "qsa_uniform")
+  )
+
+  expect_equal(dim(eval_horizons_multiple_methods), c(4, 3))
+  expect_equal(
+    colnames(eval_horizons_multiple_methods),
+    c("horizon", "cqr", "qsa_uniform")
+  )
+
+  expect_equal(dim(eval_quantiles_multiple_methods), c(23, 3))
+  expect_equal(
+    colnames(eval_quantiles_multiple_methods),
+    c("quantile", "cqr", "qsa_uniform")
+  )
+
+  expect_equal(attr(eval_models_multiple_methods, "summarise_by"), "model")
+})
+
+test_that("correct error message for multiple methods and categories", {
+  expect_error(
+    eval_methods(uk_cqr_qsa, summarise_by = c("model", "target_type")),
+    "Multiple categories can only be evaluated for a single method."
+  )
+})
+
+
+test_that("plotting works as expected for multiple methods", {
+  expect_error(plot_eval(eval_models_multiple_methods), NA)
+  expect_error(
+    plot_eval(eval_models_multiple_methods, heatmap = FALSE),
+    paste(
+      "Barplot is only available in one dimension",
+      "(1 input to 'summarise_by' and single evaluation method)"
+    ),
+    fixed = TRUE
+  )
+})
+
+
+
+
+
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### Tests for two categories                                                ####
 
 eval_models_horizons <- eval_methods(
-  df_combined,
+  uk_cqr,
   summarise_by = c("model", "horizon")
 )
 
 eval_models_target_types <- eval_methods(
-  df_combined,
+  uk_cqr,
   summarise_by = c("model", "target_type")
 )
 
 eval_horizons_target_types <- eval_methods(
-  df_combined,
+  uk_cqr,
   summarise_by = c("horizon", "target_type")
 )
 
@@ -67,7 +131,7 @@ test_that("argument heatmap = FALSE triggers error correctly", {
     plot_eval(eval_models_horizons, heatmap = FALSE),
     paste(
       "Barplot is only available in one dimension",
-      "(1 input to 'summarise_by' in eval_methods())"
+      "(1 input to 'summarise_by' and single evaluation method)"
     ),
     fixed = TRUE
   )
@@ -78,7 +142,7 @@ test_that("argument heatmap = FALSE triggers error correctly", {
 ### Tests for input margins                                                 ####
 
 margins_models_horizons <- eval_methods(
-  df_combined,
+  uk_cqr,
   summarise_by = c("model", "horizon"), margins = TRUE
 )
 
@@ -103,17 +167,17 @@ test_that("plot works for margins = TRUE", {
 ### Tests for input averages                                                ####
 
 row_horizon_target_type <- eval_methods(
-  df_combined,
+  uk_cqr,
   summarise_by = c("horizon", "target_type"), row_averages = TRUE
 )
 
 col_horizon_target_type <- eval_methods(
-  df_combined,
+  uk_cqr,
   summarise_by = c("horizon", "target_type"), col_averages = TRUE
 )
 
 row_col_horizon_target_type <- eval_methods(
-  df_combined,
+  uk_cqr,
   summarise_by = c("horizon", "target_type"), row_averages = TRUE,
   col_averages = TRUE
 )
@@ -145,7 +209,7 @@ test_that("plot works for averages = TRUE", {
 ### Tests for input round_digits                                            ####
 
 test_that("works for different numeric value of round_digits", {
-  eval_models_rounded <- eval_methods(df_combined, summarise_by = "model", round_digits = 1)
+  eval_models_rounded <- eval_methods(uk_cqr, summarise_by = "model", round_digits = 1)
 
   expect_equal(
     eval_models_rounded[1, 2], round(eval_models_rounded[1, 2], digits = 1)
@@ -154,7 +218,7 @@ test_that("works for different numeric value of round_digits", {
 
 test_that("NULL value of round_digits does not trigger error", {
   expect_error(
-    eval_methods(df_combined, summarise_by = "model", round_digits = NULL), NA
+    eval_methods(uk_cqr, summarise_by = "model", round_digits = NULL), NA
   )
 })
 
@@ -163,14 +227,14 @@ test_that("NULL value of round_digits does not trigger error", {
 
 test_that("error messages are triggered as intended", {
   expect_error(
-    eval_methods(df_combined,
+    eval_methods(uk_cqr,
       summarise_by = "model", margins = TRUE,
       row_averages = TRUE
     ),
     "Either margins or averages can be specified."
   )
   expect_error(
-    eval_methods(df_combined,
+    eval_methods(uk_cqr,
       summarise_by = "model", margins = TRUE,
       col_averages = TRUE
     ),

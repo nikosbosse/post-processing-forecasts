@@ -32,7 +32,11 @@ update_predictions <- function(df, methods = c(
     for (model in models) {
       for (location in locations) {
         if (verbose) {
-          cat("method = ", method, " | model = ", model, " | location = ", location, "\n", sep = "")
+          cat(
+            "method = ", method, " | model = ", model, " | location = ",
+            location, "\n",
+            sep = ""
+          )
         }
         for (target_type in target_types) {
           for (horizon in horizons) {

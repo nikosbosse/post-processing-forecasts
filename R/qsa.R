@@ -68,8 +68,8 @@ wis <- function(subset, spread_factor_vec, penalty_weight) {
 
   # Calculating the score for the adjusted series
   res <- subset |>
-    score() |>
-    summarise_scores(by = c("model"))
+    scoringutils::score() |>
+    scoringutils::summarise_scores(by = c("model"))
 
   if (is.null(penalty_weight)) {
     wis <- res$interval_score

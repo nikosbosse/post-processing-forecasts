@@ -35,6 +35,7 @@ library(patchwork)
 
 uk_cqr <- readr::read_rds(here::here("data_results", "uk_cqr.rds"))
 uk_cqr_qsa <- readr::read_rds(here::here("data_results", "uk_cqr_qsa_uniform.rds"))
+uk_cqr_qsa_ensemble <- readr::read_rds(here::here("data_results", "uk_cqr_qsa_uniform_ensemble.rds"))
 
 hub_1 <- readr::read_rds(here::here("data_results", "hub_cqr_1.rds"))
 hub_2 <- readr::read_rds(here::here("data_results", "hub_cqr_2.rds"))
@@ -43,7 +44,7 @@ hub_combined <- dplyr::bind_rows(hub_1, hub_2)
 
 # UK Data
 
-## By single category
+## CQR +  Single Category
 
 ```{r}
 df_eval <- eval_methods(uk_cqr, summarise_by = "model")
@@ -56,7 +57,7 @@ plot_eval(df_eval, heatmap = FALSE)
 ```
 
 
-## By combination of two categories
+## CQR + 2 Categories
 
 ```{r}
 eval_methods(uk_cqr, summarise_by = c("model", "target_type"))
@@ -109,7 +110,9 @@ df_eval <- eval_methods(
 plot_eval(df_eval)
 ```
 
-## For multiple methods
+## Multiple Methods
+
+### CQR + QSA Uniform
 
 ```{r}
 eval_methods(uk_cqr_qsa, summarise_by = "model")
@@ -135,6 +138,31 @@ p4 <- plot_eval(df_eval, base_size = 8)
 (p1 + p2) / (p3 + p4)
 ```
 
+### CQR + QSA Uniform + Ensemble
+
+```{r}
+eval_methods(uk_cqr_qsa_ensemble, summarise_by = "model")
+eval_methods(uk_cqr_qsa_ensemble, summarise_by = "target_type")
+eval_methods(uk_cqr_qsa_ensemble, summarise_by = "horizon")
+eval_methods(uk_cqr_qsa_ensemble, summarise_by = "quantile")
+```
+
+```{r}
+df_eval <- eval_methods(uk_cqr_qsa_ensemble, summarise_by = "model")
+p1 <- plot_eval(df_eval, base_size = 8) + ggplot2::labs(y = NULL)
+
+df_eval <- eval_methods(uk_cqr_qsa_ensemble, summarise_by = "target_type")
+p2 <- plot_eval(df_eval, base_size = 8) + ggplot2::labs(y = NULL)
+
+df_eval <- eval_methods(uk_cqr_qsa_ensemble, summarise_by = "horizon")
+p3 <- plot_eval(df_eval, base_size = 8)
+
+df_eval <- eval_methods(uk_cqr_qsa_ensemble, summarise_by = "quantile")
+p4 <- plot_eval(df_eval, base_size = 8)
+
+(p1 + p2) / (p3 + p4)
+```
+
 
 # European Forecast Hub Data
 
@@ -145,7 +173,7 @@ hub_combined <- hub_combined |>
 ```
 
 
-## By single category
+## CQR + Single Category
 
 ```{r}
 df_eval <- eval_methods(hub_combined, summarise_by = "location_name")
@@ -163,7 +191,7 @@ p4 <- plot_eval(df_eval, base_size = 8)
 (p1 + p2) / (p3 + p4)
 ```
 
-## By two categories
+## CQR + 2 Categories
 
 ```{r}
 df_eval <- eval_methods(

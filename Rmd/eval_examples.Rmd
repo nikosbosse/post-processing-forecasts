@@ -79,6 +79,7 @@ eval_methods(uk_cqr, summarise_by = "model")
 eval_methods(uk_cqr, summarise_by = "target_type")
 
 # not sorted by relative changes
+# TODO: Fix order of margins
 df_eval <- eval_methods(
   uk_cqr,
   summarise_by = c("model", "target_type"), margins = TRUE
@@ -170,6 +171,9 @@ p4 <- plot_eval(df_eval, base_size = 8)
 # data set very large, choose e.g. one model to avoid time limit error
 hub_combined <- hub_combined |>
   dplyr::filter(model == "EuroCOVIDhub-ensemble")
+
+# TODO: Choose one Model for qsa_uniform() and focus on Cases
+hub_combined |> dplyr::count(model)
 ```
 
 

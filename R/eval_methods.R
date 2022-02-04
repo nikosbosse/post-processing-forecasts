@@ -13,6 +13,11 @@ eval_one_category <- function(df_combined, summarise_by) {
     tidyr::pivot_wider(
       names_from = .data$method, values_from = .data$interval_score
     )
+  
+  # move ensemble column to the last position in data frame
+  if ("ensemble" %in% colnames(wide_format)) {
+    wide_format <- wide_format |> dplyr::relocate(ensemble, .after = dplyr::last_col())
+  }
 
   all_columns <- colnames(wide_format)
   method_names <- all_columns[!all_columns %in% c(summarise_by, "original")]

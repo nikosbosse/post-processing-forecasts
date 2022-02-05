@@ -39,12 +39,13 @@ uk_cqr_qsa_ensemble <- readr::read_rds(here::here("data_results", "uk_cqr_qsa_un
 
 hub_1 <- readr::read_rds(here::here("data_results", "hub_cqr_1.rds"))
 hub_2 <- readr::read_rds(here::here("data_results", "hub_cqr_2.rds"))
-hub_combined <- dplyr::bind_rows(hub_1, hub_2)
+hub_cqr <- dplyr::bind_rows(hub_1, hub_2)
+hub_cqr_qsa_ensemble <- readr::read_rds(here::here("data_results", "hub_cqr_qsa_uniform_ensemble_subset.rds"))
 ```
 
 # UK Data
 
-## CQR +  Single Category
+## CQR + Single Category
 
 ```{r}
 df_eval <- eval_methods(uk_cqr, summarise_by = "model")
@@ -169,27 +170,24 @@ p4 <- plot_eval(df_eval, base_size = 8)
 
 ```{r}
 # data set very large, choose e.g. one model to avoid time limit error
-hub_combined <- hub_combined |>
-  dplyr::filter(model == "EuroCOVIDhub-ensemble")
-
-# TODO: Choose one Model for qsa_uniform() and focus on Cases
-hub_combined |> dplyr::count(model)
+hub_cqr <- hub_cqr |>
+  dplyr::filter(model == "epiforecasts-EpiNow2")
 ```
 
 
 ## CQR + Single Category
 
 ```{r}
-df_eval <- eval_methods(hub_combined, summarise_by = "location_name")
+df_eval <- eval_methods(hub_cqr, summarise_by = "location_name")
 p1 <- plot_eval(df_eval, heatmap = FALSE, base_size = 8) + ggplot2::labs(y = NULL)
 
-df_eval <- eval_methods(hub_combined, summarise_by = "target_type")
+df_eval <- eval_methods(hub_cqr, summarise_by = "target_type")
 p2 <- plot_eval(df_eval, heatmap = FALSE, base_size = 8) + ggplot2::labs(y = NULL)
 
-df_eval <- eval_methods(hub_combined, summarise_by = "horizon")
+df_eval <- eval_methods(hub_cqr, summarise_by = "horizon")
 p3 <- plot_eval(df_eval, heatmap = FALSE, base_size = 8)
 
-df_eval <- eval_methods(hub_combined, summarise_by = "quantile")
+df_eval <- eval_methods(hub_cqr, summarise_by = "quantile")
 p4 <- plot_eval(df_eval, base_size = 8)
 
 (p1 + p2) / (p3 + p4)
@@ -199,8 +197,30 @@ p4 <- plot_eval(df_eval, base_size = 8)
 
 ```{r}
 df_eval <- eval_methods(
-  hub_combined,
+  hub_cqr,
   summarise_by = c("horizon", "target_type")
 )
 plot_eval(df_eval) + ggplot2::labs(x = NULL)
+```
+
+
+## CQR + QSA Uniform + Ensemble
+
+```{r}
+df_eval <- eval_methods(hub_cqr_qsa_ensemble, summarise_by = "location_name")
+p1 <- plot_eval(df_eval, base_size = 8) + ggplot2::labs(y = NULL)
+
+df_eval <- eval_methods(
+  hub_cqr_qsa_ensemble |> dplyr::filter(!location_name %in% c("Poland", "Finland")),
+  summarise_by = "location_name"
+)
+p2 <- plot_eval(df_eval, base_size = 8) + ggplot2::labs(y = NULL)
+
+df_eval <- eval_methods(hub_cqr_qsa_ensemble, summarise_by = "horizon")
+p3 <- plot_eval(df_eval, base_size = 8)
+
+df_eval <- eval_methods(hub_cqr_qsa_ensemble, summarise_by = "quantile")
+p4 <- plot_eval(df_eval, base_size = 8)
+
+(p1 + p2) / (p3 + p4)
 ```

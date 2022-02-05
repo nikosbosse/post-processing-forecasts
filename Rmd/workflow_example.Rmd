@@ -61,7 +61,8 @@ df_combined_1 <- collect_predictions(df_list)
 # use prefitted data
 uk_cqr_qsa <- readr::read_rds(here::here("data_results", "uk_cqr_qsa_uniform.rds"))
 uk_cqr_qsa_ensemble <- readr::read_rds(
-  here::here("data_results", "uk_cqr_qsa_uniform_ensemble.rds"))
+  here::here("data_results", "uk_cqr_qsa_uniform_ensemble.rds")
+)
 ```
 
 ```{r}
@@ -78,7 +79,13 @@ uk_cqr_qsa_ensemble |>
 ## for given `model`, `location`, `target_type`, `quantile` and `horizon`
 
 ```{r}
-plot_intervals(uk_cqr_qsa, models, locations, target_type = "Cases", quantile = 0.01, horizon = 1)
+models <- "epiforecasts-EpiExpert"
+locations <- "GB"
+
+plot_intervals(
+  uk_cqr_qsa, models, locations,
+  target_type = "Cases", quantile = 0.05, horizon = 1
+)
 ```
 
 ## for given `model`, `location` and `quantile` and different `horizons`

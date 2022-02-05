@@ -57,7 +57,9 @@ plot_intervals <- function(df, model = NULL, location = NULL,
     filter_horizons(horizon) |>
     setup_intervals_plot() +
     ggplot2::labs(
-      title = stringr::str_glue("Predicted {target} in {location_name} {h}"),
+      title = stringr::str_glue(
+        "Predicted Incidences ({target} per 100k) in {location_name} {h}"
+      ),
       subtitle = stringr::str_glue("model: {model}   |   quantile: {quantile}")
     ) +
     set_labels() +
@@ -122,7 +124,9 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
         scales = "free_y"
       ) +
       ggplot2::labs(
-        title = stringr::str_glue("Prediction Intervals in {location_name}"),
+        title = stringr::str_glue(
+          "Predicted Incidences (per 100k) in {location_name}"
+        ),
         subtitle = stringr::str_glue("model: {model}   |   quantile: {q}")
       ) +
       set_labels() +
@@ -136,7 +140,9 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
         scales = "free_y"
       ) +
       ggplot2::labs(
-        title = stringr::str_glue("Prediction Intervals in {location_name} {h}"),
+        title = stringr::str_glue(
+          "Predicted Incidenced (per 100k) in {location_name} {h}"
+        ),
         subtitle = stringr::str_glue("model: {model}")
       ) +
       set_labels() +

@@ -32,7 +32,7 @@ eval_one_category <- function(df_combined, summarise_by) {
   # move ensemble column to the last position in data frame
   if ("ensemble" %in% colnames(wide_format)) {
     wide_format <- wide_format |>
-      dplyr::relocate(ensemble, .after = dplyr::last_col())
+      dplyr::relocate(.data$ensemble, .after = dplyr::last_col())
   }
 
   all_columns <- colnames(wide_format)
@@ -134,9 +134,9 @@ eval_methods <- function(df_combined, summarise_by, margins = FALSE,
 
   result_long_format <- eval_one_category(df_combined, summarise_by)
 
-  # sort first column in increasing order, surprisingly this works
+  # sort first column and then second column in increasing order, surprisingly this works
   result_long_format <- result_long_format |>
-    dplyr::arrange(result_long_format[[1]])
+    dplyr::arrange(result_long_format[[1]], result_long_format[[2]])
 
   # if only one category is specified
   if (length(c(summarise_by)) == 1) {
@@ -156,9 +156,16 @@ eval_methods <- function(df_combined, summarise_by, margins = FALSE,
 
   # either margins or table averages can be added
   if (margins) {
-    row_margins <- eval_one_category(df_combined, summarise_by = summarise_by[1]) |>
+    row_margins_df <- eval_one_category(df_combined, summarise_by = summarise_by[1])
+    # sort first column to keep same order as rows in 'result_wide_format'
+    row_margins <- row_margins_df |>
+      dplyr::arrange(row_margins_df[[1]]) |>
       dplyr::pull(.data$relative_change)
-    col_margins <- eval_one_category(df_combined, summarise_by = summarise_by[2]) |>
+
+    col_margins_df <-  eval_one_category(df_combined, summarise_by = summarise_by[2])
+    # sort first column to keep same order as columns in 'result_wide_format'
+    col_margins <- col_margins_df |> 
+      dplyr::arrange(col_margins_df[[1]]) |> 
       dplyr::pull(.data$relative_change)
 
     return(

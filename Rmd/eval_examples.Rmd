@@ -211,7 +211,8 @@ df_eval <- eval_methods(hub_cqr_qsa_ensemble, summarise_by = "location_name")
 p1 <- plot_eval(df_eval, base_size = 8) + ggplot2::labs(y = NULL)
 
 df_eval <- eval_methods(
-  hub_cqr_qsa_ensemble |> dplyr::filter(!location_name %in% c("Poland", "Finland")),
+  hub_cqr_qsa_ensemble |> 
+    dplyr::filter(!location_name %in% c("Poland", "Finland")),
   summarise_by = "location_name"
 )
 p2 <- plot_eval(df_eval, base_size = 8) + ggplot2::labs(y = NULL)

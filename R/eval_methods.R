@@ -116,6 +116,10 @@ eval_methods <- function(df_combined, summarise_by, margins = FALSE,
   if ((margins && row_averages) || (margins && col_averages)) {
     stop("Either margins or averages can be specified.")
   }
+  
+  # plot_eval() needs to know used methods for plot title
+  methods <- unique(df_combined$method)
+  methods <- methods[methods != "original"]
 
   result_long_format <- eval_one_category(df_combined, summarise_by)
 
@@ -128,8 +132,10 @@ eval_methods <- function(df_combined, summarise_by, margins = FALSE,
     return(
       result_long_format |>
         round_output(round_digits) |>
+        `attr<-`("methods", methods) |> 
         # plot_eval() needs to know original colnames after pivoting
         `attr<-`("summarise_by", summarise_by)
+        
     )
   }
 
@@ -148,6 +154,7 @@ eval_methods <- function(df_combined, summarise_by, margins = FALSE,
     return(
       add_margins(result_wide_format, row_margins, col_margins) |>
         round_output(round_digits) |>
+        `attr<-`("methods", methods) |> 
         `attr<-`("summarise_by", summarise_by)
     )
   }
@@ -163,6 +170,7 @@ eval_methods <- function(df_combined, summarise_by, margins = FALSE,
   return(
     result_wide_format |>
       round_output(round_digits) |>
+      `attr<-`("methods", methods) |> 
       `attr<-`("summarise_by", summarise_by)
   )
 }

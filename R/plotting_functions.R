@@ -1,6 +1,7 @@
 #' @importFrom rlang .data
 
-plot_quantiles <- function(df, model = NULL, location = NULL, quantiles = c(0.05, 0.5, 0.95)) {
+plot_quantiles <- function(df, model = NULL, location = NULL,
+                           quantiles = c(0.05, 0.5, 0.95)) {
   l <- process_model_input(df, model)
   df <- l$df
   model <- l$model
@@ -154,10 +155,6 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
 }
 
 plot_eval <- function(df_eval, heatmap = TRUE, base_size = 9) {
-  # use attributes for axis labels
-  orig_columns <- attr(df_eval, which = "summarise_by")
-  first_colname <- orig_columns[1]
-
   if (ncol(df_eval) > 2 && !heatmap) {
     stop(paste(
       "Barplot is only available in one dimension",
@@ -165,27 +162,20 @@ plot_eval <- function(df_eval, heatmap = TRUE, base_size = 9) {
     ))
   }
 
-  if (length(orig_columns) == 2) {
-    xlabel <- orig_columns[2]
-  } else {
-    xlabel <- NULL
-  }
+  title <- get_plot_title(df_eval)
+
+  summarise_by <- attr(df_eval, which = "summarise_by")
+  xlabel <- get_xlabel(summarise_by)
+  first_colname <- summarise_by[1]
 
   # for limits of color palette
-  max_value <- df_eval |>
-    # exclude numeric quantile column when taking max of dataframe
-    # where() leads to warning in RCMDCHECK, prefixing with tidyselect:::where()
-    # does not solve it, discussed here:
-    # https://github.com/r-lib/tidyselect/issues/201
-    dplyr::select(-1 & tidyselect:::where(is.numeric)) |>
-    abs() |>
-    max(na.rm = TRUE)
+  max_value <- get_max_value(df_eval)
 
   # keep y-axis order the same as in input dataframe
   df_eval[[1]] <- factor(df_eval[[1]], levels = df_eval[[1]])
 
   if (!heatmap) {
-    return(plot_bars(df_eval, first_colname, max_value, base_size))
+    return(plot_bars(df_eval, title, first_colname, max_value, base_size))
   }
 
   # this part belongs to heatmap plot
@@ -203,5 +193,5 @@ plot_eval <- function(df_eval, heatmap = TRUE, base_size = 9) {
     df_plot[[2]] <- ""
   }
 
-  plot_heatmap(df_plot, first_colname, max_value, xlabel, base_size)
+  plot_heatmap(df_plot, title, first_colname, max_value, xlabel, base_size)
 }

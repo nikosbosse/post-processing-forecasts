@@ -62,10 +62,13 @@ plot_eval(df_eval, heatmap = FALSE)
 
 ```{r}
 eval_methods(uk_cqr, summarise_by = c("model", "target_type"))
-eval_methods(uk_cqr, summarise_by = c("model", "horizon"))
 
-df_eval <- eval_methods(uk_cqr, summarise_by = c("horizon", "target_type"))
-plot_eval(df_eval)
+# plots actually quite nice :)
+df_eval <- eval_methods(uk_cqr, summarise_by = c("quantile", "model"))
+plot_eval(df_eval) + ggplot2::labs(x = NULL)
+
+df_eval <- eval_methods(uk_cqr, summarise_by = c("model", "horizon"))
+plot_eval(df_eval) + ggplot2::labs(y = NULL)
 ```
 
 ## Add marginal relative changes
@@ -74,16 +77,12 @@ plot_eval(df_eval)
 # not really informative, since margins are dominated by category with largest
 # values, here "Cases"
 # => these margins are almost identical to one row / column of table
-
-# sorted by increasing relative changes
 eval_methods(uk_cqr, summarise_by = "model")
-eval_methods(uk_cqr, summarise_by = "target_type")
+eval_methods(uk_cqr, summarise_by = "horizon")
 
-# not sorted by relative changes
-# TODO: Fix order of margins
 df_eval <- eval_methods(
   uk_cqr,
-  summarise_by = c("model", "target_type"), margins = TRUE
+  summarise_by = c("model", "horizon"), margins = TRUE
 )
 plot_eval(df_eval)
 ```
@@ -211,7 +210,7 @@ df_eval <- eval_methods(hub_cqr_qsa_ensemble, summarise_by = "location_name")
 p1 <- plot_eval(df_eval, base_size = 8) + ggplot2::labs(y = NULL)
 
 df_eval <- eval_methods(
-  hub_cqr_qsa_ensemble |> 
+  hub_cqr_qsa_ensemble |>
     dplyr::filter(!location_name %in% c("Poland", "Finland")),
   summarise_by = "location_name"
 )

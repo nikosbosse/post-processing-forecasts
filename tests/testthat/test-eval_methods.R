@@ -146,15 +146,26 @@ margins_models_horizons <- eval_methods(
   summarise_by = c("model", "horizon"), margins = TRUE
 )
 
-row_margins <- margins_models_horizons$margins
-col_margins <- margins_models_horizons[nrow(margins_models_horizons), ]
+row_margins <- margins_models_horizons$margins |> round(digits = 4)
+col_margins <- margins_models_horizons[nrow(margins_models_horizons), ] |>
+  as.numeric() |>
+  round(digits = 4)
 
 test_that("margins are added correctly", {
-  expect_equal(sum(row_margins, na.rm = TRUE), sum(eval_models$relative_change))
   expect_equal(
-    sum(as.numeric(col_margins), na.rm = TRUE),
-    sum(eval_horizons$relative_change)
+    na.omit(row_margins), eval_models$relative_change,
+    ignore_attr = TRUE
   )
+  expect_equal(sum(row_margins, na.rm = TRUE), sum(eval_models$relative_change))
+
+  expect_equal(
+    na.omit(col_margins), eval_horizons$relative_change,
+    ignore_attr = TRUE
+  )
+  expect_equal(
+    sum(col_margins, na.rm = TRUE), sum(eval_horizons$relative_change)
+  )
+
   expect_equal(attr(margins_models_horizons, "summarise_by"), c("model", "horizon"))
 })
 

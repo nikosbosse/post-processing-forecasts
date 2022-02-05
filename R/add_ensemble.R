@@ -3,7 +3,7 @@
 get_X_y <- function(df_combined, methods, m, t, h, q) {
   df_combined |>
     dplyr::filter(
-      model == m, target_type == t, horizon == h, quantile %in% q
+      .data$model == m, .data$target_type == t, .data$horizon == h, .data$quantile %in% q
     ) |>
     tidyr::pivot_wider(
       names_from = "method", values_from = "prediction"
@@ -101,7 +101,7 @@ add_ensemble <- function(df_combined, per_quantile_weights = TRUE,
 
   # overwrite subset of prediction column in each iteration
   # same dimensions as data for single method => can be appended at the end
-  ensemble_df <- df_combined |> dplyr::filter(method == "original")
+  ensemble_df <- df_combined |> dplyr::filter(.data$method == "original")
 
   methods <- unique(df_combined$method)
   methods <- methods[methods != "original"]

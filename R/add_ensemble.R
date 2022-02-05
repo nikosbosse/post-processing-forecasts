@@ -1,3 +1,5 @@
+#' @importFrom rlang .data
+
 get_X_y <- function(df_combined, methods, m, t, h, q) {
   df_combined |>
     dplyr::filter(
@@ -6,7 +8,7 @@ get_X_y <- function(df_combined, methods, m, t, h, q) {
     tidyr::pivot_wider(
       names_from = "method", values_from = "prediction"
     ) |>
-    dplyr::select(dplyr::all_of(methods), true_value)
+    dplyr::select(dplyr::all_of(methods), .data$true_value)
 }
 
 compute_weights <- function(X_training, y_training) {
@@ -66,9 +68,9 @@ update_subset_ensemble <- function(df_combined, ensemble_df, cv_init_training,
 
   # (m x n) matrix where each column is part of the convex combination
   X_training <- X_y_training |>
-    dplyr::select(-true_value) |>
+    dplyr::select(-.data$true_value) |>
     as.matrix()
-  
+
   # (m x 1) matrix with true values
   y_training <- as.matrix(X_y_training$true_value)
 
@@ -77,7 +79,7 @@ update_subset_ensemble <- function(df_combined, ensemble_df, cv_init_training,
   X_inference <- df_combined |>
     # compute predictions on training and validation set
     get_X_y(methods, m, t, h, q) |>
-    dplyr::select(-true_value) |>
+    dplyr::select(-.data$true_value) |>
     as.matrix()
 
   ensemble_predictions <- X_inference %*% weights

@@ -1,42 +1,53 @@
 #' @importFrom rlang .data
 
+apply_scoring <- function(df_combined, summarise_by) {
+  df_combined |>
+    extract_validation_set() |>
+    scoringutils::score() |>
+    scoringutils::summarise_scores(by = c("method", summarise_by)) |>
+    dplyr::select(.data$method:.data$interval_score)
+}
+
+output_single_method <- function(wide_format, method_names) {
+  # outputs data frame with two columns:
+  # first column = selected category (e.g. target_type), second column =
+  # relative change compared to original predictions in input data
+  wide_format |>
+    dplyr::mutate(
+      relative_change = (.data[[method_names]] - .data$original) / .data$original
+    ) |>
+    dplyr::select(-c(.data[[method_names]], .data$original))
+}
+
 eval_one_category <- function(df_combined, summarise_by) {
   if (dplyr::n_distinct(df_combined$method) > 2 && length(summarise_by) == 2) {
     stop("Multiple categories can only be evaluated for a single method.")
   }
 
-  wide_format <- df_combined |>
-    extract_validation_set() |>
-    scoringutils::score() |>
-    scoringutils::summarise_scores(by = c("method", summarise_by)) |>
-    dplyr::select(.data$method:.data$interval_score) |>
+  wide_format <- apply_scoring(df_combined, summarise_by) |>
     tidyr::pivot_wider(
       names_from = .data$method, values_from = .data$interval_score
     )
-  
+
   # move ensemble column to the last position in data frame
   if ("ensemble" %in% colnames(wide_format)) {
-    wide_format <- wide_format |> dplyr::relocate(ensemble, .after = dplyr::last_col())
+    wide_format <- wide_format |>
+      dplyr::relocate(ensemble, .after = dplyr::last_col())
   }
 
   all_columns <- colnames(wide_format)
   method_names <- all_columns[!all_columns %in% c(summarise_by, "original")]
 
   if (length(method_names) == 1) {
-    # outputs data frame with two columns:
-    # first column = selected category (e.g. target_type), second column =
-    # relative change compared to original predictions in input data
-    output_df <- wide_format |>
-      dplyr::mutate(relative_change = (.data[[method_names]] - .data$original) / .data$original) |>
-      dplyr::select(-c(.data[[method_names]], .data$original))
-
-    return(output_df)
+    return(output_single_method(wide_format, method_names))
   }
 
   # add one column of relative change for each method in method column of df_combined
-  # output column names are e.g. 'cqr' and 'qsa_uniform', hence the existing columns are overwritten and only the 'original' column has to be dropped
+  # output column names are e.g. 'cqr' and 'qsa_uniform', hence the existing
+  # columns are overwritten and only the 'original' column has to be dropped
   for (method_name in method_names) {
-    wide_format[method_name] <- (wide_format[method_name] - wide_format["original"]) / wide_format["original"]
+    wide_format[method_name] <-
+      (wide_format[method_name] - wide_format["original"]) / wide_format["original"]
   }
 
   wide_format |> dplyr::select(-.data$original)
@@ -116,7 +127,7 @@ eval_methods <- function(df_combined, summarise_by, margins = FALSE,
   if ((margins && row_averages) || (margins && col_averages)) {
     stop("Either margins or averages can be specified.")
   }
-  
+
   # plot_eval() needs to know used methods for plot title
   methods <- unique(df_combined$method)
   methods <- methods[methods != "original"]
@@ -132,10 +143,9 @@ eval_methods <- function(df_combined, summarise_by, margins = FALSE,
     return(
       result_long_format |>
         round_output(round_digits) |>
-        `attr<-`("methods", methods) |> 
+        `attr<-`("methods", methods) |>
         # plot_eval() needs to know original colnames after pivoting
         `attr<-`("summarise_by", summarise_by)
-        
     )
   }
 
@@ -154,7 +164,7 @@ eval_methods <- function(df_combined, summarise_by, margins = FALSE,
     return(
       add_margins(result_wide_format, row_margins, col_margins) |>
         round_output(round_digits) |>
-        `attr<-`("methods", methods) |> 
+        `attr<-`("methods", methods) |>
         `attr<-`("summarise_by", summarise_by)
     )
   }
@@ -170,7 +180,7 @@ eval_methods <- function(df_combined, summarise_by, margins = FALSE,
   return(
     result_wide_format |>
       round_output(round_digits) |>
-      `attr<-`("methods", methods) |> 
+      `attr<-`("methods", methods) |>
       `attr<-`("summarise_by", summarise_by)
   )
 }

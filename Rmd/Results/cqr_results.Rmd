@@ -51,7 +51,8 @@ The corresponding prediction interval before and after CQR can be plotted with t
 
 ```{r}
 plot_intervals(
-  uk_cqr, model = "seabbs", target_type = "Cases", horizon = 3, quantile = 0.1
+  uk_cqr,
+  model = "seabbs", target_type = "Cases", horizon = 3, quantile = 0.1
 )
 ```
 
@@ -59,7 +60,8 @@ To visualize the trend along the horizon dimension or for different quantiles fo
 
 ```{r}
 plot_intervals_grid(
-  uk_cqr, model = "seabbs", quantile = 0.1, facet_by = "horizon"
+  uk_cqr,
+  model = "seabbs", quantile = 0.1, facet_by = "horizon"
 )
 ```
 
@@ -83,11 +85,11 @@ Let us first replicate the setting from the first plot and analyze if CQR actual
 Since we are primarily interested in out-of-sample performance we filter the data frame down to the validation set:
 
 ```{r}
-uk_cqr |> 
+uk_cqr |>
   extract_validation_set() |>
-  scoringutils::score() |> 
+  scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method", "model", "target_type", "horizon", "quantile")) |>
-  dplyr::filter(model == "seabbs", target_type == "Cases", horizon == 3, quantile == 0.1) |> 
+  dplyr::filter(model == "seabbs", target_type == "Cases", horizon == 3, quantile == 0.1) |>
   dplyr::select(method:dispersion)
 ```
 
@@ -96,9 +98,9 @@ Indeed, CQR leads to a lower interval score by increasing the dispersion/spread 
 In contrast, we can aggregate over all models, target types, horizons and quantiles and evaluate the *overall* performance of the CQR method:
 
 ```{r}
-uk_cqr |> 
+uk_cqr |>
   extract_validation_set() |>
-  scoringutils::score() |> 
+  scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method")) |>
   dplyr::select(method:dispersion)
 ```
@@ -164,7 +166,8 @@ This can be achieved for rows and/or columns with the `row_averages` and `col_av
 
 ```{r}
 df_mod_tar <- eval_methods(
-  uk_cqr, summarise_by = c("model", "target_type"), 
+  uk_cqr,
+  summarise_by = c("model", "target_type"),
   row_averages = TRUE, col_averages = TRUE
 )
 df_mod_tar
@@ -195,7 +198,8 @@ For that reason the marginal changes can be added to the two-dimensional table w
 
 ```{r}
 eval_mod_hor <- eval_methods(
-  uk_cqr, summarise_by = c("model", "horizon"), margins = TRUE
+  uk_cqr,
+  summarise_by = c("model", "horizon"), margins = TRUE
 )
 ```
 
@@ -215,4 +219,144 @@ While the marginal performance of all models except `EuroCOVIDhub-baseline` is i
 hub_1 <- readr::read_rds(here::here("data_results", "hub_cqr_1.rds"))
 hub_2 <- readr::read_rds(here::here("data_results", "hub_cqr_2.rds"))
 hub_cqr <- dplyr::bind_rows(hub_1, hub_2)
+```
+
+For analyzing the impact of CQR on the European Hub Data, we selected a subset of six different models.
+In contrast to the UK Dataset we can now analyze performance differences between $18$ European countries.
+
+```{r}
+hub_cqr |> dplyr::count(model)
+hub_cqr |> dplyr::count(location_name)
+```
+
+Let us first get a quick impression for the predictions in Germany:
+
+```{r}
+plot_intervals_grid(hub_cqr, model = "EuroCOVIDhub-ensemble", location = "DE", quantiles = 0.1)
+```
+
+Here the CQR adjustments are more interesting than for the UK Data:
+CQR appears to extend the prediction intervals for `Cases` whereas it reduced the spread for `Deaths`.
+
+We can check if this statement holds averaged across all models and quantiles:
+
+```{r}
+hub_cqr |>
+  dplyr::filter(location_name == "Germany") |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "target_type")) |>
+  dplyr::arrange(target_type) |>
+  dplyr::select(method:dispersion)
+```
+
+While CQR improves the interval score for both `target_types`, the dispersion also increases in both cases such that the previous finding does not generalize.
+
+Next, we consider the effects of all models for each country:
+
+```{r}
+df_mod_loc <- eval_methods(hub_cqr, summarise_by = c("model", "location_name"))
+plot_eval(df_mod_loc)
+```
+
+This plot is incredibly uninformative since Poland seems to be a huge outlier for **all** models, but particularly for the `IEM_Health-CovidProject` predictions.
+Here, CQR makes the forecast intervals around $400$% worse, which is quite hard to believe.
+
+Let us briefly look into the scores for Poland in more detail by computing the raw scores on the training and validation set for CQR separately:
+
+```{r}
+cqr_poland <- hub_cqr |>
+  dplyr::filter(location_name == "Poland")
+
+cqr_poland |>
+  extract_training_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model")) |>
+  dplyr::arrange(model) |>
+  dplyr::select(method:dispersion)
+
+cqr_poland |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model")) |>
+  dplyr::arrange(model) |>
+  dplyr::select(method:dispersion)
+```
+
+The discrepancy is striking!
+This indicates a sudden change of the COVID situation in Poland right around where we splitted the data.
+We compare the development of COVID Cases between Poland and Germany
+
+```{r}
+hub_cqr |>
+  dplyr::filter(location %in% c("PL", "DE"), method == "original", model == "IEM_Health-CovidProject", target_type == "Cases", quantile == 0.05, horizon == 1) |>
+  dplyr::select(location_name, forecast_date, true_value) |>
+  tidyr::pivot_wider(names_from = location_name, values_from = true_value) |>
+  print(n = Inf)
+
+p1 <- cqr_poland |>
+  plot_intervals(model = "IEM_Health-CovidProject", target_type = "Cases")
+
+p2 <- hub_cqr |>
+  dplyr::filter(location == "DE") |>
+  plot_intervals(model = "IEM_Health-CovidProject", target_type = "Cases")
+
+p1 + p2
+```
+
+In both countries the incidence dropped drastically during the summer months of 2021.
+While the number of Cases increased again in autumn in Germany, the incidence in Poland stayed very low (at least in the dataset).
+Thus the distribution while training CQR looks very different from the distribution of Cases during inference.
+
+Since the plot shows 1 week ahead forecasts the original predictions could be adapted quite fast based on human knowledge about the current situation at that time.
+CQR in contrast adjusts slowly to the distribution shift.
+
+We exclude Poland from the further analysis to obtain more meaningful visual illustrations for the remaining countries.
+Let's display the same picture from before without Poland:
+
+```{r}
+cqr_no_poland <- hub_cqr |>
+  dplyr::filter(location_name != "Poland")
+
+df_mod_loc <- eval_methods(cqr_no_poland, summarise_by = c("model", "location_name"))
+plot_eval(df_mod_loc)
+```
+
+For all other countries CQR has the largest improvements for the `USC-SIkJalpha` model that contains predictions from a research group of the University of California.
+
+In case of the UK Data we could improve forecasts most when considering large forecast horizons, quantiles in the tails of the predictive distribution and Cases instaed of Deaths.
+We now investigate if these effects persist for the European Forecast Hub, but now stratified by country:
+
+```{r}
+df_hor_loc <- eval_methods(cqr_no_poland, summarise_by = c("horizon", "location_name"))
+plot_eval(df_hor_loc)
+
+df_quant_loc <- eval_methods(cqr_no_poland, summarise_by = c("quantile", "location_name"))
+plot_eval(df_quant_loc)
+
+df_target_loc <- eval_methods(cqr_no_poland, summarise_by = c("target_type", "location_name"))
+plot_eval(df_target_loc)
+```
+
+Indeed, the same trends are identifiable, although to a much more moderate degree.
+
+After removing Poland form the data now *Croatia* seems to be an outlier, where CQR does not improve the interval score across many scenarios.
+
+```{r}
+hub_cqr |>
+  dplyr::filter(location_name == "Croatia") |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model", "target_type", "quantile", "horizon")) |>
+  dplyr::filter(target_type == "Cases", horizon == 2, quantile == 0.2) |>
+  dplyr::arrange(model) |>
+  dplyr::select(method:dispersion)
+```
+
+In this case, however, this performance drop is exclusively caused by the `EuroCOVIDhub-baseline` model, where CQR increases the interval width by a large amount.
+For this specific covariate combination the new adjusted intervals contain the true value only in few more situations than the original predictions at the cost of a much lower precision:
+
+```{r}
+hub_cqr |>
+  dplyr::filter(location_name == "Croatia") |>
+  plot_intervals(model = "EuroCOVIDhub-baseline", target_type = "Cases", horizon = 2, quantile = 0.2)
 ```

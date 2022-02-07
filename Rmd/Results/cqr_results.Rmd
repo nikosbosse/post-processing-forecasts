@@ -107,7 +107,7 @@ uk_cqr |>
 
 The result shows the same trend: better and wider overall prediction intervals.
 
-Of particular interest might be the question which models benefitted most from CQR adjustments.
+Of particular interest might be the question which models benefited most from CQR adjustments.
 This question can, of course, be answered in a similar way to above by including `model` in the `by` argument of `summarise_scores()`.
 
 ## `eval_methods()` and `plot_eval()`  

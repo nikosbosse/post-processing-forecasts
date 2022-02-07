@@ -173,9 +173,9 @@ eval_methods(uk_cqr, summarise_by = "model") |>
 
 .pull-right[ 
 
-- For many categories the magnitudes of the relative change in are difficult to compare in table output
+- For many categories the magnitudes of the relative change is difficult to compare in the table output
 
-- Visualize table either with as barplot or as heatmap
+- Visualize table either as barplot or heatmap
 
 - Focus on models that participated regularly in the UK Forecasting Challenge
 

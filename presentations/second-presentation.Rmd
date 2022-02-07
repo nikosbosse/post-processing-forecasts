@@ -41,9 +41,26 @@ hub_2 <- readr::read_rds(here::here("data_results", "hub_cqr_2.rds"))
 hub_cqr <- dplyr::bind_rows(hub_1, hub_2)
 
 uk_cqr_qsa_ensemble <- readr::read_rds(
-  here::here("data_results", "uk_cqr_qsa_uniform_ensemble.rds"))
+  here::here("data_results", "uk_cqr_qsa_uniform_ensemble.rds")
+)
 hub_cqr_qsa_ensemble <- readr::read_rds(
-  here::here("data_results", "hub_cqr_qsa_uniform_ensemble_subset.rds"))
+  here::here("data_results", "hub_cqr_qsa_uniform_ensemble_subset.rds")
+)
+
+# helper functions to round values in data frame for nicer display in slides
+round_output <- function(df, digits) {
+  df |> mutate(across(.cols = where(is.numeric), .fns = ~ round(.x, digits)))
+}
+
+display_table <- function(df, digits = 3, align = "left") {
+  df |>
+    round_output(digits = digits) |>
+    gt::gt() |>
+    gt::tab_options(
+      table.align = align, row.striping.include_table_body = TRUE,
+      data_row.padding = gt::px(15)
+    )
+}
 ```
 
 <!-- here content of second slide -->
@@ -54,7 +71,7 @@ hub_cqr_qsa_ensemble <- readr::read_rds(
 
 --
 
-- Original forecasts from two data sources: The **UK Covid-19 Crowd Forecasting Challenge**<sup>1</sup> (includes forecasts of non-expert individuals) and the **European Forecast Hub**<sup>2</sup> (includes forecasts from international research groups)
+- Original forecasts from two data sources: The **UK Covid-19 Crowd Forecasting Challenge**<sup>1</sup> (includes forecasts of non-expert individuals) and the **European Forecast Hub**<sup>2</sup> (forecasts from international research groups)
 
 .footnote[ 
 [1] https://www.crowdforecastr.org/2021/05/11/uk-challenge/ <br>
@@ -66,10 +83,150 @@ hub_cqr_qsa_ensemble <- readr::read_rds(
 - The Quality of prediction intervals is measured by the **Weighted Interval Score** based on a trade-off between interval coverage and precision  
 
 ---
+class: inverse, center, middle
+
+# Conformalized Quantile Regression (CQR)
+
+---
+
+```{r, echo=FALSE, fig.height=5}
+plot_intervals(
+  uk_cqr,
+  model = "seabbs", target_type = "Cases", horizon = 3, quantile = 0.1
+)
+```
+
+---
 
 ## CQR for UK Data
 
- 
+.left-30[ 
+- Hypotheses: For most models (particular by individual humans) CQR makes the prediction intervals **wider** increasing the coverage at the cost of precision
+
+- Often leads to improvement of Weighted Interval Score
+]
+
+--
+
+.right-65[
+
+For this specific covariate combination:
+
+```{r, echo=FALSE}
+uk_cqr |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model", "target_type", "horizon", "quantile")) |>
+  dplyr::filter(model == "seabbs", target_type == "Cases", horizon == 3, quantile == 0.1) |>
+  dplyr::select(method:dispersion) |>
+  display_table()
+```
+
+Aggregated over all **models**, **target types**, **horizons** and **quantiles**:
+
+```{r, echo=FALSE}
+uk_cqr |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method")) |>
+  dplyr::select(method:dispersion) |>
+  display_table()
+```
+
+]
+
+---
+
+## Evaluation
+
+- Apart from the absolute Interval Score change the **relative** or **percentage** change after applying CQR might be of interest
+
+--
+
+- New evaluation functions: **eval_methods()** and **plot_eval()**   
+
+--
+
+- Negative values indicate a score improvement, positive values a larger/worse interval score
+
+--
+
+- All displayed values are computed exclusively from the **validation** (out-of-sample) data 
+
+---
+
+## Which model benefits most?
+
+.pull-left[ 
+
+```{r}
+eval_methods(uk_cqr, summarise_by = "model") |>
+  display_table()
+```
+
+]
+
+--
+
+.pull-right[ 
+
+- For many categories the magnitudes of the relative change in are difficult to compare in table output
+
+- Visualize table either with as barplot or as heatmap
+
+- Focus on models that participated regularly in the UK Forecasting Challenge
+
+]
+
+---
+
+```{r, echo=FALSE, fig.height=5}
+df_eval <- eval_methods(uk_cqr, summarise_by = "model")
+
+p1 <- plot_eval(df_eval, heatmap = FALSE, base_size = 8) +
+  ggplot2::labs(y = NULL) +
+  ggplot2::labs(title = "CQR Improvements by Model")
+p2 <- plot_eval(df_eval, base_size = 8) +
+  ggplot2::labs(y = NULL) +
+  ggplot2::labs(title = "CQR Improvements by Model")
+
+p1 + p2
+```
+
+---
+
+```{r, echo=FALSE, fig.height=5}
+df_mod_quant <- eval_methods(uk_cqr, summarise_by = c("model", "quantile"))
+
+b <- "black"
+t <- "transparent"
+
+p1 <- plot_eval(df_mod_quant, base_size = 8) +
+  ggplot2::labs(
+    y = NULL,
+    title = "CQR Improvements by Model and Quantile",
+    subtitle = NULL
+  ) +
+  ggplot2::theme(
+    # 'hack' to display only every second label on x - axis
+    axis.text.x = ggplot2::element_text(color = c(b, rep(c(t, b), 11)))
+  )
+
+df_mod_hor <- eval_methods(uk_cqr, summarise_by = c("model", "horizon"))
+p2 <- plot_eval(df_mod_hor, base_size = 8) +
+  ggplot2::labs(
+    y = NULL, title = "CQR Improvements by Model and Horizon",
+    subtitle = NULL
+  )
+
+p1 + p2
+```
+
+---
+
+## CQR for European Forecast Hub Data
+
+
 
 ---
 class: inverse, center, middle
@@ -166,4 +323,3 @@ class: center, middle, inverse
 --
 
 - Comprehensive analysis of strength and weaknesses of each method 
-

@@ -35,6 +35,9 @@ devtools::load_all(".")
 library(dplyr)
 library(patchwork)
 
+# cache chunks that take a long time
+cache <- TRUE
+
 uk_cqr <- readr::read_rds(here::here("data_results", "uk_cqr.rds"))
 hub_1 <- readr::read_rds(here::here("data_results", "hub_cqr_1.rds"))
 hub_2 <- readr::read_rds(here::here("data_results", "hub_cqr_2.rds"))
@@ -180,7 +183,7 @@ eval_methods(uk_cqr, summarise_by = "model") |>
 
 ---
 
-```{r, echo=FALSE, fig.height=5}
+```{r uk-cqr-plots1, echo=FALSE, fig.height=5, cache=cache}
 df_eval <- eval_methods(uk_cqr, summarise_by = "model")
 
 p1 <- plot_eval(df_eval, heatmap = FALSE, base_size = 8) +
@@ -195,7 +198,7 @@ p1 + p2
 
 ---
 
-```{r, echo=FALSE, fig.height=5}
+```{r uk-cqr-plots2, echo=FALSE, fig.height=5, cache=cache}
 df_mod_quant <- eval_methods(uk_cqr, summarise_by = c("model", "quantile"))
 
 b <- "black"
@@ -226,7 +229,173 @@ p1 + p2
 
 ## CQR for European Forecast Hub Data
 
+- We selected $18$ European countries to conduct the analysis
 
+--
+
+- Several interesting questions to investigate:
+
+--
+
+- Do CQR improvements vary across countries?
+
+--
+
+- Do the findings from the much smaller UK Data Set generalize?
+
+--
+
+- For Germany CQR tends to extend original forecast intervals for **Cases** as before but decrease their width for **Deaths**  
+
+---
+
+```{r, echo=FALSE, fig.height=5}
+plot_intervals_grid(hub_cqr, model = "EuroCOVIDhub-ensemble", location = "DE", quantiles = 0.1)
+```
+
+---
+
+## What's wrong with Poland?
+
+.left-65[ 
+
+```{r hub-cqr-all, echo=FALSE, fig.height=5, cache=cache}
+df_mod_loc <- eval_methods(hub_cqr, summarise_by = c("model", "location"))
+plot_eval(df_mod_loc) + ggplot2::labs(y = NULL)
+```
+
+]
+
+.right-30[ 
+
+- Visualization is dominated by the very large negative impact of CQR on Poland
+
+- Have to exclude Poland to gain further insight about the remaining countries
+
+- First, let's figure out why Poland is such an outlier
+
+]
+
+---
+
+.pull-left[ 
+
+## Training Set
+
+```{r hub-cqr-poland-1, echo=FALSE, cache=cache}
+cqr_poland <- hub_cqr |>
+  dplyr::filter(location_name == "Poland")
+
+cqr_poland |>
+  extract_training_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model")) |>
+  dplyr::arrange(model) |>
+  dplyr::select(method:dispersion) |>
+  dplyr::slice_head(n = 6) |>
+  display_table()
+```
+
+]
+
+--
+
+.pull-right[ 
+
+## Validation Set
+
+```{r hub-cqr-poland-2, echo=FALSE, cache=cache}
+cqr_poland |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model")) |>
+  dplyr::arrange(model) |>
+  dplyr::select(method:dispersion) |>
+  dplyr::slice_head(n = 6) |>
+  display_table()
+```
+
+]
+
+--
+
+<br>
+
+Hypothesis: **Distribution Shift** between training period and validation period!
+
+---
+
+```{r hub-cqr-poland-3, echo=FALSE, fig.height=5, cache=cache}
+p1 <- cqr_poland |>
+  plot_intervals(model = "IEM_Health-CovidProject", target_type = "Cases", base_size = 8)
+
+p2 <- hub_cqr |>
+  dplyr::filter(location == "DE") |>
+  plot_intervals(model = "IEM_Health-CovidProject", target_type = "Cases", base_size = 8)
+
+p1 + p2
+```
+
+---
+
+## Findings for EU Hub
+
+- As a final step, we exclude Poland and analyze CQR improvements for each combination of country with either **model**, **horizon**, **target type** and **quantile**   
+
+--
+
+- Largest relative performance boost for **USC-SIkJalpha** model from a research group of the University of California
+
+--
+
+- Recall that in the UK Data Set CQR improved interval scores most for **large forecast horizons**, **quantiles in the tails** of the predictive distribution and **Cases** instead of Deaths
+
+--
+
+- Same trends exist for the European Hub Data, although to a much more moderate degree
+
+---
+
+```{r hub-cqr-no-poland-1, echo=FALSE, fig.height=5, cache=cache}
+cqr_no_poland <- hub_cqr |>
+  dplyr::filter(location_name != "Poland")
+
+df_mod_loc <- eval_methods(cqr_no_poland, summarise_by = c("model", "location"))
+p1 <- plot_eval(df_mod_loc, base_size = 8) +
+  ggplot2::labs(
+    x = NULL, y = NULL, title = "CQR Improvements by Model and Location",
+    subtitle = NULL
+  )
+
+df_hor_loc <- eval_methods(cqr_no_poland, summarise_by = c("horizon", "location"))
+p2 <- plot_eval(df_hor_loc, base_size = 8) +
+  ggplot2::labs(
+    x = NULL, title = "CQR Improvements by Horizon and Location",
+    subtitle = NULL
+  )
+
+p1 + p2
+```
+
+---
+
+```{r hub-cqr-no-poland-2, echo=FALSE, fig.height=5, cache=cache}
+df_quant_loc <- eval_methods(cqr_no_poland, summarise_by = c("quantile", "location"))
+p1 <- plot_eval(df_quant_loc, base_size = 8) +
+  ggplot2::labs(
+    x = NULL, title = "CQR Improvements by Quantile and Location",
+    subtitle = NULL
+  )
+
+df_target_loc <- eval_methods(cqr_no_poland, summarise_by = c("target_type", "location"))
+p2 <- plot_eval(df_target_loc, base_size = 8) +
+  ggplot2::labs(
+    x = NULL, y = NULL, title = "CQR Improvements by Target Type and Location",
+    subtitle = NULL
+  )
+
+p1 + p2
+```
 
 ---
 class: inverse, center, middle
@@ -369,8 +538,44 @@ class: center, middle, inverse
 
 --
 
-- Candidate methods: **Quantile Regression Averaging** and modified versions of CQR 
+- Candidate methods: **Quantile Regression Averaging** and **modified** versions of CQR 
 
 --
 
 - Comprehensive analysis of strength and weaknesses of each method 
+
+---
+
+## References
+
+**Traditional CQR Method**
+
+Romano Y., Patterson E., and Candès E. (2019). Conformalized Quantile Regression. *NeurIPS Annual Conference on Neural Information Processing Systems*.
+  - Paper: https://proceedings.neurips.cc/paper/2019/file/5103c3584b063c431bd1268e9b5e76fb-Paper.pdf
+  
+  - Poster: https://github.com/yromano/cqr/blob/master/poster/CQR_Poster.pdf
+
+<br>
+
+**Variations and Extensions of CQR**
+
+Tibshirani R. (2019). Advances and Challenges in Conformal Inference. *Carnegie Mellon University*.
+  - Slides: .underline[www.stat.cmu.edu/~ryantibs/talks/conformal-2019.pdf]
+
+---
+
+## References
+
+**More Information about the UK Covid-19 Forecasting Challenge**
+
+- Website: https://www.crowdforecastr.org/2021/05/11/uk-challenge/
+
+- Evaluation & Ranking: https://epiforecasts.io/uk-challenge/
+
+<br>
+
+**More Information about the European Forecasting Hub**
+
+- Website: https://covid19forecasthub.eu/index.html
+
+- GitHub: https://github.com/epiforecasts/covid19-forecast-hub-europe

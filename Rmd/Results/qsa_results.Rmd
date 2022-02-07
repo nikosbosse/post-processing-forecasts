@@ -263,7 +263,5 @@ Both data set results due have in common that the effect QSA has on the WIS incr
 
 ## Next Steps
 
-In order to better understand these results we might want to do the following:
-- analyze the `epiforecasts-EpiNow2` model results in the UK data set to see if our results in the Eu hub data might be driven by the model
-
-
+The first intuitive step would be to analyze the `epiforecasts-EpiNow2` model results in the UK data set to see if our results in the Eu hub data might be driven by the model. The `epiforecasts-EpiNow2` model is however not part of the UK data set models. Thus we might want to choose another model from the UK data set which is also in the EU hub data to repeat the EU Hub analysis.
+Possible candidates are the `EuroCOVIDhub-ensemble` or the `EuroCOVIDhub-baseline ` model. One might rather choose the former as it preformed better under QSA and the latter was the only model that preformed worse, aggregated over all variables except model.

@@ -146,8 +146,8 @@ df_mod_quant <- eval_methods(uk_cqr, summarise_by = c("model", "quantile"))
 b <- "black"
 t <- "transparent"
 
-p1 <- plot_eval(df_mod_quant, base_size = 8) + 
-  ggplot2::labs(y = NULL) + 
+p1 <- plot_eval(df_mod_quant, base_size = 8) +
+  ggplot2::labs(y = NULL) +
   ggplot2::theme(
     # 'hack' to display only every second label on x - axis
     axis.text.x = ggplot2::element_text(color = c(b, rep(c(t, b), 11)))
@@ -299,7 +299,10 @@ We compare the development of COVID Cases between Poland and Germany
 
 ```{r}
 hub_cqr |>
-  dplyr::filter(location %in% c("PL", "DE"), method == "original", model == "IEM_Health-CovidProject", target_type == "Cases", quantile == 0.05, horizon == 1) |>
+  dplyr::filter(
+    location %in% c("PL", "DE"), method == "original", model == "IEM_Health-CovidProject",
+    target_type == "Cases", quantile == 0.05, horizon == 1
+  ) |>
   dplyr::select(location_name, forecast_date, true_value) |>
   tidyr::pivot_wider(names_from = location_name, values_from = true_value) |>
   print(n = Inf)

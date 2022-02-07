@@ -40,7 +40,8 @@ plot_quantiles <- function(df, model = NULL, location = NULL,
 
 plot_intervals <- function(df, model = NULL, location = NULL,
                            target_type = c("Cases", "Deaths"),
-                           quantile = 0.05, horizon = 1, highlight_cv = TRUE) {
+                           quantile = 0.05, horizon = 1, 
+                           highlight_cv = TRUE, base_size = 9) {
   target <- rlang::arg_match(arg = target_type, values = c("Cases", "Deaths"))
   h <- paste_horizon(horizon)
 
@@ -65,7 +66,7 @@ plot_intervals <- function(df, model = NULL, location = NULL,
     ) +
     set_labels() +
     # making theme specifications before setting general theme does not work!
-    ggplot2::theme_minimal() +
+    ggplot2::theme_minimal(base_size = base_size) +
     modify_theme()
 
   if (highlight_cv) {
@@ -80,7 +81,8 @@ plot_intervals <- function(df, model = NULL, location = NULL,
 
 plot_intervals_grid <- function(df, model = NULL, location = NULL,
                                 facet_by = c("horizon", "quantile"),
-                                quantiles = NULL, horizon = NULL, highlight_cv = FALSE) {
+                                quantiles = NULL, horizon = NULL, 
+                                highlight_cv = FALSE, base_size = 9) {
   facet_by <- rlang::arg_match(arg = facet_by, values = c("horizon", "quantile"))
 
   l <- process_model_input(df, model)
@@ -131,7 +133,7 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
         subtitle = stringr::str_glue("model: {model}   |   quantile: {q}")
       ) +
       set_labels() +
-      ggplot2::theme_light() +
+      ggplot2::theme_light(base_size = base_size) +
       modify_theme()
   } else if (facet_by == "quantile") {
     p <- p +
@@ -147,7 +149,7 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
         subtitle = stringr::str_glue("model: {model}")
       ) +
       set_labels() +
-      ggplot2::theme_light() +
+      ggplot2::theme_light(base_size = base_size) +
       modify_theme()
   }
 

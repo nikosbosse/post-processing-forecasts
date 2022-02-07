@@ -183,7 +183,7 @@ eval_methods(uk_cqr, summarise_by = "model") |>
 
 ---
 
-```{r, echo=FALSE, fig.height=5}
+```{r uk-cqr-plots1, echo=FALSE, fig.height=5, cache=cache}
 df_eval <- eval_methods(uk_cqr, summarise_by = "model")
 
 p1 <- plot_eval(df_eval, heatmap = FALSE, base_size = 8) +
@@ -198,7 +198,7 @@ p1 + p2
 
 ---
 
-```{r, echo=FALSE, fig.height=5}
+```{r uk-cqr-plots2, echo=FALSE, fig.height=5, cache=cache}
 df_mod_quant <- eval_methods(uk_cqr, summarise_by = c("model", "quantile"))
 
 b <- "black"

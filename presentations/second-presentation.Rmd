@@ -235,9 +235,60 @@ class: inverse, center, middle
 
 ---
 
-## QSA - Theory
+## QSA - Intuition
 
+- Define quantile spreads as the distance of a quantile from the median 
 
+- Alternative are distance between neighboring quantiles or between symmetric quantiles
+
+- Median basis makes spreads independent of the number of quantiles and allows for non-symmetry in adjustments
+
+- Risks of quantile cutting 
+
+---
+
+## QSA - Theory 
+
+Let $n$ specify the number of observations in the training set within this combination, $\mathbf{y} \in \mathbb{R}^n$ the vector of true values and $\hat{\mathbf{q}}_1, \ldots, \hat{\mathbf{q}}_p \in \mathbb{R}^n$ vectors of quantile estimates for $p$ different probability levels.
+
+--
+
+Then, for each time series, the quantile spread adjustment computes the quantile spread factors $\mathbf{f}^* \in R^p$ by minimizing the weighted interval score:
+$$
+\begin{aligned}
+\mathbf{f}^*
+= \operatorname*{arg\,min}_{ \mathbf{f} \in R^p} Score_\alpha(\mathbf{y})
+&= \sum_{i=1}^p \sum_{j=1}^n (u_{i,j}^*-l_{i,j}^*) + \frac{2}{\alpha} \cdot (l_{i,j}^*-y_j) \cdot \mathbf{1} (y_j \leq l_{i,j}^*) + \frac{2}{\alpha} \cdot (y_j-u_{i,j}^*) \cdot \mathbf{1}(y_j \geq u_{i,j}^*) \\
+\text{s.t.} \qquad l_{i,j}^* = l_{i,j} + (l_{i,j}-m) * f_i \quad\text{and}\quad 
+u_{i,j}^* = u_{i,j} + (m-u_{i,j}) * f_i 
+\end{aligned}
+$$
+
+---
+
+## QSA - Implementation 
+
+Postforecast offers three flavors of QSA where each restricts $\mathbf{f}^*$ differently:
+- uniform: $i \in [0,1,...,p-1,p] \quad f_i = c$
+- flexibel: no restriction
+- flexibel_symmetric: $i \in [0,1,...,m-1] \quad f_i = f_{p-i}$
+
+Furthermore postforecast provides regularization towards QSA uniform by adding a regularization term $Pen(\mathbf{f})$ with the weight $r$ to the score function: 
+
+$$
+\begin{aligned}
+\mathbf{f}^*
+= \operatorname*{arg\,min}_{\mathbf{f} \in R^p} \ Score_\alpha(\mathbf{y}) + r * Pen(\mathbf{f}) \quad Pen(\mathbf{f}) = \sum_{i=1}^p (f_i - \bar{f})^2 \\
+\text{s.t.} \qquad \bar{f} = \frac{1}{p} \sum_{i=1}^p f_i
+\end{aligned}
+$$
+The optimization uses the function **optim** from the package **stats**<sup>1</sup>. As optimization method we use the quasi-Newton method **BFGS**.
+
+<!-- read in preperation: https://en.wikipedia.org/wiki/Broyden–Fletcher–Goldfarb–Shanno_algorithm and find reference to the paper for footnotes. -->
+
+.footnote[ 
+https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/optim
+]
 
 ---
 

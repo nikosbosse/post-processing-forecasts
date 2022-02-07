@@ -334,7 +334,7 @@ plot_eval(df_mod_loc)
 
 For all other countries CQR has the largest improvements for the `USC-SIkJalpha` model that contains predictions from a research group of the University of California.
 
-In case of the UK Data we could improve forecasts most when considering large forecast horizons, quantiles in the tails of the predictive distribution and Cases instaed of Deaths.
+In case of the UK Data we could improve forecasts most when considering large forecast horizons, quantiles in the tails of the predictive distribution and Cases instead of Deaths.
 We now investigate if these effects persist for the European Forecast Hub, but now stratified by country:
 
 ```{r}

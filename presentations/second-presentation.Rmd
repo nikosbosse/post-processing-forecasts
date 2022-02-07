@@ -1,0 +1,325 @@
+---
+title: "Post-Processing COVID-19 Forecasts"
+subtitle: "- Second Presentation -<br><br>"
+author: "Matthias Herp & Joel Beck"
+date: "10.12.2021"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    nature:
+      slideNumberFormat: "%current% / %total%"
+      beforeInit: "https://platform.twitter.com/widgets.js"
+      # List of highlighting styles: https://highlightjs.org/static/demo/
+      # not all of them work with xaringan
+      highlightStyle: github
+      highlightLines: true
+      highlightSpans: true
+      ratio: 16:9
+      countIncrementalSlides: false
+    # Adds logo to all slides except title slide
+    # set slide class 'hide_logo' to hide logo on particular slides
+    # modify insert-logo.html file with correct file path to logo and desired 
+    # logo position 
+    # https://www.garrickadenbuie.com/blog/xaringan-tip-logo-all-slides/
+    # includes:
+    #   after_body: insert-logo.html
+---
+<!-- here classes for second slide -->
+
+```{r, child="xaringan-setup.Rmd", echo=FALSE}
+
+```
+
+```{r, include=FALSE}
+devtools::load_all(".")
+library(dplyr)
+library(patchwork)
+
+uk_cqr <- readr::read_rds(here::here("data_results", "uk_cqr.rds"))
+hub_1 <- readr::read_rds(here::here("data_results", "hub_cqr_1.rds"))
+hub_2 <- readr::read_rds(here::here("data_results", "hub_cqr_2.rds"))
+hub_cqr <- dplyr::bind_rows(hub_1, hub_2)
+
+uk_cqr_qsa_ensemble <- readr::read_rds(
+  here::here("data_results", "uk_cqr_qsa_uniform_ensemble.rds")
+)
+hub_cqr_qsa_ensemble <- readr::read_rds(
+  here::here("data_results", "hub_cqr_qsa_uniform_ensemble_subset.rds")
+)
+
+# helper functions to round values in data frame for nicer display in slides
+round_output <- function(df, digits) {
+  df |> mutate(across(.cols = where(is.numeric), .fns = ~ round(.x, digits)))
+}
+
+display_table <- function(df, digits = 3, align = "left") {
+  df |>
+    round_output(digits = digits) |>
+    gt::gt() |>
+    gt::tab_options(
+      table.align = align, row.striping.include_table_body = TRUE,
+      data_row.padding = gt::px(15)
+    )
+}
+```
+
+<!-- here content of second slide -->
+
+## Setting
+
+- Post-Processing Covid19 forecasts: Systematically adjust existing prediction intervals with the goal of better out-of-sample performance
+
+--
+
+- Original forecasts from two data sources: The **UK Covid-19 Crowd Forecasting Challenge**<sup>1</sup> (includes forecasts of non-expert individuals) and the **European Forecast Hub**<sup>2</sup> (forecasts from international research groups)
+
+.footnote[ 
+[1] https://www.crowdforecastr.org/2021/05/11/uk-challenge/ <br>
+[2] https://covid19forecasthub.eu/index.html
+]
+
+--
+
+- The Quality of prediction intervals is measured by the **Weighted Interval Score** based on a trade-off between interval coverage and precision  
+
+---
+class: inverse, center, middle
+
+# Conformalized Quantile Regression (CQR)
+
+---
+
+```{r, echo=FALSE, fig.height=5}
+plot_intervals(
+  uk_cqr,
+  model = "seabbs", target_type = "Cases", horizon = 3, quantile = 0.1
+)
+```
+
+---
+
+## CQR for UK Data
+
+.left-30[ 
+- Hypotheses: For most models (particular by individual humans) CQR makes the prediction intervals **wider** increasing the coverage at the cost of precision
+
+- Often leads to improvement of Weighted Interval Score
+]
+
+--
+
+.right-65[
+
+For this specific covariate combination:
+
+```{r, echo=FALSE}
+uk_cqr |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model", "target_type", "horizon", "quantile")) |>
+  dplyr::filter(model == "seabbs", target_type == "Cases", horizon == 3, quantile == 0.1) |>
+  dplyr::select(method:dispersion) |>
+  display_table()
+```
+
+Aggregated over all **models**, **target types**, **horizons** and **quantiles**:
+
+```{r, echo=FALSE}
+uk_cqr |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method")) |>
+  dplyr::select(method:dispersion) |>
+  display_table()
+```
+
+]
+
+---
+
+## Evaluation
+
+- Apart from the absolute Interval Score change the **relative** or **percentage** change after applying CQR might be of interest
+
+--
+
+- New evaluation functions: **eval_methods()** and **plot_eval()**   
+
+--
+
+- Negative values indicate a score improvement, positive values a larger/worse interval score
+
+--
+
+- All displayed values are computed exclusively from the **validation** (out-of-sample) data 
+
+---
+
+## Which model benefits most?
+
+.pull-left[ 
+
+```{r}
+eval_methods(uk_cqr, summarise_by = "model") |>
+  display_table()
+```
+
+]
+
+--
+
+.pull-right[ 
+
+- For many categories the magnitudes of the relative change in are difficult to compare in table output
+
+- Visualize table either with as barplot or as heatmap
+
+- Focus on models that participated regularly in the UK Forecasting Challenge
+
+]
+
+---
+
+```{r, echo=FALSE, fig.height=5}
+df_eval <- eval_methods(uk_cqr, summarise_by = "model")
+
+p1 <- plot_eval(df_eval, heatmap = FALSE, base_size = 8) +
+  ggplot2::labs(y = NULL) +
+  ggplot2::labs(title = "CQR Improvements by Model")
+p2 <- plot_eval(df_eval, base_size = 8) +
+  ggplot2::labs(y = NULL) +
+  ggplot2::labs(title = "CQR Improvements by Model")
+
+p1 + p2
+```
+
+---
+
+```{r, echo=FALSE, fig.height=5}
+df_mod_quant <- eval_methods(uk_cqr, summarise_by = c("model", "quantile"))
+
+b <- "black"
+t <- "transparent"
+
+p1 <- plot_eval(df_mod_quant, base_size = 8) +
+  ggplot2::labs(
+    y = NULL,
+    title = "CQR Improvements by Model and Quantile",
+    subtitle = NULL
+  ) +
+  ggplot2::theme(
+    # 'hack' to display only every second label on x - axis
+    axis.text.x = ggplot2::element_text(color = c(b, rep(c(t, b), 11)))
+  )
+
+df_mod_hor <- eval_methods(uk_cqr, summarise_by = c("model", "horizon"))
+p2 <- plot_eval(df_mod_hor, base_size = 8) +
+  ggplot2::labs(
+    y = NULL, title = "CQR Improvements by Model and Horizon",
+    subtitle = NULL
+  )
+
+p1 + p2
+```
+
+---
+
+## CQR for European Forecast Hub Data
+
+
+
+---
+class: inverse, center, middle
+
+# Quantile Spread Averaging (QSA)
+
+---
+
+## QSA - Theory
+
+
+
+---
+
+## QSA - Application
+
+
+
+---
+class: inverse, center, middle
+
+# Ensemble Model
+
+---
+
+## Ensemble - Idea
+
+- Find the best **convex combination** of post-processed predictions that minimizes the sum of squared residuals 
+
+--
+
+- Averages of independent prediction algorithms often lead to better performance than each individual predictor
+
+---
+
+## Ensemble - Exact Formulation
+
+Consider one particular covariate combination of **model**, **location**, **horizon**, **target type** and **quantile**.
+
+--
+
+Let $n$ specify the number of observations in the training set within this combination, $\mathbf{y} \in \mathbb{R}^n$ the vector of true values and $\hat{\mathbf{y}}_1, \ldots, \hat{\mathbf{y}}_k \in \mathbb{R}^n$ vectors of adjusted predictions from $k$ different post-processing procedures.
+
+--
+
+Then, for each such combination, the ensemble model computes weights $\mathbf{w}^* \in [0, 1]^k$ (technically $\mathbf{w}_{m, l, h, t, q}^*$) by solving the following constrained optimization problem:
+$$
+\begin{aligned}
+\mathbf{w}^*
+= \operatorname*{arg\,min}_{ \mathbf{w} \in [0, 1]^k} \left \Vert \mathbf{y} - \sum_{j=1}^{k} w_j \hat{\mathbf{y}}_j \right \Vert_2^2
+&= \operatorname*{arg\,min}_{ \mathbf{w} \in [0, 1]^k} \sum_{i=1}^{n} \left(y_i - \sum_{j=1}^{k} w_j \hat{y}_{ij} \right)^2 \\
+\text{s.t.} \qquad \sum_{j=1}^{k} w_j &= 1
+\end{aligned}
+$$
+---
+
+## Ensemble - Exact Formulation
+
+Since we only consider the **CQR** and **QSA Uniform** methods in this case, the minimization objective above simplifies to
+$$
+\begin{aligned}
+\mathbf{w}^*
+= \begin{pmatrix} w_1^* & w_2^* \end{pmatrix}^T
+= \operatorname*{arg\,min}_{w_1, w_2 \in [0, 1]} \sum_{i=1}^{n} \left(y_i - w_1 cqr_i - w_2 qsa_i \right)^2.
+\end{aligned}
+$$
+--
+
+The optimization is implemented with the **quadprog**<sup>1</sup> package which can also be used for more general quadratic programming problems.
+
+.footnote[ 
+https://cran.r-project.org/web/packages/quadprog/index.html
+]
+
+---
+
+## Comparison of CQR, QSA and Ensemble
+
+---
+class: center, middle, inverse
+
+# Outlook
+
+---
+
+## More Methods
+
+- Stable package infrastructure that generalizes well to further Post-Processing methods 
+
+--
+
+- Candidate methods: **Quantile Regression Averaging** and modified versions of CQR 
+
+--
+
+- Comprehensive analysis of strength and weaknesses of each method 

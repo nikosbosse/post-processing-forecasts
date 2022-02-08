@@ -406,13 +406,22 @@ class: inverse, center, middle
 
 ## QSA - Intuition
 
-- Define quantile spreads as the distance of a quantile from the median 
+.left-30[ 
+- Define quantile spreads median based
 
-- Alternative are distance between neighboring quantiles or between symmetric quantiles
+- Alternatives are neighbor or symmetry based
 
-- Median basis makes spreads independent of the number of quantiles and allows for non-symmetry in adjustments
+- Avantages of Median basis: spreads independent of quantile number and non-symmetric adjustments possible
 
-- Risks of quantile cutting 
+- Risks: quantile cutting 
+
+]
+
+.right-65[ 
+
+![](Images/qs_all.png) 
+
+]
 
 ---
 

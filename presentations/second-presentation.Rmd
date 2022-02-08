@@ -419,8 +419,7 @@ class: inverse, center, middle
 
 .right-65[ 
 
-![](Images/qs_all.png) 
-
+![](Images/qs_all.png)
 ]
 
 ---
@@ -442,13 +441,24 @@ u_{i,j}^* = u_{i,j} + (m-u_{i,j}) * f_i
 \end{aligned}
 $$
 
+--
+
+The optimization uses the **optim** function from the **stats**<sup>1</sup> package. 
+As optimization method we use the quasi-Newton method **BFGS** named after Broyden, Fletcher, Goldfarb and Shanno.
+
+<!-- read in preparation: https://en.wikipedia.org/wiki/Broyden–Fletcher–Goldfarb–Shanno_algorithm and find reference to the paper for footnotes. -->
+
+.footnote[ 
+https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/optim
+]
+
 ---
 
-## QSA - Implementation 
+## QSA - Flavors and Extensions 
 
 Postforecast offers three flavors of QSA where each restricts $\mathbf{f}^*$ differently:
 - uniform: $i \in [0, 1, \ldots, p-1, p] \quad f_i = c$
-- flexibel: no restriction
+- flexibel: $none$
 - flexibel-symmetric: $i \in [0, 1, \ldots, m-1] \quad f_i = f_{p-i}$
 
 Furthermore, postforecast provides regularization towards QSA uniform by adding a regularization term $Pen(\mathbf{f})$ with the weight $r$ to the score function: 
@@ -460,14 +470,6 @@ $$
 \text{s.t.} \qquad \bar{f} &= \frac{1}{p} \sum_{i=1}^p f_i
 \end{aligned}
 $$
-The optimization uses the **optim** function from the **stats**<sup>1</sup> package. 
-As optimization method we use the quasi-Newton method **BFGS**.
-
-<!-- read in preparation: https://en.wikipedia.org/wiki/Broyden–Fletcher–Goldfarb–Shanno_algorithm and find reference to the paper for footnotes. -->
-
-.footnote[ 
-https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/optim
-]
 
 ---
 
@@ -487,17 +489,21 @@ plot_intervals_grid(
 ## QSA for thte UK Dataset
 
 .left-30[ 
-- Does QSA improve the Weighted Interval Score? What adjustments does it make?
+- Does QSA improve the Weighted Interval Score? 
+
+- What adjustments to the prediction intervals does it make?
 
 - Is there any pattern visible in QSA adjustments across models?
 
 ]
 
 --
-#TODO: How can we put the tables below next to each other?
+
 .right-65[
 
-Aggregated over all time series:
+.pull-left[
+
+Aggregated results:
 
 ```{r, echo=FALSE}
 uk_qsa_uniform |>
@@ -508,12 +514,17 @@ uk_qsa_uniform |>
   display_table()
 ```
 
+]
+
+.pull-right[
+
 Unraveled by **models**:
 
 ```{r, echo=FALSE}
 eval_methods(uk_qsa_uniform, summarise_by = "model") |>
   display_table()
 ```
+]
 
 ]
 
@@ -561,7 +572,7 @@ p1 + p2
 
 - For Germany QSA tends to extend original forecast intervals for **Cases** as seen in the UK data:
 
-```{r hub-qsa-plots1, echo=FALSE, fig.height=3, cache=cache}
+```{r hub-qsa-plots1, echo=FALSE, fig.height=2.7, cache=cache}
 hub_qsa_uniform <- readr::read_rds(here::here("data_results", "hub_cqr_qsa_uniform_ensemble_subset.rds")) |> dplyr::filter( method %in%  c("original", "qsa_uniform"))
 
 
@@ -699,7 +710,7 @@ class: center, middle, inverse
 
 --
 
-- Comprehensive analysis of strength and weaknesses of each method 
+- Comprehensive analysis of strength and weaknesses of each method across the full datasets
 
 ---
 

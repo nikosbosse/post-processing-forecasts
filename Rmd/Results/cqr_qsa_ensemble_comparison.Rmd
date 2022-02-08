@@ -19,7 +19,7 @@ output:
     keep_tex: FALSE
 urlcolor: blue
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ```{r knitr-opts, include=FALSE}
@@ -139,4 +139,34 @@ p3 + p4
 In most situations QSA indicates a stronger performance boost such that the ensemble predictions are closer to QSA compared to CQR.
 Except for the splitting by quantiles case the ensemble model performs best on the UK Data, even on the out-of-sample validation set.
 
-## EUropean Forecast Hub Data
+
+## European Forecast Hub Data
+
+Due to computational constraints the Post-Processed EU Hub Data only contains a single Model and a single Target Type. 
+Here the most interesting aspect is the varying effect of the different methods across all countries.
+
+Since the visualization is skewed by the outliers Poland (for CQR) and Finland (QSA) we omit these two countries:
+
+```{r}
+df_loc <- eval_methods(
+  hub_cqr_qsa_ensemble |> dplyr::filter(!location %in% c("PL", "FI")),
+  summarise_by = "location_name"
+)
+
+plot_eval(df_loc) + ggplot2::labs(y = NULL)
+```
+
+The **magnitude** of the relative changes are greater for QSA both in positive and negative direction.
+Since the effects are more diverse than for the UK Data, the Ensemble model shines by weighting the better method for each country stronger.
+
+This finding is supported by the raw interval scores aggregated over all covariates:
+Again CQR and QSA increase the dispersion overall (i.e. make the intervals larger), yet this effect only improves the interval score for the CQR method in this case:
+
+```{r}
+hub_cqr_qsa_ensemble |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method")) |>
+  dplyr::select(method:dispersion) |>
+  dplyr::arrange(interval_score)
+```

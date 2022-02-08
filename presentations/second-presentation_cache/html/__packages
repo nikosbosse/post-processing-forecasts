@@ -4,4 +4,7 @@ testthat
 postforecasts
 dplyr
 patchwork
-base
+reprex
+usethis
+devtools
+shrtcts

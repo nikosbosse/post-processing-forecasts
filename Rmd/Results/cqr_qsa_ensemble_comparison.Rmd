@@ -156,7 +156,7 @@ df_loc <- eval_methods(
 plot_eval(df_loc) + ggplot2::labs(y = NULL)
 ```
 
-The **magnitude** of the relative changes are greater for QSA both in positive and negative direction.
+The **absolute magnitude** of the relative changes are greater for QSA both in positive and negative direction.
 Since the effects are more diverse than for the UK Data, the Ensemble model shines by weighting the better method for each country stronger.
 
 This finding is supported by the raw interval scores aggregated over all covariates:

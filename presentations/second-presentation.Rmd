@@ -36,7 +36,7 @@ library(dplyr)
 library(patchwork)
 
 # cache chunks that take a long time
-cache <- TRUE
+cache <- FALSE
 
 uk_cqr <- readr::read_rds(here::here("data_results", "uk_cqr.rds"))
 hub_1 <- readr::read_rds(here::here("data_results", "hub_cqr_1.rds"))
@@ -471,8 +471,155 @@ https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/optim
 
 ---
 
-## QSA - Application
+```{r, echo=FALSE}
+uk_qsa_uniform <- readr::read_rds(here::here("data_results", "uk_cqr_qsa_uniform_ensemble.rds")) |> dplyr::filter( method %in%  c("original", "qsa_uniform"))
+```
 
+```{r uk-qsa-plots1, echo=FALSE}
+plot_intervals_grid(
+  uk_qsa_uniform,
+  model = "seabbs", quantile = 0.1, facet_by = "horizon"
+)
+```
+
+---
+
+## QSA for thte UK Dataset
+
+.left-30[ 
+- Does QSA improve the Weighted Interval Score? What adjustments does it make?
+
+- Is there any pattern visible in QSA adjustments across models?
+
+]
+
+--
+#TODO: How can we put the tables below next to each other?
+.right-65[
+
+Aggregated over all time series:
+
+```{r, echo=FALSE}
+uk_qsa_uniform |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method")) |>
+  dplyr::select(method:dispersion) |>
+  display_table()
+```
+
+Unraveled by **models**:
+
+```{r, echo=FALSE}
+eval_methods(uk_qsa_uniform, summarise_by = "model") |>
+  display_table()
+```
+
+]
+
+---
+<!-- ## How are improvements distributed around quantiles and horizons? -->
+
+```{r uk-qsa-plots2, echo=FALSE, fig.height=5, cache=cache}
+df_mod_quant <- eval_methods(uk_qsa_uniform, summarise_by = c("model", "quantile"))
+
+b <- "black"
+t <- "transparent"
+
+p1 <- plot_eval(df_mod_quant, base_size = 8) +
+  ggplot2::labs(
+    y = NULL,
+    title = "QSA Improvements by Model and Quantile",
+    subtitle = NULL
+  ) +
+  ggplot2::theme(
+    # 'hack' to display only every second label on x - axis
+    axis.text.x = ggplot2::element_text(color = c(b, rep(c(t, b), 11)))
+  )
+
+df_mod_hor <- eval_methods(uk_cqr, summarise_by = c("model", "horizon"))
+p2 <- plot_eval(df_mod_hor, base_size = 8) +
+  ggplot2::labs(
+    y = NULL, title = "QSA Improvements by Model and Horizon",
+    subtitle = NULL
+  )
+
+p1 + p2
+```
+
+---
+
+## QSA for European Forecast Hub Data
+
+- Can we replicate QSA benefits across countries?
+
+--
+
+- Due to run time restrictions we restrict our analysis to the **Epiforecasts-EpiNow2** model and the target type **Cases**
+
+--
+
+- For Germany QSA tends to extend original forecast intervals for **Cases** as seen in the UK data:
+
+```{r hub-qsa-plots1, echo=FALSE, fig.height=3, cache=cache}
+hub_qsa_uniform <- readr::read_rds(here::here("data_results", "hub_cqr_qsa_uniform_ensemble_subset.rds")) |> dplyr::filter( method %in%  c("original", "qsa_uniform"))
+
+
+plot_intervals_grid(hub_qsa_uniform, model = "epiforecasts-EpiNow2", location = "DE", quantiles = 0.1) +
+  ggplot2::labs(
+    y = NULL,
+    title = "CQR Improvements in Germany",
+    subtitle = NULL
+  )
+```
+
+---
+
+<!-- ## how are the benefits distributed around countries as well as around quantiles and horizons? 
+
+- no poland issue indicates that QSA adjusts faster to new distributions
+-->
+
+```{r hub-qsa-plots2, echo=FALSE, fig.height=5, cache=cache}
+df_mod_loc <- eval_methods(hub_qsa_uniform, summarise_by = c("location_name"))
+
+b <- "black"
+t <- "transparent"
+
+plot_eval(df_mod_loc, heatmap = FALSE) +
+  ggplot2::labs(
+    y = NULL,
+    title = "CQR Improvements by Country",
+    subtitle = NULL
+  ) +
+  ggplot2::theme(
+    # 'hack' to display only every second label on x - axis
+    axis.text.x = ggplot2::element_text(color = c(b, rep(c(t, b), 11)))
+  )
+
+df_mod_quant <- eval_methods(hub_qsa_uniform, summarise_by = c("horizon", "quantile"))
+p1 <- plot_eval(df_mod_quant, base_size = 8) +
+  ggplot2::labs(
+    y = NULL, title = "QSA Improvements by Horizon and Quantile",
+    subtitle = NULL
+  )
+
+p1 + p2
+```
+
+---
+
+## Where might the issue lie?
+
+- QSA Unifrom might not be well suited to improve predictions form the **Epiforecasts-EpiNow2** model
+
+--
+
+- QSA Uniform could not be flexible enough if different quantiles need different relativ adjustments
+
+--
+
+- Requires further analysis of QSA on different models and using the fleixbel and symmetric flavors
 
 
 ---

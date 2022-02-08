@@ -2,7 +2,7 @@
 title: "Post-Processing COVID-19 Forecasts"
 subtitle: "- Second Presentation -<br><br>"
 author: "Matthias Herp & Joel Beck"
-date: "10.12.2021"
+date: "11.02.2022"
 output:
   xaringan::moon_reader:
     css: xaringan-themer.css
@@ -426,9 +426,9 @@ Then, for each time series, the quantile spread adjustment computes the quantile
 $$
 \begin{aligned}
 \mathbf{f}^*
-= \operatorname*{arg\,min}_{ \mathbf{f} \in R^p} Score_\alpha(\mathbf{y})
-&= \sum_{i=1}^p \sum_{j=1}^n (u_{i,j}^*-l_{i,j}^*) + \frac{2}{\alpha} \cdot (l_{i,j}^*-y_j) \cdot \mathbf{1} (y_j \leq l_{i,j}^*) + \frac{2}{\alpha} \cdot (y_j-u_{i,j}^*) \cdot \mathbf{1}(y_j \geq u_{i,j}^*) \\
-\text{s.t.} \qquad l_{i,j}^* = l_{i,j} + (l_{i,j}-m) * f_i \quad\text{and}\quad 
+&= \operatorname*{arg\,min}_{ \mathbf{f} \in R^p} Score_\alpha(\mathbf{y}) \\
+&= \operatorname*{arg\,min}_{ \mathbf{f} \in R^p} \sum_{i=1}^p \sum_{j=1}^n (u_{i,j}^*-l_{i,j}^*) + \frac{2}{\alpha} \cdot (l_{i,j}^*-y_j) \cdot \mathbf{1} (y_j \leq l_{i,j}^*) + \frac{2}{\alpha} \cdot (y_j-u_{i,j}^*) \cdot \mathbf{1}(y_j \geq u_{i,j}^*) \\
+\text{s.t.} \qquad l_{i,j}^* &= l_{i,j} + (l_{i,j}-m) * f_i \quad \text{and} \quad 
 u_{i,j}^* = u_{i,j} + (m-u_{i,j}) * f_i 
 \end{aligned}
 $$
@@ -438,22 +438,23 @@ $$
 ## QSA - Implementation 
 
 Postforecast offers three flavors of QSA where each restricts $\mathbf{f}^*$ differently:
-- uniform: $i \in [0,1,...,p-1,p] \quad f_i = c$
+- uniform: $i \in [0, 1, \ldots, p-1, p] \quad f_i = c$
 - flexibel: no restriction
-- flexibel_symmetric: $i \in [0,1,...,m-1] \quad f_i = f_{p-i}$
+- flexibel-symmetric: $i \in [0, 1, \ldots, m-1] \quad f_i = f_{p-i}$
 
-Furthermore postforecast provides regularization towards QSA uniform by adding a regularization term $Pen(\mathbf{f})$ with the weight $r$ to the score function: 
+Furthermore, postforecast provides regularization towards QSA uniform by adding a regularization term $Pen(\mathbf{f})$ with the weight $r$ to the score function: 
 
 $$
 \begin{aligned}
 \mathbf{f}^*
-= \operatorname*{arg\,min}_{\mathbf{f} \in R^p} \ Score_\alpha(\mathbf{y}) + r * Pen(\mathbf{f}) \quad Pen(\mathbf{f}) = \sum_{i=1}^p (f_i - \bar{f})^2 \\
-\text{s.t.} \qquad \bar{f} = \frac{1}{p} \sum_{i=1}^p f_i
+&= \operatorname*{arg\,min}_{\mathbf{f} \in R^p} \ Score_\alpha(\mathbf{y}) + r * Pen(\mathbf{f}), \quad Pen(\mathbf{f}) = \sum_{i=1}^p (f_i - \bar{f})^2 \\
+\text{s.t.} \qquad \bar{f} &= \frac{1}{p} \sum_{i=1}^p f_i
 \end{aligned}
 $$
-The optimization uses the function **optim** from the package **stats**<sup>1</sup>. As optimization method we use the quasi-Newton method **BFGS**.
+The optimization uses the **optim** function from the **stats**<sup>1</sup> package. 
+As optimization method we use the quasi-Newton method **BFGS**.
 
-<!-- read in preperation: https://en.wikipedia.org/wiki/Broyden–Fletcher–Goldfarb–Shanno_algorithm and find reference to the paper for footnotes. -->
+<!-- read in preparation: https://en.wikipedia.org/wiki/Broyden–Fletcher–Goldfarb–Shanno_algorithm and find reference to the paper for footnotes. -->
 
 .footnote[ 
 https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/optim

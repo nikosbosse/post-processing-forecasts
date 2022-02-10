@@ -108,7 +108,7 @@ plot_intervals(
 ## CQR for UK Data
 
 .left-30[ 
-- Hypotheses: For most models (particular by individual humans) CQR makes the prediction intervals **wider** increasing the coverage at the cost of precision
+- For most models (particular by individual humans) CQR makes the prediction intervals **wider** increasing the coverage at the cost of precision
 
 - Often leads to improvement of Weighted Interval Score
 ]
@@ -196,35 +196,6 @@ p1 <- plot_eval(df_eval, heatmap = FALSE, base_size = 8) +
 p2 <- plot_eval(df_eval, base_size = 8) +
   ggplot2::labs(y = NULL) +
   ggplot2::labs(title = "CQR Improvements by Model")
-
-p1 + p2
-```
-
----
-
-```{r uk-cqr-plots2, echo=FALSE, fig.height=5, cache=cache}
-df_mod_quant <- eval_methods(uk_cqr, summarise_by = c("model", "quantile"))
-
-b <- "black"
-t <- "transparent"
-
-p1 <- plot_eval(df_mod_quant, base_size = 8) +
-  ggplot2::labs(
-    y = NULL,
-    title = "CQR Improvements by Model and Quantile",
-    subtitle = NULL
-  ) +
-  ggplot2::theme(
-    # 'hack' to display only every second label on x - axis
-    axis.text.x = ggplot2::element_text(color = c(b, rep(c(t, b), 11)))
-  )
-
-df_mod_hor <- eval_methods(uk_cqr, summarise_by = c("model", "horizon"))
-p2 <- plot_eval(df_mod_hor, base_size = 8) +
-  ggplot2::labs(
-    y = NULL, title = "CQR Improvements by Model and Horizon",
-    subtitle = NULL
-  )
 
 p1 + p2
 ```

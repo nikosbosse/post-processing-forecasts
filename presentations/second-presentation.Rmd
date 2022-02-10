@@ -83,7 +83,11 @@ display_table <- function(df, digits = 3, align = "left") {
 
 --
 
-- The Quality of prediction intervals is measured by the **Weighted Interval Score** based on a trade-off between interval coverage and precision  
+- We consider five dimensions: **location**, **model**, **target type**, **horizon** and **quantile**
+
+--
+
+- The quality of prediction intervals is measured by the **Weighted Interval Score** based on a trade-off between interval coverage and precision  
 
 ---
 class: inverse, center, middle
@@ -142,7 +146,7 @@ uk_cqr |>
 
 ## Evaluation
 
-- Apart from the absolute Interval Score change the **relative** or **percentage** change after applying CQR might be of interest
+- Apart from the **absolute** interval score, the **relative** or **percentage** change after applying CQR might be of interest
 
 --
 
@@ -150,7 +154,7 @@ uk_cqr |>
 
 --
 
-- Negative values indicate a score improvement, positive values a larger/worse interval score
+- **Negative** values indicate a score improvement, **positive** values a larger/worse interval score
 
 --
 
@@ -175,9 +179,9 @@ eval_methods(uk_cqr, summarise_by = "model") |>
 
 - For many categories the magnitudes of the relative change is difficult to compare in the table output
 
-- Visualize table either as barplot or heatmap
+- Solution: visualize table either as barplot or heatmap with **plot_eval()** 
 
-- Focus on models that participated regularly in the UK Forecasting Challenge
+- Allows for two-dimensional grid for **covariate combinations** 
 
 ]
 
@@ -245,7 +249,11 @@ p1 + p2
 
 --
 
-- For Germany CQR tends to extend original forecast intervals for **Cases** as before but decrease their width for **Deaths**  
+- Result: Same trends exist in both Data Sets, but more moderate effect for EU Hub Data
+
+--
+
+- In contrast to the UK Data: For Germany, CQR tends to **extend** original forecast intervals for Cases as before but **decrease** their widths for Deaths 
 
 ---
 
@@ -257,7 +265,7 @@ plot_intervals_grid(hub_cqr, model = "EuroCOVIDhub-ensemble", location = "DE", q
 
 ## What's wrong with Poland?
 
-.left-65[ 
+.left-60[ 
 
 ```{r hub-cqr-all, echo=FALSE, fig.height=5, cache=cache}
 df_mod_loc <- eval_methods(hub_cqr, summarise_by = c("model", "location"))
@@ -266,13 +274,15 @@ plot_eval(df_mod_loc) + ggplot2::labs(y = NULL)
 
 ]
 
-.right-30[ 
+.right-35[ 
 
 - Visualization is dominated by the very large negative impact of CQR on Poland
 
-- Have to exclude Poland to gain further insight about the remaining countries
+- To gain further insight about the remaining countries we would have to exclude Poland
 
-- First, let's figure out why Poland is such an outlier
+- Why is Poland such an outlier?
+
+- Since CQR is beneficial for the **training set** by construction, the issue must be in the **validation set**
 
 ]
 
@@ -337,67 +347,6 @@ p1 + p2
 ```
 
 ---
-
-## Findings for European Forecast Hub
-
-- As a final step, we exclude Poland and analyze CQR improvements for each combination of country with either **model**, **horizon**, **target type** and **quantile**   
-
---
-
-- Largest relative performance boost for **USC-SIkJalpha** model from a research group of the University of California
-
---
-
-- Recall that in the UK Data Set CQR improved interval scores most for **large forecast horizons**, **quantiles in the tails** of the predictive distribution and **Cases** instead of Deaths
-
---
-
-- Same trends exist for the European Hub Data, although to a much more moderate degree
-
----
-
-```{r hub-cqr-no-poland-1, echo=FALSE, fig.height=5, cache=cache}
-cqr_no_poland <- hub_cqr |>
-  dplyr::filter(location_name != "Poland")
-
-df_mod_loc <- eval_methods(cqr_no_poland, summarise_by = c("model", "location"))
-p1 <- plot_eval(df_mod_loc, base_size = 8) +
-  ggplot2::labs(
-    x = NULL, y = NULL, title = "CQR Improvements by Model and Location",
-    subtitle = NULL
-  )
-
-df_hor_loc <- eval_methods(cqr_no_poland, summarise_by = c("horizon", "location"))
-p2 <- plot_eval(df_hor_loc, base_size = 8) +
-  ggplot2::labs(
-    x = NULL, title = "CQR Improvements by Horizon and Location",
-    subtitle = NULL
-  )
-
-p1 + p2
-```
-
----
-
-```{r hub-cqr-no-poland-2, echo=FALSE, fig.height=5, cache=cache}
-df_quant_loc <- eval_methods(cqr_no_poland, summarise_by = c("quantile", "location"))
-p1 <- plot_eval(df_quant_loc, base_size = 8) +
-  ggplot2::labs(
-    x = NULL, title = "CQR Improvements by Quantile and Location",
-    subtitle = NULL
-  )
-
-df_target_loc <- eval_methods(cqr_no_poland, summarise_by = c("target_type", "location"))
-p2 <- plot_eval(df_target_loc, base_size = 8) +
-  ggplot2::labs(
-    x = NULL, y = NULL, title = "CQR Improvements by Target Type and Location",
-    subtitle = NULL
-  )
-
-p1 + p2
-```
-
----
 class: inverse, center, middle
 
 # Quantile Spread Averaging (QSA)
@@ -411,9 +360,9 @@ class: inverse, center, middle
 
 - Alternatives are neighbor or symmetry based
 
-- Avantages of Median basis: spreads independent of quantile number and non-symmetric adjustments possible
+- Advantages of Median basis: spreads independent of quantile number and non-symmetric adjustments possible
 
-- Risks: quantile cutting 
+- Risks: quantile crossing
 
 ]
 
@@ -430,14 +379,14 @@ Let $n$ specify the number of observations in the training set within this combi
 
 --
 
-Then, for each time series, the quantile spread adjustment computes the quantile spread factors $\mathbf{f}^* \in R^p$ by minimizing the weighted interval score:
+Then, for each time series, the quantile spread adjustment computes the quantile spread factors $\mathbf{w}^* \in \mathbb{R}^p$ by minimizing the weighted interval score:
 $$
 \begin{aligned}
-\mathbf{f}^*
-&= \operatorname*{arg\,min}_{ \mathbf{f} \in R^p} Score_\alpha(\mathbf{y}) \\
-&= \operatorname*{arg\,min}_{ \mathbf{f} \in R^p} \sum_{i=1}^p \sum_{j=1}^n (u_{i,j}^*-l_{i,j}^*) + \frac{2}{\alpha} \cdot (l_{i,j}^*-y_j) \cdot \mathbf{1} (y_j \leq l_{i,j}^*) + \frac{2}{\alpha} \cdot (y_j-u_{i,j}^*) \cdot \mathbf{1}(y_j \geq u_{i,j}^*) \\
-\text{s.t.} \qquad l_{i,j}^* &= l_{i,j} + (l_{i,j}-m) * f_i \quad \text{and} \quad 
-u_{i,j}^* = u_{i,j} + (m-u_{i,j}) * f_i 
+\mathbf{w}^*
+&= \operatorname*{arg\,min}_{\mathbf{w} \in \mathbb{R}^p} WIS_\alpha(\mathbf{y}) \\
+&= \operatorname*{arg\,min}_{\mathbf{w} \in \mathbb{R}^p} \sum_{i=1}^p \sum_{j=1}^n (u_{i,j}^*-l_{i,j}^*) + \frac{2}{\alpha} \cdot (l_{i,j}^*-y_j) \cdot \mathbf{1} (y_j \leq l_{i,j}^*) + \frac{2}{\alpha} \cdot (y_j-u_{i,j}^*) \cdot \mathbf{1}(y_j \geq u_{i,j}^*) \\
+\text{s.t.} \qquad l_{i,j}^* &= l_{i,j} + (l_{i,j}-m) \cdot w_i \quad \text{and} \quad 
+u_{i,j}^* = u_{i,j} + (m-u_{i,j}) \cdot w_i 
 \end{aligned}
 $$
 
@@ -456,28 +405,29 @@ https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/optim
 
 ## QSA - Flavors and Extensions 
 
-Postforecast offers three flavors of QSA where each restricts $\mathbf{f}^*$ differently:
-- uniform: $i \in [0, 1, \ldots, p-1, p] \quad f_i = c$
-- flexibel: $none$
-- flexibel-symmetric: $i \in [0, 1, \ldots, m-1] \quad f_i = f_{p-i}$
+The **postforecasts** package offers three flavors of QSA where each restricts $\mathbf{w}$ differently:
+- uniform: $i \in [0, 1, \ldots, p-1, p] \quad w_i = c$
+- flexibel: No Restrictions
+- flexibel-symmetric: $i \in [0, 1, \ldots, m-1] \quad w_i = w_{p-i}$
 
-Furthermore, postforecast provides regularization towards QSA uniform by adding a regularization term $Pen(\mathbf{f})$ with the weight $r$ to the score function: 
+Furthermore, **postforecasts** provides regularization towards QSA Uniform by adding a regularization term $Pen(w)$ with the weight $r$ to the score function: 
 
 $$
 \begin{aligned}
-\mathbf{f}^*
-&= \operatorname*{arg\,min}_{\mathbf{f} \in R^p} \ Score_\alpha(\mathbf{y}) + r * Pen(\mathbf{f}), \quad Pen(\mathbf{f}) = \sum_{i=1}^p (f_i - \bar{f})^2 \\
-\text{s.t.} \qquad \bar{f} &= \frac{1}{p} \sum_{i=1}^p f_i
+\mathbf{w}^*
+&= \operatorname*{arg\,min}_{\mathbf{w} \in \mathbb{R}^p} \ WIS_\alpha(\mathbf{y}) + r \cdot Pen(\mathbf{w}), \quad Pen(\mathbf{w}) = \sum_{i=1}^p (w_i - \bar{w})^2 \\
+\text{s.t.} \qquad \bar{w} &= \frac{1}{p} \sum_{i=1}^p w_i
 \end{aligned}
 $$
 
 ---
 
 ```{r, echo=FALSE}
-uk_qsa_uniform <- readr::read_rds(here::here("data_results", "uk_cqr_qsa_uniform_ensemble.rds")) |> dplyr::filter( method %in%  c("original", "qsa_uniform"))
+uk_qsa_uniform <- uk_cqr_qsa_ensemble |> 
+  dplyr::filter(method %in% c("original", "qsa_uniform"))
 ```
 
-```{r uk-qsa-plots1, echo=FALSE}
+```{r uk-qsa-plots1, echo=FALSE, fig.height=5}
 plot_intervals_grid(
   uk_qsa_uniform,
   model = "seabbs", quantile = 0.1, facet_by = "horizon"
@@ -486,7 +436,7 @@ plot_intervals_grid(
 
 ---
 
-## QSA for thte UK Dataset
+## QSA for the UK Dataset
 
 .left-30[ 
 - Does QSA improve the Weighted Interval Score? 
@@ -566,20 +516,21 @@ p1 + p2
 
 --
 
-- Due to run time restrictions we restrict our analysis to the **Epiforecasts-EpiNow2** model and the target type **Cases**
+- Due to run time restrictions we limit our analysis to the **Epiforecasts-EpiNow2** model and the target type **Cases**
 
 --
 
 - For Germany QSA tends to extend original forecast intervals for **Cases** as seen in the UK data:
 
 ```{r hub-qsa-plots1, echo=FALSE, fig.height=2.7, cache=cache}
-hub_qsa_uniform <- readr::read_rds(here::here("data_results", "hub_cqr_qsa_uniform_ensemble_subset.rds")) |> dplyr::filter( method %in%  c("original", "qsa_uniform"))
+hub_qsa_uniform <- readr::read_rds(here::here("data_results", "hub_cqr_qsa_uniform_ensemble_subset.rds")) |> 
+  dplyr::filter( method %in%  c("original", "qsa_uniform"))
 
 
 plot_intervals_grid(hub_qsa_uniform, model = "epiforecasts-EpiNow2", location = "DE", quantiles = 0.1) +
   ggplot2::labs(
     y = NULL,
-    title = "CQR Improvements in Germany",
+    title = "QSA Improvements in Germany",
     subtitle = NULL
   )
 ```
@@ -597,10 +548,10 @@ df_mod_loc <- eval_methods(hub_qsa_uniform, summarise_by = c("location_name"))
 b <- "black"
 t <- "transparent"
 
-plot_eval(df_mod_loc, heatmap = FALSE) +
+p1 <- plot_eval(df_mod_loc, heatmap = FALSE) +
   ggplot2::labs(
     y = NULL,
-    title = "CQR Improvements by Country",
+    title = "QSA Improvements by Country",
     subtitle = NULL
   ) +
   ggplot2::theme(
@@ -609,7 +560,7 @@ plot_eval(df_mod_loc, heatmap = FALSE) +
   )
 
 df_mod_quant <- eval_methods(hub_qsa_uniform, summarise_by = c("horizon", "quantile"))
-p1 <- plot_eval(df_mod_quant, base_size = 8) +
+p2 <- plot_eval(df_mod_quant, base_size = 8) +
   ggplot2::labs(
     y = NULL, title = "QSA Improvements by Horizon and Quantile",
     subtitle = NULL
@@ -622,82 +573,27 @@ p1 + p2
 
 ## Where might the issue lie?
 
-- QSA Unifrom might not be well suited to improve predictions form the **Epiforecasts-EpiNow2** model
+- QSA Uniform might not be well suited to improve predictions for the **Epiforecasts-EpiNow2** model
 
 --
 
-- QSA Uniform could not be flexible enough if different quantiles need different relativ adjustments
+- QSA Uniform could not be flexible enough if different quantiles need different relative adjustments
 
 --
 
-- Requires further analysis of QSA on different models and using the fleixbel and symmetric flavors
+- Requires further analysis of QSA on different models and using the flexibel and symmetric flavors
 
 
 ---
 class: inverse, center, middle
 
-# Ensemble Model
+# Method Comparison
 
 ---
 
-## Ensemble - Idea
+## Comparison of CQR and QSA Results
 
-- Find the best **convex combination** of post-processed predictions that minimizes the sum of squared residuals 
-
---
-
-- Averages of independent prediction algorithms often lead to better performance than each individual predictor
-
----
-
-## Ensemble - Exact Formulation
-
-Consider one particular covariate combination of **model**, **location**, **horizon**, **target type** and **quantile**.
-
---
-
-Let $n$ specify the number of observations in the training set within this combination, $\mathbf{y} \in \mathbb{R}^n$ the vector of true values and $\hat{\mathbf{y}}_1, \ldots, \hat{\mathbf{y}}_k \in \mathbb{R}^n$ vectors of adjusted predictions from $k$ different post-processing procedures.
-
---
-
-Then, for each such combination, the ensemble model computes weights $\mathbf{w}^* \in [0, 1]^k$ (technically $\mathbf{w}_{m, l, h, t, q}^*$) by solving the following constrained optimization problem:
-$$
-\begin{aligned}
-\mathbf{w}^*
-= \operatorname*{arg\,min}_{ \mathbf{w} \in [0, 1]^k} \left \Vert \mathbf{y} - \sum_{j=1}^{k} w_j \hat{\mathbf{y}}_j \right \Vert_2^2
-&= \operatorname*{arg\,min}_{ \mathbf{w} \in [0, 1]^k} \sum_{i=1}^{n} \left(y_i - \sum_{j=1}^{k} w_j \hat{y}_{ij} \right)^2 \\
-\text{s.t.} \qquad \sum_{j=1}^{k} w_j &= 1
-\end{aligned}
-$$
----
-
-## Ensemble - Exact Formulation
-
-Since we only consider the **CQR** and **QSA Uniform** methods in this case, the minimization objective above simplifies to
-$$
-\begin{aligned}
-\mathbf{w}^*
-= \begin{pmatrix} w_1^* & w_2^* \end{pmatrix}^T
-= \operatorname*{arg\,min}_{w_1, w_2 \in [0, 1]} \sum_{i=1}^{n} \left(y_i - w_1 cqr_i - w_2 qsa_i \right)^2.
-\end{aligned}
-$$
---
-
-The optimization is implemented with the **quadprog**<sup>1</sup> package which can also be used for more general quadratic programming problems.
-
-.footnote[ 
-https://cran.r-project.org/web/packages/quadprog/index.html
-]
-
----
-
-## Comparison of CQR, QSA and Ensemble Results
-
-- We start with UK Data
-
---
-
-- Nature of adjustments majorly depends on covariate combination
+- Nature of adjustments majorly depends on specific covariate combination
 
 --
 
@@ -705,11 +601,11 @@ https://cran.r-project.org/web/packages/quadprog/index.html
 
 --
 
-- Here, CQR makes intervals larger while QSA makes them **smaller**
+- As usual CQR makes intervals larger, however QSA makes them **smaller**
 
 --
 
-- However, neither of the methods improve the weighted interval score
+- In this case, **neither** of the methods improve the weighted interval score
 
 ```{r, echo=FALSE}
 uk_cqr_qsa <- uk_cqr_qsa_ensemble |> dplyr::filter(method != "ensemble")
@@ -735,7 +631,7 @@ plot_intervals(
 
 ---
 
-## Comparison of CQR, QSA and Ensemble Results
+## Comparison of CQR and QSA Results
 
 - Second Example with **seabbs** model: Both methods produce much larger intervals
 
@@ -749,7 +645,7 @@ plot_intervals(
 
 --
 
-- In this example both models improve interval score a lot, however QSA effect is much stronger 
+- In this example **both** models improve interval score a lot, however QSA effect is much stronger 
 
 ```{r, echo=FALSE}
 uk_cqr_qsa |>
@@ -775,76 +671,24 @@ plot_intervals(
 
 ## Comparison by Category
 
-- When stratified by a single category the overall performance of **QSA is better than CQR**
+- For UK Data Set QSA performs **better** than CQR within each category of **model**, **target type**, **horizon** and **quantile**
 
 --
 
-- Hence the ensemble predictions are pulled towards the QSA forecasts
+- For EU Hub Data the effects are more diverse: Depending on the covariate combination QSA might perform better or worse than CQR
 
 --
 
-- Except for splitting by quantiles the **ensemble model performs best** on the UK Data
-
----
-
-```{r, echo=FALSE, fig.height=5}
-df_mod <- eval_methods(uk_cqr_qsa_ensemble, summarise_by = "model")
-df_target <- eval_methods(uk_cqr_qsa_ensemble, summarise_by = "target_type")
-
-p1 <- plot_eval(df_mod, base_size = 8) + ggplot2::labs(
-  y = NULL,
-  title = "Performance Comparison by Model",
-  subtitle = NULL
-)
-
-p2 <- plot_eval(df_target, base_size = 8) + ggplot2::labs(
-  y = NULL,
-  title = "Performance Comparison by Target Type",
-  subtitle = NULL
-)
-
-p1 + p2
-```
-
----
-
-```{r, echo=FALSE, fig.height=5}
-df_hor <- eval_methods(uk_cqr_qsa_ensemble, summarise_by = "horizon")
-df_quant <- eval_methods(uk_cqr_qsa_ensemble, summarise_by = "quantile")
-
-p3 <- plot_eval(df_hor, base_size = 8) + ggplot2::labs(
-  title = "Performance Comparison by Horizon",
-  subtitle = NULL
-)
-
-p4 <- plot_eval(df_quant, base_size = 8) + ggplot2::labs(
-  title = "Performance Comparison by Quantile",
-  subtitle = NULL
-)
-
-p3 + p4
-```
-
----
-
-## Comparison on EU Forecast Hub Data
-
-- Most interesting question: How do the methods compare across the countries?
+- However, the absolute **magnitude** of relative changes is usually **greater** for QSA (both in positive and negative direction)
 
 --
 
-- Result: Absolute **magnitude** of relative changes is greater for QSA (both positive and negative)
-
---
-
-- Effects are more diverse than for UK Data, hence the **ensemble model outperforms the individual methods**
-
---
-
-- CQR and QSA increase overall dispersion, yet the interval score is **only improved by CQR** in this case
+- Both QSA and CQR increase overall dispersion, yet the interval score is **only improved by CQR**
 
 ```{r, echo=FALSE}
-hub_cqr_qsa_ensemble |>
+hub_cqr_qsa <- hub_cqr_qsa_ensemble |> dplyr::filter(method != "ensemble")
+
+hub_cqr_qsa |>
   extract_validation_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method")) |>
@@ -857,7 +701,7 @@ hub_cqr_qsa_ensemble |>
 
 ```{r, echo=FALSE, fig.height=5}
 df_loc <- eval_methods(
-  hub_cqr_qsa_ensemble |> dplyr::filter(!location %in% c("PL", "FI")),
+  hub_cqr_qsa |> dplyr::filter(!location %in% c("PL", "FI")),
   summarise_by = "location_name"
 )
 
@@ -881,11 +725,19 @@ class: center, middle, inverse
 
 --
 
-- Candidate methods: **Quantile Regression Averaging** and **modified** versions of CQR 
+- Candidate methods: **Quantile Regression Averaging** and **modified versions of CQR**
 
 --
 
-- Comprehensive analysis of strength and weaknesses of each method across the full datasets
+- Comprehensive analysis of strength and weaknesses of each method across the the entire Data Sets
+
+--
+
+- Exponential Smoothing approach to enable faster/more flexible reactions to distribution shifts 
+
+--
+
+- Ensemble Model of all implemented Post-Processing procedures
 
 ---
 

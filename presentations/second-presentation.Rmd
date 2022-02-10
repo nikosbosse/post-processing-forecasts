@@ -356,13 +356,13 @@ class: inverse, center, middle
 ## QSA - Intuition
 
 .left-30[ 
-- Define quantile spreads median based
+- Three possibilities to define quantile spreads
 
-- Alternatives are neighbor or symmetry based
+- We choose median based quantile spreads due to the advantages:
+    + spreads are independent of quantile number 
+    + non-symmetric adjustments are possible
 
-- Advantages of Median basis: spreads independent of quantile number and non-symmetric adjustments possible
-
-- Risks: quantile crossing
+- Disadvantage: quantile crossing
 
 ]
 
@@ -377,8 +377,6 @@ class: inverse, center, middle
 
 Let $n$ specify the number of observations in the training set within this combination, $\mathbf{y} \in \mathbb{R}^n$ the vector of true values and $\hat{\mathbf{q}}_1, \ldots, \hat{\mathbf{q}}_p \in \mathbb{R}^n$ vectors of quantile estimates for $p$ different probability levels.
 
---
-
 Then, for each time series, the quantile spread adjustment computes the quantile spread factors $\mathbf{w}^* \in \mathbb{R}^p$ by minimizing the weighted interval score:
 $$
 \begin{aligned}
@@ -386,7 +384,7 @@ $$
 &= \operatorname*{arg\,min}_{\mathbf{w} \in \mathbb{R}^p} WIS_\alpha(\mathbf{y}) \\
 &= \operatorname*{arg\,min}_{\mathbf{w} \in \mathbb{R}^p} \sum_{i=1}^p \sum_{j=1}^n (u_{i,j}^*-l_{i,j}^*) + \frac{2}{\alpha} \cdot (l_{i,j}^*-y_j) \cdot \mathbf{1} (y_j \leq l_{i,j}^*) + \frac{2}{\alpha} \cdot (y_j-u_{i,j}^*) \cdot \mathbf{1}(y_j \geq u_{i,j}^*) \\
 \text{s.t.} \qquad l_{i,j}^* &= l_{i,j} + (l_{i,j}-m) \cdot w_i \quad \text{and} \quad 
-u_{i,j}^* = u_{i,j} + (m-u_{i,j}) \cdot w_i 
+u_{i,j}^* = u_{i,j} + (u_{i,j}-m) \cdot w_i 
 \end{aligned}
 $$
 
@@ -410,6 +408,8 @@ The **postforecasts** package offers three flavors of QSA where each restricts $
 - flexibel: No Restrictions
 - flexibel-symmetric: $i \in [0, 1, \ldots, m-1] \quad w_i = w_{p-i}$
 
+--
+
 Furthermore, **postforecasts** provides regularization towards QSA Uniform by adding a regularization term $Pen(w)$ with the weight $r$ to the score function: 
 
 $$
@@ -419,31 +419,19 @@ $$
 \text{s.t.} \qquad \bar{w} &= \frac{1}{p} \sum_{i=1}^p w_i
 \end{aligned}
 $$
-
----
-
-```{r, echo=FALSE}
-uk_qsa_uniform <- uk_cqr_qsa_ensemble |> 
-  dplyr::filter(method %in% c("original", "qsa_uniform"))
-```
-
-```{r uk-qsa-plots1, echo=FALSE, fig.height=5}
-plot_intervals_grid(
-  uk_qsa_uniform,
-  model = "seabbs", quantile = 0.1, facet_by = "horizon"
-)
-```
-
 ---
 
 ## QSA for the UK Dataset
 
 .left-30[ 
+
+- Note: following slides refer to QSA Uniform as QSA
+
 - Does QSA improve the Weighted Interval Score? 
 
 - What adjustments to the prediction intervals does it make?
 
-- Is there any pattern visible in QSA adjustments across models?
+- Is there any pattern visible in QSA adjustments across dimensions?
 
 ]
 
@@ -453,9 +441,12 @@ plot_intervals_grid(
 
 .pull-left[
 
-Aggregated results:
+results **aggregated**:
 
 ```{r, echo=FALSE}
+uk_qsa_uniform <- uk_cqr_qsa_ensemble |> 
+  dplyr::filter(method %in% c("original", "qsa_uniform"))
+
 uk_qsa_uniform |>
   extract_validation_set() |>
   scoringutils::score() |>
@@ -506,6 +497,32 @@ p2 <- plot_eval(df_mod_hor, base_size = 8) +
   )
 
 p1 + p2
+```
+
+---
+
+```{r uk-qsa-plots3, echo=FALSE, fig.height=5, cache=cache}
+df_mod_tar <- eval_methods(
+  uk_qsa_uniform,
+  summarise_by = c("model", "target_type"),
+  row_averages = TRUE, col_averages = TRUE
+)
+
+b <- "black"
+t <- "transparent"
+
+p1 <- plot_eval(df_mod_tar, base_size = 8) +
+  ggplot2::labs(
+    y = NULL,
+    title = "QSA Improvements by Model and Target Type",
+    subtitle = NULL
+  ) +
+  ggplot2::theme(
+    # 'hack' to display only every second label on x - axis
+    axis.text.x = ggplot2::element_text(color = c(b, rep(c(t, b), 11)))
+  )
+
+p1
 ```
 
 ---

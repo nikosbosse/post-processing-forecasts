@@ -74,8 +74,17 @@ cqr_multiplicative <- function(quantile, true_values, quantiles_low, quantiles_h
   )
 }
 
-update_quantiles_cqr <- function(margin_lower, margin_upper, quantiles_low, quantiles_high,
+update_quantiles_cqr <- function(method, margin_lower, margin_upper, quantiles_low, quantiles_high,
                                  lower_bound_updated, upper_bound_updated, cv_init_training) {
+  if (method == "cqr_multiplicative") {
+    return(
+      list(
+        quantiles_low_updated = c(lower_bound_updated, (quantiles_low[cv_init_training + 1] * margin_lower)),
+        quantiles_high_updated = c(upper_bound_updated, (quantiles_high[cv_init_training + 1] * margin_upper))
+      )
+    )
+  }
+
   list(
     quantiles_low_updated = c(lower_bound_updated, (quantiles_low[cv_init_training + 1] - margin_lower)),
     quantiles_high_updated = c(upper_bound_updated, (quantiles_high[cv_init_training + 1] + margin_upper))
@@ -92,16 +101,20 @@ select_cqr_method <- function(method) {
   }
 }
 
-cross_validate_cqr <- function(cqr_method, quantile, true_values, quantiles_low,
+cross_validate_cqr <- function(method, quantile, true_values, quantiles_low,
                                quantiles_high, cv_init_training) {
+  cqr_method <- select_cqr_method(method)
+
   if (is.null(cv_init_training)) {
     # By default cv_init_training is equal to NULL and therefore equal to the complete data.
     # e.g. by default no split in training and validation set
     cqr_results <- cqr_method(quantile * 2, true_values, quantiles_low, quantiles_high)
 
     return(
-      quantiles_low_updated = cqr_results$lower_bound,
-      quantiles_high_updated = cqr_results$upper_bound
+      list(
+        quantiles_low_updated = cqr_results$lower_bound,
+        quantiles_high_updated = cqr_results$upper_bound
+      )
     )
   } else {
     # This Section runs the Time Series Cross validation.
@@ -117,8 +130,8 @@ cross_validate_cqr <- function(cqr_method, quantile, true_values, quantiles_low,
     )
 
     quantiles_updated <- update_quantiles_cqr(
-      cqr_results$margin_lower, cqr_results$margin_upper, quantiles_low, quantiles_high,
-      cqr_results$lower_bound, cqr_results$upper_bound, cv_init_training
+      method, cqr_results$margin_lower, cqr_results$margin_upper, quantiles_low,
+      quantiles_high, cqr_results$lower_bound, cqr_results$upper_bound, cv_init_training
     )
 
     quantiles_low_updated <- quantiles_updated$quantiles_low_updated
@@ -137,21 +150,24 @@ cross_validate_cqr <- function(cqr_method, quantile, true_values, quantiles_low,
       )
 
       quantiles_updated <- update_quantiles_cqr(
-        cqr_results$margin_lower, cqr_results$margin_upper, quantiles_low, quantiles_high,
-        quantiles_low_updated, quantiles_high_updated, cv_init_training
+        method, cqr_results$margin_lower, cqr_results$margin_upper, quantiles_low,
+        quantiles_high, quantiles_low_updated, quantiles_high_updated, cv_init_training
       )
 
-      return(
-        quantiles_low_updated = quantiles_updated$quantiles_low_updated,
-        quantiles_high_updated = quantiles_updated$quantiles_high_updated
-      )
+      quantiles_low_updated <- quantiles_updated$quantiles_low_updated
+      quantiles_high_updated <- quantiles_updated$quantiles_high_updated
     }
+
+    return(
+      list(
+        quantiles_low_updated = quantiles_low_updated,
+        quantiles_high_updated = quantiles_high_updated
+      )
+    )
   }
 }
 
 update_subset_cqr <- function(df, method, model, location, target_type, horizon, quantile, cv_init_training) {
-  cqr_method <- select_cqr_method(method)
-
   # 'validate_cv_init' must be placed on filtered data frame (i.e. lowest level,
   # not in update_predictions()) such that fractional inputs can be correctly
   # converted
@@ -163,7 +179,7 @@ update_subset_cqr <- function(df, method, model, location, target_type, horizon,
   quantiles_high <- quantiles_list$quantiles_high
 
   quantiles_updated <- cross_validate_cqr(
-    cqr_method, quantile, true_values, quantiles_low, quantiles_high, cv_init_training
+    method, quantile, true_values, quantiles_low, quantiles_high, cv_init_training
   )
 
   df_updated <- replace_combination(

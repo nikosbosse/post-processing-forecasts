@@ -1,6 +1,6 @@
 update_predictions <- function(df, methods = c(
-                                 "cqr", "qsa_uniform",
-                                 "qsa_flexibel", "qsa_flexibel_symmetric"
+                                 "cqr", "cqr_asymmetric", "cqr_multiplicative",
+                                 "qsa_uniform", "qsa_flexibel", "qsa_flexibel_symmetric"
                                ), models = NULL, locations = NULL,
                                target_types = NULL, horizons = NULL,
                                quantiles = NULL, cv_init_training = NULL,
@@ -47,9 +47,8 @@ update_predictions <- function(df, methods = c(
               quantiles <- quantiles[quantiles < 0.5]
 
               for (quantile in quantiles) {
-                # only one method => does not require 'method' argument
                 df_updated <- update_subset_cqr(
-                  df_updated, model, location, target_type, horizon,
+                  df_updated, method, model, location, target_type, horizon,
                   quantile, cv_init_training
                 )
               }

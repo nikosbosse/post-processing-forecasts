@@ -43,6 +43,8 @@ Imports:
     tidyselect
 Suggests: 
     here,
+    knitr,
     readr,
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

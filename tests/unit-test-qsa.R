@@ -11,10 +11,10 @@ h <- 1
 qs <- c(0.2, 0.4, 0.5, 0.6, 0.8) #seq(0.100,0.900,0.100) doesnt work?
 #cv_init_training <- 10
 
-subset <- dplyr::filter(df, model == m & location == l & target_type == t & horizon == h & quantile %in% q)
+subset <- dplyr::filter(df, model == m & location == l & target_type == t & horizon == h & quantile %in% qs)
 
 length(unique(subset$target_end_date))
-length(unique(subset$quantile)) == length(q)
+length(unique(subset$quantile)) == length(qs)
 
 
 subset_generated <- subset
@@ -50,5 +50,5 @@ df_combined_1 <- update_predictions(subset_generated, methods = "qsa_uniform",
                    horizons = h, quantiles = qs,
                    cv_init_training = 10, penalty_weight=NULL, return_list = TRUE)
 
-plot_intervals(df_combined_1, model = m, location = l, target_type = "Cases", quantile = 0.2, horizon = 1)
+plot_intervals(df_combined_1$qsa_uniform, model = m, location = l, target_type = "Cases", quantile = 0.2, horizon = 1)
 

@@ -1,0 +1,172 @@
+---
+title: "CQR, QSA Uniform & Ensemble Comparison"
+author: "Joel Beck"
+output:
+  bookdown::html_document2:
+    theme: flatly
+    highlight: pygments  # kate
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 2
+    number_sections: FALSE
+    df_print: tibble
+  bookdown::pdf_document2:
+    highlight: tango  # pygments
+    toc: FALSE
+    number_sections: FALSE
+    df_print: tibble
+    latex_engine: pdflatex
+    keep_tex: FALSE
+urlcolor: blue
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r knitr-opts, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center",
+  out.width = "100%", dpi = 300, fig.asp = 0.618, collapse = TRUE
+)
+```
+
+```{r libraries}
+devtools::load_all(".")
+library(patchwork)
+
+uk_cqr_qsa_ensemble <- readr::read_rds(
+  here::here("data_results", "uk_cqr_qsa_uniform_ensemble.rds")
+)
+
+uk_cqr_qsa <- uk_cqr_qsa_ensemble |> dplyr::filter(method != "ensemble")
+
+hub_cqr_qsa_ensemble <- readr::read_rds(
+  here::here("data_results", "hub_cqr_qsa_uniform_ensemble_subset.rds")
+)
+```
+
+# UK Data
+
+We first compare CQR with QSA for the UK Data Set.
+In addition we add a simple ensemble model that combined the forecasts of both methods.
+
+## Different Behaviour for specific combinations
+
+The behaviour of CQR and QSA can be vastly different for different covariate combinations:
+
+For the `epiforecasts-EpiExpert` model the adjustment of both methods are fairly moderate.
+Interestingly CQR extends the original forecast intervals while QSA shrinks them.
+Neither of them improve the interval score on the validation set.
+
+```{r}
+plot_intervals(
+  uk_cqr_qsa,
+  model = "epiforecasts-EpiExpert", target_type = "Cases", horizon = 1, quantile = 0.1
+)
+
+uk_cqr_qsa |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model", "target_type", "horizon", "quantile")) |>
+  dplyr::filter(model == "epiforecasts-EpiExpert", target_type == "Cases", horizon == 1, quantile == 0.1) |>
+  dplyr::select(method:dispersion) |>
+  dplyr::arrange(interval_score)
+```
+
+For the `seabbs` model the picture looks completely different.
+Both post-processing methods make the prediction intervals (much) larger.
+In contrast to the first situation where the interval's midpoint appears to be approximately equal for each method, the CQR and QSA adjustments are sometimes shifted and centered around a different value.
+
+The table shows that the performance measured by the weighted interval score improves drastically for both methods.
+The effect of the QSA Uniform method, however, is much stronger in this case:
+
+```{r}
+plot_intervals(
+  uk_cqr_qsa,
+  model = "seabbs", target_type = "Cases", horizon = 3, quantile = 0.05
+)
+```
+
+```{r}
+uk_cqr_qsa |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model", "target_type", "horizon", "quantile")) |>
+  dplyr::filter(model == "seabbs", target_type == "Cases", horizon == 3, quantile == 0.05) |>
+  dplyr::select(method:dispersion) |>
+  dplyr::arrange(interval_score)
+```
+
+## Aggregated Scores
+
+Next, we are interested in comparing both methods and their ensemble stratified by a single category while aggregating over the remaining ones:
+
+```{r}
+df_mod <- eval_methods(uk_cqr_qsa_ensemble, summarise_by = "model")
+df_target <- eval_methods(uk_cqr_qsa_ensemble, summarise_by = "target_type")
+
+p1 <- plot_eval(df_mod, base_size = 8) + ggplot2::labs(
+  y = NULL,
+  title = "Performance Comparison by Models",
+  subtitle = NULL
+)
+
+p2 <- plot_eval(df_target, base_size = 8) + ggplot2::labs(
+  y = NULL,
+  title = "Performance Comparison by Target Types",
+  subtitle = NULL
+)
+
+p1 + p2
+```
+
+```{r}
+df_hor <- eval_methods(uk_cqr_qsa_ensemble, summarise_by = "horizon")
+df_quant <- eval_methods(uk_cqr_qsa_ensemble, summarise_by = "quantile")
+
+p3 <- plot_eval(df_hor, base_size = 8) + ggplot2::labs(
+  title = "Performance Comparison by Horizons",
+  subtitle = NULL
+)
+
+p4 <- plot_eval(df_quant, base_size = 8) + ggplot2::labs(
+  title = "Performance Comparison by Quantiles",
+  subtitle = NULL
+)
+
+p3 + p4
+```
+
+In most situations QSA indicates a stronger performance boost such that the ensemble predictions are closer to QSA compared to CQR.
+Except for the splitting by quantiles case the ensemble model performs best on the UK Data, even on the out-of-sample validation set.
+
+
+## European Forecast Hub Data
+
+Due to computational constraints the Post-Processed EU Hub Data only contains a single Model and a single Target Type. 
+Here the most interesting aspect is the varying effect of the different methods across all countries.
+
+Since the visualization is skewed by the outliers Poland (for CQR) and Finland (QSA) we omit these two countries:
+
+```{r}
+df_loc <- eval_methods(
+  hub_cqr_qsa_ensemble |> dplyr::filter(!location %in% c("PL", "FI")),
+  summarise_by = "location_name"
+)
+
+plot_eval(df_loc) + ggplot2::labs(y = NULL)
+```
+
+The **absolute magnitude** of the relative changes are greater for QSA both in positive and negative direction.
+Since the effects are more diverse than for the UK Data, the Ensemble model shines by weighting the better method for each country stronger.
+
+This finding is supported by the raw interval scores aggregated over all covariates:
+Again CQR and QSA increase the dispersion overall (i.e. make the intervals larger), yet this effect only improves the interval score for the CQR method in this case:
+
+```{r}
+hub_cqr_qsa_ensemble |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method")) |>
+  dplyr::select(method:dispersion) |>
+  dplyr::arrange(interval_score)
+```

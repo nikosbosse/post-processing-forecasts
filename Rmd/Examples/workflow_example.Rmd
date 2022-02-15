@@ -1,0 +1,101 @@
+---
+title: "Workflow of `update_predictions()` and plotting functions"
+author: "Joel Beck"
+output:
+  bookdown::html_document2:
+    theme: flatly
+    highlight: pygments  # kate
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 2
+    number_sections: FALSE
+    df_print: tibble
+  bookdown::pdf_document2:
+    highlight: tango  # pygments
+    toc: FALSE
+    number_sections: FALSE
+    df_print: tibble
+    latex_engine: pdflatex
+    keep_tex: FALSE
+urlcolor: blue
+---
+
+```{r knitr-opts, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center",
+  out.width = "100%", dpi = 300, fig.asp = 0.618, collapse = TRUE
+)
+```
+
+```{r libraries}
+# temporary and not recommended way, library(postforecasts) imports only functions with @export tag
+# => requires more complete documentation
+devtools::load_all(".")
+```
+
+# Original Dataframe
+
+```{r}
+df <- readr::read_csv(here::here("data", "full-data-uk-challenge.csv"))
+```
+
+# Plot Original Predictions
+
+```{r}
+models <- "epiforecasts-EpiExpert"
+locations <- "GB"
+plot_quantiles(df, models, locations, quantiles = c(0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99))
+```
+
+# Update Predictions
+
+```{r, eval=FALSE}
+# takes a bit of time
+df_list <- update_predictions(methods = c("cqr", "qsa_uniform"), model, location, cv_init_training = 0.5)
+df_combined_1 <- collect_predictions(df_list)
+```
+
+# Numerical Analysis
+
+```{r}
+# use prefitted data
+uk_cqr_qsa <- readr::read_rds(here::here("data_results", "uk_cqr_qsa_uniform.rds"))
+uk_cqr_qsa_ensemble <- readr::read_rds(
+  here::here("data_results", "uk_cqr_qsa_uniform_ensemble.rds")
+)
+```
+
+```{r}
+uk_cqr_qsa_ensemble |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method")) |>
+  dplyr::arrange(interval_score) |>
+  dplyr::select(method:overprediction)
+```
+
+# Graphical Analysis
+
+## for given `model`, `location`, `target_type`, `quantile` and `horizon`
+
+```{r}
+models <- "epiforecasts-EpiExpert"
+locations <- "GB"
+
+plot_intervals(
+  uk_cqr_qsa, models, locations,
+  target_type = "Cases", quantile = 0.05, horizon = 1
+)
+```
+
+## for given `model`, `location` and `quantile` and different `horizons`
+
+```{r}
+plot_intervals_grid(uk_cqr_qsa, models, facet_by = "horizon", highlight_cv = TRUE)
+```
+
+## for given `model`, `location` and `horizon` and different `quantiles`
+
+```{r}
+plot_intervals_grid(uk_cqr_qsa, models, facet_by = "quantile", highlight_cv = TRUE)
+```

@@ -16,7 +16,7 @@ facet_quantile <- function(df, quantiles, horizon) {
 setup_intervals_plot <- function(df) {
   df |>
     tidyr::pivot_wider(names_from = .data$quantile, values_from = .data$prediction) |>
-    dplyr::mutate(method = factor(.data$method) |> forcats::fct_inorder()) |> 
+    dplyr::mutate(method = factor(.data$method) |> forcats::fct_inorder()) |>
     ggplot2::ggplot(mapping = ggplot2::aes(x = .data$target_end_date)) +
     ggplot2::geom_point(ggplot2::aes(y = .data$true_value), size = 1) +
     ggplot2::geom_line(ggplot2::aes(y = .data$true_value)) +
@@ -61,11 +61,50 @@ plot_training_end <- function(p, df, type = c("segment", "vline")) {
 }
 
 
-plot_bars <- function(df_eval, first_colname, max_value, base_size) {
-  first_colname <- rlang::sym(first_colname)
-  
+### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
+### Helpers for plot_eval()                                                 ####
+
+get_plot_title <- function(df_eval) {
+  methods <- attr(df_eval, which = "methods")
+
+  if (length(methods) > 1) {
+    title_end <- "Post Processing"
+  } else {
+    method <- stringr::str_replace(methods, pattern = "_", replacement = " ") |>
+      stringr::str_to_upper()
+    title_end <- paste(method, "Adjustment")
+  }
+
+  paste("Relative Changes in Weighted Interval Score after", title_end)
+}
+
+get_xlabel <- function(summarise_by) {
+  # multiple categories
+  if (length(summarise_by) == 2) {
+    xlabel <- summarise_by[2]
+  } else {
+    xlabel <- NULL
+  }
+
+  return(xlabel)
+}
+
+get_max_value <- function(df_eval) {
   df_eval |>
-    dplyr::mutate(positive_effect = .data$relative_change < 0) |> 
+    # exclude numeric quantile column when taking max of dataframe
+    # where() leads to warning in RCMDCHECK, prefixing with tidyselect:::where()
+    # does not solve it, discussed here:
+    # https://github.com/r-lib/tidyselect/issues/201
+    dplyr::select(-1 & tidyselect:::where(is.numeric)) |>
+    abs() |>
+    max(na.rm = TRUE)
+}
+
+plot_bars <- function(df_eval, title, first_colname, max_value, base_size) {
+  first_colname <- rlang::sym(first_colname)
+
+  df_eval |>
+    dplyr::mutate(positive_effect = .data$relative_change < 0) |>
     ggplot2::ggplot(
       mapping = ggplot2::aes(
         x = .data$relative_change, y = !!first_colname,
@@ -74,21 +113,20 @@ plot_bars <- function(df_eval, first_colname, max_value, base_size) {
     ) +
     ggplot2::geom_vline(xintercept = 0, color = "grey40", linetype = "dashed") +
     ggplot2::geom_segment(
-      mapping = ggplot2::aes(xend = 0, yend = !!first_colname)) +
+      mapping = ggplot2::aes(xend = 0, yend = !!first_colname)
+    ) +
     ggplot2::geom_point(size = 3) +
     ggplot2::scale_y_discrete(limits = rev) +
     ggplot2::scale_color_manual(values = c("TRUE" = "#67a9cf", "FALSE" = "#ef8a62")) +
-    ggplot2::labs(
-      x = NULL, y = first_colname, color = NULL,
-      title = "Relative Changes in Weighted Interval Score after CQR Adjustments",
-    ) +
-    ggplot2::guides(color = "none") + 
-    ggplot2::theme_minimal(base_size = base_size) + 
+    ggplot2::labs(x = NULL, y = first_colname, color = NULL, title = title) +
+    ggplot2::guides(color = "none") +
+    ggplot2::theme_minimal(base_size = base_size) +
     ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 }
 
 
-plot_heatmap <- function(df_plot, first_colname, max_value, xlabel, base_size) {
+plot_heatmap <- function(df_plot, title, first_colname,
+                         max_value, xlabel, base_size) {
   # to use columns as strings in aes(), encode string first to symbol with sym()
   # and then decode / unquote it with !! inside of aes()
   first_colname <- rlang::sym(first_colname)
@@ -104,8 +142,7 @@ plot_heatmap <- function(df_plot, first_colname, max_value, xlabel, base_size) {
       palette = "RdBu", limits = c(-max_value, max_value)
     ) +
     ggplot2::labs(
-      x = xlabel, y = first_colname, fill = NULL,
-      title = "Relative Changes in Weighted Interval Score after CQR Adjustments",
+      x = xlabel, y = first_colname, fill = NULL, title = title,
       subtitle = paste(
         "- Negative values indicate a lower (better) Score,",
         "positive values a higher (worse) Score -"

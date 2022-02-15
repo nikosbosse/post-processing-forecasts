@@ -1,0 +1,4758 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Post-Processing COVID-19 Forecasts</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Matthias Herp &amp; Joel Beck" />
+    <script src="second-presentation_files/header-attrs/header-attrs.js"></script>
+    <link href="second-presentation_files/tile-view/tile-view.css" rel="stylesheet" />
+    <script src="second-presentation_files/tile-view/tile-view.js"></script>
+    <link href="second-presentation_files/panelset/panelset.css" rel="stylesheet" />
+    <script src="second-presentation_files/panelset/panelset.js"></script>
+    <script src="second-presentation_files/mark.js/mark.min.js"></script>
+    <link href="second-presentation_files/xaringanExtra-search/search.css" rel="stylesheet" />
+    <script src="second-presentation_files/xaringanExtra-search/search.js"></script>
+    <script>window.addEventListener('load', function() { window.xeSearch = new RemarkSearch({"position":"bottom-left","caseSensitive":false,"showIcon":false,"autoSearch":false}) })</script>
+    <link href="second-presentation_files/tachyons/tachyons.min.css" rel="stylesheet" />
+    <script src="second-presentation_files/xaringanExtra_fit-screen/fit-screen.js"></script>
+    <link href="second-presentation_files/xaringanExtra-extra-styles/xaringanExtra-extra-styles.css" rel="stylesheet" />
+    <script src="second-presentation_files/xaringanExtra-progressBar/progress-bar.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Post-Processing COVID-19 Forecasts
+## - Second Presentation -<br><br>
+### Matthias Herp &amp; Joel Beck
+### 11.02.2022
+
+---
+
+&lt;!-- here classes for second slide --&gt;
+
+
+&lt;!-- General Layout &amp; Workflow --&gt;
+&lt;!-- ----------------------------------------------------------------------- --&gt;
+
+&lt;!-- 
+build pdf slides with the xaringanBuilder package 
+use e.g. xaringanBuilder::build_pdf(input = "file-path", partial_slides = TRUE, complex_slides = FALSE, keep_intermediates = TRUE) 
+--&gt;
+
+&lt;!-- 
+Slide Classes:
+
+- top, middle, bottom
+- left, center, right
+- inverse
+
+- background-image: url(link)
+- background-size: cover | contain
+- background-position: center
+
+- name
+- template
+- layout: true | false
+- count: false
+- seal: true | false (create title slide from YAML header)
+
+
+Content Classes:
+
+- .left[], .center[], .right[] (alignment)
+- .left-column[], .right-column[] (positioning, unequal width)
+- .pull-left[], .pull-right[] (positioning, equal width)
+- .footnote[]
+- .color[]
+- custom classes defined in CSS code chunks, 
+e.g. .tiny[], .small[], .medium[], .large[], .huge[]
+
+
+Colors:
+- Color Scheme Generator: https://coolors.co/
+- Google Color Picker
+
+Images:
+- Background Images: https://unsplash.com/
+
+Fonts:
+- Google Fonts: https://fonts.google.com/
+
+Emojis:
+- Find Emoji Name: https://emojipedia.org/
+- Use Ermoji Addin to get Unicode Symbol or R Code for emo package
+- emo Package: https://github.com/hadley/emo 
+
+Icons:
+- icon Package: https://pkg.mitchelloharawild.com/icons/
+
+Embedding:
+- Images and Gifs: usual Markdown Syntax ![]() or html syntax &lt;iframe&gt;&lt;/iframe&gt;
+- Youtube Videos: Click 'Teilen =&gt; Einbetten' below the video, can also control the starting time of the video
+- Example: &lt;iframe width="800" height="400" src="link" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen&gt;&lt;/iframe&gt;
+
+--&gt;
+
+
+&lt;!-- Settings for xaringanthemer &amp; xaringanExtra --&gt;
+&lt;!-- ----------------------------------------------------------------------- --&gt;
+
+
+
+
+&lt;!-- CSS Classes taken from Garrick Aiden-Buie's Blog --&gt;
+&lt;!-- ----------------------------------------------------------------------- --&gt;
+
+&lt;style type="text/css"&gt;
+/* 
+This code highlights the last item in an incremental list 
+Add 'class: highlight-last-item' or 'class: bold-last-item' to slide 
+*/
+
+.highlight-last-item &gt; ul &gt; li, 
+.highlight-last-item &gt; ol &gt; li {
+  opacity: 0.5;
+}
+
+.highlight-last-item &gt; ul &gt; li:last-of-type,
+.highlight-last-item &gt; ol &gt; li:last-of-type {
+  opacity: 1;
+}
+
+.bold-last-item &gt; ul &gt; li:last-of-type,
+.bold-last-item &gt; ol &gt; li:last-of-type {
+  font-weight: bold;
+}
+
+/* fixes positioning of double .pull-left[] on same slide */
+.pull-right ~ * { clear: unset; }
+.pull-right + * { clear: both; }
+&lt;/style&gt;
+
+&lt;!-- 
+CSS Changes in CSS code chunks **and** inside of &lt;style&gt; tags apply to the **entire** document, indpendent of their location.
+To apply changes only to the current slide, create new CSS class and put text into enclosing brackets.
+
+Thus, &lt;style&gt; tags are NOT necessary for xaringan !!
+--&gt;
+
+
+&lt;!-- CSS Classes taken from Thomas Mock --&gt;
+&lt;!-- https://github.com/jthomasmock/tidymodels-workshops/blob/master/tidymodels-intro-phil.Rmd --&gt;
+&lt;!-- ----------------------------------------------------------------------- --&gt;
+
+&lt;style type="text/css"&gt;
+.hljs-github .hjls {
+  background: black;
+}
+
+.remark-slide thead, .remark-slide tr:nth-child(2n) {
+  background-color: white;
+}
+.remark-slide thead, .remark-slide tr:nth-child(2n) {
+  background-color: white;
+}
+
+/* footer specifications */
+div.my-footer {
+    background-color: #1a1917;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    height: 20px;
+    width: 100%;
+}
+div.my-footer span {
+    font-size: 10pt;
+    color: #F7F8FA;
+    position: absolute;
+    left: 15px;
+    bottom: 2px;
+}
+&lt;/style&gt;
+
+
+&lt;!-- Custom CSS Classes --&gt;
+&lt;!-- ----------------------------------------------------------------------- --&gt;
+
+&lt;style type="text/css"&gt;
+.bold {
+  font-weight: bold;
+}
+
+.underline {
+  text-decoration: underline;  
+}
+
+.mono {
+  font-family: 'Fira Mono', monospace;
+}
+
+/* make left and right column horizontally aligned */
+.right-column {
+  padding-top: 0;
+}
+
+/* 
+The first two commands change the background of the input code block,
+the repeated commands with the star change the background of the output code block
+
+With special name .remark-code this is set as the new default, add custom prefix ( e.g. .grey-code-bg .remark-code) to leave the default unchanged
+*/
+.remark-code, .remark-code * {
+    background-color: #f0f2f0;
+}
+&lt;/style&gt;
+
+&lt;style type="text/css"&gt;
+/* Font Size Categories for Text and Code */
+.size-60 {
+  font-size: 60%;
+}
+.size-60 pre .remark-code {
+  font-size: 60%;
+}
+.size-60 .remark-code {
+  font-size: 60%;
+}
+
+.size-70 {
+  font-size: 70%;
+}
+.size-70 pre .remark-code {
+  font-size: 70%;
+}
+.size-70 .remark-code {
+  font-size: 70%;
+}
+
+.size-80 {
+  font-size: 80%;
+}
+.size-80 pre .remark-code {
+  font-size: 80%;
+}
+.size-80 .remark-code {
+  font-size: 80%;
+}
+
+.size-90 {
+  font-size: 90%;
+}
+.size-90 pre .remark-code {
+  font-size: 90%;
+}
+.size-90 .remark-code {
+  font-size: 90%;
+}
+
+.size-100 {
+  font-size: 100%;
+}
+.size-100 pre .remark-code {
+  font-size: 100%;
+}
+.size-100 .remark-code {
+  font-size: 100%;
+}
+
+.size-110 {
+  font-size: 110%;
+}
+.size-110 pre .remark-code {
+  font-size: 110%;
+}
+.size-110 .remark-code {
+  font-size: 110%;
+}
+
+.size-120 {
+  font-size: 120%;
+}
+.size-120 pre .remark-code {
+  font-size: 120%;
+}
+.size-120 .remark-code {
+  font-size: 120%;
+}
+
+.size-130 {
+  font-size: 130%;
+}
+.size-130 pre .remark-code {
+  font-size: 130%;
+}
+.size-130 .remark-code {
+  font-size: 130%;
+}
+
+.size-140 {
+  font-size: 140%;
+}
+.size-140 pre .remark-code {
+  font-size: 140%;
+}
+.size-140 .remark-code {
+  font-size: 140%;
+}
+
+.size-150 {
+  font-size: 150%;
+}
+.size-150 pre .remark-code {
+  font-size: 150%;
+}
+.size-150 .remark-code {
+  font-size: 150%;
+}
+&lt;/style&gt;
+
+
+&lt;style type="text/css"&gt;
+/* Two - Column Layouts of different widths */
+.left-75 {
+  width: 75%;
+  float: left;
+}
+.right-20 {
+  width: 20%;
+  float: right;
+}
+.right-20 + * {
+  clear: both;
+}
+
+
+.left-70 {
+  width: 70%;
+  float: left;
+}
+.right-25 {
+  width: 25%;
+  float: right;
+}
+.right-25 + * {
+  clear: both;
+}
+
+
+.left-65 {
+  width: 65%;
+  float: left;
+}
+.right-30 {
+  width: 30%;
+  float: right;
+}
+.right-30 + * {
+  clear: both;
+}
+
+
+.left-60 {
+  width: 60%;
+  float: left;
+}
+.right-35 {
+  width: 35%;
+  float: right;
+}
+.right-35 + * {
+  clear: both;
+}
+
+
+.left-55 {
+  width: 55%;
+  float: left;
+}
+.right-40 {
+  width: 40%;
+  float: right;
+}
+.right-40 + * {
+  clear: both;
+}
+
+
+.left-40 {
+  width: 40%;
+  float: left;
+}
+.right-55 {
+  width: 55%;
+  float: right;
+}
+.right-55 + * {
+  clear: both;
+}
+
+
+.left-35 {
+  width: 35%;
+  float: left;
+}
+.right-60 {
+  width: 60%;
+  float: right;
+}
+.right-60 + * {
+  clear: both;
+}
+
+
+.left-30 {
+  width: 30%;
+  float: left;
+}
+.right-65 {
+  width: 65%;
+  float: right;
+}
+.right-65 + * {
+  clear: both;
+}
+
+
+.left-25 {
+  width: 25%;
+  float: left;
+}
+.right-65 {
+  width: 65%;
+  float: right;
+}
+.right-65 + * {
+  clear: both;
+}
+
+
+.left-20 {
+  width: 20%;
+  float: left;
+}
+.right-75 {
+  width: 75%;
+  float: right;
+}
+.right-75 + * {
+  clear: both;
+}
+&lt;/style&gt;
+
+
+&lt;!-- Code Chunk Options --&gt;
+&lt;!-- ----------------------------------------------------------------------- --&gt;
+
+
+
+
+&lt;!-- Example First Slide for Link Footer --&gt;
+&lt;!-- ----------------------------------------------------------------------- --&gt;
+
+&lt;!-- layout: true --&gt;
+
+&lt;!-- &lt;div class="my-footer"&gt;&lt;span&gt;text&lt;/span&gt;&lt;/div&gt; --&gt;
+
+&lt;!-- this adds the link footer to all slides, depends on my-footer class in css--&gt;
+
+&lt;!-- --- --&gt;
+
+
+
+&lt;!-- here content of second slide --&gt;
+
+## Setting
+
+- Post-Processing Covid19 forecasts: Systematically adjust existing prediction intervals with the goal of better out-of-sample performance
+
+--
+
+- Original forecasts from two data sources: The **UK Covid-19 Crowd Forecasting Challenge**&lt;sup&gt;1&lt;/sup&gt; (includes forecasts of non-expert individuals) and the **European Forecast Hub**&lt;sup&gt;2&lt;/sup&gt; (forecasts from international research groups)
+
+.footnote[ 
+[1] https://www.crowdforecastr.org/2021/05/11/uk-challenge/ &lt;br&gt;
+[2] https://covid19forecasthub.eu/index.html
+]
+
+--
+
+- We consider five dimensions: **location**, **model**, **target type**, **horizon** and **quantile**
+
+--
+
+- The quality of prediction intervals is measured by the **Weighted Interval Score** based on a trade-off between interval coverage and precision  
+
+---
+class: inverse, center, middle
+
+# Conformalized Quantile Regression (CQR)
+
+---
+
+&lt;img src="second-presentation_files/figure-html/unnamed-chunk-3-1.png" width="100%" /&gt;
+
+---
+
+## CQR for UK Data
+
+.left-30[ 
+- For most models (particular by individual humans) CQR makes the prediction intervals **wider** increasing the coverage at the cost of precision
+
+- Often leads to improvement of Weighted Interval Score
+]
+
+--
+
+.right-65[
+
+For this specific covariate combination:
+
+<div id="xglqjfvzie" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#xglqjfvzie .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: 0;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#xglqjfvzie .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#xglqjfvzie .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#xglqjfvzie .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#xglqjfvzie .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#xglqjfvzie .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#xglqjfvzie .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#xglqjfvzie .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#xglqjfvzie .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#xglqjfvzie .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#xglqjfvzie .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#xglqjfvzie .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#xglqjfvzie .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#xglqjfvzie .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#xglqjfvzie .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#xglqjfvzie .gt_row {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#xglqjfvzie .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#xglqjfvzie .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#xglqjfvzie .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#xglqjfvzie .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#xglqjfvzie .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#xglqjfvzie .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#xglqjfvzie .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#xglqjfvzie .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#xglqjfvzie .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#xglqjfvzie .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#xglqjfvzie .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#xglqjfvzie .gt_left {
+  text-align: left;
+}
+
+#xglqjfvzie .gt_center {
+  text-align: center;
+}
+
+#xglqjfvzie .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#xglqjfvzie .gt_font_normal {
+  font-weight: normal;
+}
+
+#xglqjfvzie .gt_font_bold {
+  font-weight: bold;
+}
+
+#xglqjfvzie .gt_font_italic {
+  font-style: italic;
+}
+
+#xglqjfvzie .gt_super {
+  font-size: 65%;
+}
+
+#xglqjfvzie .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 65%;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">method</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">model</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">target_type</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">horizon</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">quantile</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">interval_score</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">dispersion</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">cqr</td>
+<td class="gt_row gt_left">seabbs</td>
+<td class="gt_row gt_left">Cases</td>
+<td class="gt_row gt_right">3</td>
+<td class="gt_row gt_right">0.1</td>
+<td class="gt_row gt_right">157.319</td>
+<td class="gt_row gt_right">87.485</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">original</td>
+<td class="gt_row gt_left gt_striped">seabbs</td>
+<td class="gt_row gt_left gt_striped">Cases</td>
+<td class="gt_row gt_right gt_striped">3</td>
+<td class="gt_row gt_right gt_striped">0.1</td>
+<td class="gt_row gt_right gt_striped">210.622</td>
+<td class="gt_row gt_right gt_striped">38.138</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+
+Aggregated over all **models**, **target types**, **horizons** and **quantiles**:
+
+<div id="opwosqclph" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#opwosqclph .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: 0;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#opwosqclph .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#opwosqclph .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#opwosqclph .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#opwosqclph .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#opwosqclph .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#opwosqclph .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#opwosqclph .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#opwosqclph .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#opwosqclph .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#opwosqclph .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#opwosqclph .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#opwosqclph .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#opwosqclph .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#opwosqclph .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#opwosqclph .gt_row {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#opwosqclph .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#opwosqclph .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#opwosqclph .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#opwosqclph .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#opwosqclph .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#opwosqclph .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#opwosqclph .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#opwosqclph .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#opwosqclph .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#opwosqclph .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#opwosqclph .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#opwosqclph .gt_left {
+  text-align: left;
+}
+
+#opwosqclph .gt_center {
+  text-align: center;
+}
+
+#opwosqclph .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#opwosqclph .gt_font_normal {
+  font-weight: normal;
+}
+
+#opwosqclph .gt_font_bold {
+  font-weight: bold;
+}
+
+#opwosqclph .gt_font_italic {
+  font-style: italic;
+}
+
+#opwosqclph .gt_super {
+  font-size: 65%;
+}
+
+#opwosqclph .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 65%;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">method</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">interval_score</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">dispersion</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">cqr</td>
+<td class="gt_row gt_right">62.186</td>
+<td class="gt_row gt_right">24.129</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">original</td>
+<td class="gt_row gt_right gt_striped">65.739</td>
+<td class="gt_row gt_right gt_striped">12.001</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+
+]
+
+---
+
+## Evaluation
+
+- Apart from the **absolute** interval score, the **relative** or **percentage** change after applying CQR might be of interest
+
+--
+
+- New evaluation functions: **eval_methods()** and **plot_eval()**   
+
+--
+
+- **Negative** values indicate a score improvement, **positive** values a larger/worse interval score
+
+--
+
+- All displayed values are computed exclusively from the **validation** (out-of-sample) data 
+
+---
+
+## Which model benefits most?
+
+.pull-left[ 
+
+
+```r
+eval_methods(uk_cqr, summarise_by = "model") |&gt;
+  display_table()
+```
+
+<div id="icilyastul" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#icilyastul .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: 0;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#icilyastul .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#icilyastul .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#icilyastul .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#icilyastul .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#icilyastul .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#icilyastul .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#icilyastul .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#icilyastul .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#icilyastul .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#icilyastul .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#icilyastul .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#icilyastul .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#icilyastul .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#icilyastul .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#icilyastul .gt_row {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#icilyastul .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#icilyastul .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#icilyastul .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#icilyastul .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#icilyastul .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#icilyastul .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#icilyastul .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#icilyastul .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#icilyastul .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#icilyastul .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#icilyastul .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#icilyastul .gt_left {
+  text-align: left;
+}
+
+#icilyastul .gt_center {
+  text-align: center;
+}
+
+#icilyastul .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#icilyastul .gt_font_normal {
+  font-weight: normal;
+}
+
+#icilyastul .gt_font_bold {
+  font-weight: bold;
+}
+
+#icilyastul .gt_font_italic {
+  font-style: italic;
+}
+
+#icilyastul .gt_super {
+  font-size: 65%;
+}
+
+#icilyastul .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 65%;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">model</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">relative_change</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">epiforecasts-EpiExpert</td>
+<td class="gt_row gt_right">-0.057</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">epiforecasts-EpiExpert_direct</td>
+<td class="gt_row gt_right gt_striped">-0.055</td></tr>
+    <tr><td class="gt_row gt_left">epiforecasts-EpiExpert_Rt</td>
+<td class="gt_row gt_right">-0.061</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">EuroCOVIDhub-baseline</td>
+<td class="gt_row gt_right gt_striped">0.009</td></tr>
+    <tr><td class="gt_row gt_left">EuroCOVIDhub-ensemble</td>
+<td class="gt_row gt_right">-0.020</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">seabbs</td>
+<td class="gt_row gt_right gt_striped">-0.085</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+
+]
+
+--
+
+.pull-right[ 
+
+- For many categories the magnitudes of the relative change is difficult to compare in the table output
+
+- Solution: visualize table either as barplot or heatmap with **plot_eval()** 
+
+- Allows for two-dimensional grid for **covariate combinations** 
+
+]
+
+---
+
+&lt;img src="second-presentation_files/figure-html/uk-cqr-plots1-1.png" width="100%" /&gt;
+
+---
+
+## CQR for European Forecast Hub Data
+
+- We selected `\(18\)` European countries to conduct the analysis
+
+--
+
+- Several interesting questions to investigate:
+
+--
+
+- Do CQR improvements vary across countries?
+
+--
+
+- Do the findings from the much smaller UK Data Set generalize?
+
+--
+
+- Result: Same trends exist in both Data Sets, but more moderate effect for EU Hub Data
+
+--
+
+- In contrast to the UK Data: For Germany, CQR tends to **extend** original forecast intervals for Cases as before but **decrease** their widths for Deaths 
+
+---
+
+&lt;img src="second-presentation_files/figure-html/unnamed-chunk-7-1.png" width="100%" /&gt;
+
+---
+
+## What's wrong with Poland?
+
+.left-60[ 
+
+&lt;img src="second-presentation_files/figure-html/hub-cqr-all-1.png" width="100%" /&gt;
+
+]
+
+.right-35[ 
+
+- Visualization is dominated by the very large negative impact of CQR on Poland
+
+- To gain further insight about the remaining countries we would have to exclude Poland
+
+- Why is Poland such an outlier?
+
+- Since CQR is beneficial for the **training set** by construction, the issue must be in the **validation set**
+
+]
+
+---
+
+.pull-left[ 
+
+## Training Set
+
+<div id="zwikxgoudx" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#zwikxgoudx .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: 0;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#zwikxgoudx .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#zwikxgoudx .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#zwikxgoudx .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#zwikxgoudx .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#zwikxgoudx .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#zwikxgoudx .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#zwikxgoudx .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#zwikxgoudx .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#zwikxgoudx .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#zwikxgoudx .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#zwikxgoudx .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#zwikxgoudx .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#zwikxgoudx .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#zwikxgoudx .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#zwikxgoudx .gt_row {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#zwikxgoudx .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#zwikxgoudx .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zwikxgoudx .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#zwikxgoudx .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zwikxgoudx .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#zwikxgoudx .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#zwikxgoudx .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#zwikxgoudx .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#zwikxgoudx .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#zwikxgoudx .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#zwikxgoudx .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#zwikxgoudx .gt_left {
+  text-align: left;
+}
+
+#zwikxgoudx .gt_center {
+  text-align: center;
+}
+
+#zwikxgoudx .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#zwikxgoudx .gt_font_normal {
+  font-weight: normal;
+}
+
+#zwikxgoudx .gt_font_bold {
+  font-weight: bold;
+}
+
+#zwikxgoudx .gt_font_italic {
+  font-style: italic;
+}
+
+#zwikxgoudx .gt_super {
+  font-size: 65%;
+}
+
+#zwikxgoudx .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 65%;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">method</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">model</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">interval_score</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">dispersion</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">cqr</td>
+<td class="gt_row gt_left">epiforecasts-EpiNow2</td>
+<td class="gt_row gt_right">22.844</td>
+<td class="gt_row gt_right">7.241</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">original</td>
+<td class="gt_row gt_left gt_striped">epiforecasts-EpiNow2</td>
+<td class="gt_row gt_right gt_striped">23.712</td>
+<td class="gt_row gt_right gt_striped">6.238</td></tr>
+    <tr><td class="gt_row gt_left">cqr</td>
+<td class="gt_row gt_left">EuroCOVIDhub-baseline</td>
+<td class="gt_row gt_right">31.728</td>
+<td class="gt_row gt_right">9.884</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">original</td>
+<td class="gt_row gt_left gt_striped">EuroCOVIDhub-baseline</td>
+<td class="gt_row gt_right gt_striped">35.782</td>
+<td class="gt_row gt_right gt_striped">4.013</td></tr>
+    <tr><td class="gt_row gt_left">cqr</td>
+<td class="gt_row gt_left">EuroCOVIDhub-ensemble</td>
+<td class="gt_row gt_right">29.444</td>
+<td class="gt_row gt_right">9.754</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">original</td>
+<td class="gt_row gt_left gt_striped">EuroCOVIDhub-ensemble</td>
+<td class="gt_row gt_right gt_striped">31.367</td>
+<td class="gt_row gt_right gt_striped">7.541</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+
+]
+
+--
+
+.pull-right[ 
+
+## Validation Set
+
+<div id="oiyautjshf" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#oiyautjshf .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: 0;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#oiyautjshf .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#oiyautjshf .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#oiyautjshf .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#oiyautjshf .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#oiyautjshf .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#oiyautjshf .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#oiyautjshf .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#oiyautjshf .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#oiyautjshf .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#oiyautjshf .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#oiyautjshf .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#oiyautjshf .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#oiyautjshf .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#oiyautjshf .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#oiyautjshf .gt_row {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#oiyautjshf .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#oiyautjshf .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#oiyautjshf .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#oiyautjshf .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#oiyautjshf .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#oiyautjshf .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#oiyautjshf .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#oiyautjshf .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#oiyautjshf .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#oiyautjshf .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#oiyautjshf .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#oiyautjshf .gt_left {
+  text-align: left;
+}
+
+#oiyautjshf .gt_center {
+  text-align: center;
+}
+
+#oiyautjshf .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#oiyautjshf .gt_font_normal {
+  font-weight: normal;
+}
+
+#oiyautjshf .gt_font_bold {
+  font-weight: bold;
+}
+
+#oiyautjshf .gt_font_italic {
+  font-style: italic;
+}
+
+#oiyautjshf .gt_super {
+  font-size: 65%;
+}
+
+#oiyautjshf .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 65%;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">method</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">model</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">interval_score</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">dispersion</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">cqr</td>
+<td class="gt_row gt_left">epiforecasts-EpiNow2</td>
+<td class="gt_row gt_right">1.942</td>
+<td class="gt_row gt_right">1.213</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">original</td>
+<td class="gt_row gt_left gt_striped">epiforecasts-EpiNow2</td>
+<td class="gt_row gt_right gt_striped">1.322</td>
+<td class="gt_row gt_right gt_striped">0.418</td></tr>
+    <tr><td class="gt_row gt_left">cqr</td>
+<td class="gt_row gt_left">EuroCOVIDhub-baseline</td>
+<td class="gt_row gt_right">6.458</td>
+<td class="gt_row gt_right">5.727</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">original</td>
+<td class="gt_row gt_left gt_striped">EuroCOVIDhub-baseline</td>
+<td class="gt_row gt_right gt_striped">3.344</td>
+<td class="gt_row gt_right gt_striped">2.685</td></tr>
+    <tr><td class="gt_row gt_left">cqr</td>
+<td class="gt_row gt_left">EuroCOVIDhub-ensemble</td>
+<td class="gt_row gt_right">2.339</td>
+<td class="gt_row gt_right">1.868</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">original</td>
+<td class="gt_row gt_left gt_striped">EuroCOVIDhub-ensemble</td>
+<td class="gt_row gt_right gt_striped">0.964</td>
+<td class="gt_row gt_right gt_striped">0.355</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+
+]
+
+--
+
+&lt;br&gt;
+
+Hypothesis: **Distribution Shift** between training period and validation period!
+
+---
+
+&lt;img src="second-presentation_files/figure-html/hub-cqr-poland-3-1.png" width="100%" /&gt;
+
+---
+class: inverse, center, middle
+
+# Quantile Spread Averaging (QSA)
+
+---
+
+## QSA - Intuition
+
+.left-30[ 
+- Three possibilities to define quantile spreads
+
+- We choose median based quantile spreads due to the advantages:
+    + spreads are independent of quantile number 
+    + non-symmetric adjustments are possible
+
+- Disadvantage: quantile crossing
+
+]
+
+.right-65[ 
+
+![](Images/qs_all.png)
+]
+
+---
+
+## QSA - Theory 
+
+Let `\(n\)` specify the number of observations in the training set within this combination, `\(\mathbf{y} \in \mathbb{R}^n\)` the vector of true values and `\(\hat{\mathbf{q}}_1, \ldots, \hat{\mathbf{q}}_p \in \mathbb{R}^n\)` vectors of quantile estimates for `\(p\)` different probability levels.
+
+Then, for each time series, the quantile spread adjustment computes the quantile spread factors `\(\mathbf{w}^* \in \mathbb{R}^p\)` by minimizing the weighted interval score:
+$$
+`\begin{aligned}
+\mathbf{w}^*
+&amp;= \operatorname*{arg\,min}_{\mathbf{w} \in \mathbb{R}^p} WIS_\alpha(\mathbf{y}) \\
+&amp;= \operatorname*{arg\,min}_{\mathbf{w} \in \mathbb{R}^p} \sum_{i=1}^p \sum_{j=1}^n (u_{i,j}^*-l_{i,j}^*) + \frac{2}{\alpha} \cdot (l_{i,j}^*-y_j) \cdot \mathbf{1} (y_j \leq l_{i,j}^*) + \frac{2}{\alpha} \cdot (y_j-u_{i,j}^*) \cdot \mathbf{1}(y_j \geq u_{i,j}^*) \\
+\text{s.t.} \qquad l_{i,j}^* &amp;= l_{i,j} + (l_{i,j}-m) \cdot w_i \quad \text{and} \quad 
+u_{i,j}^* = u_{i,j} + (u_{i,j}-m) \cdot w_i 
+\end{aligned}`
+$$
+
+--
+
+The optimization uses the **optim** function from the **stats**&lt;sup&gt;1&lt;/sup&gt; package. 
+As optimization method we use the quasi-Newton method **BFGS** named after Broyden, Fletcher, Goldfarb and Shanno.
+
+&lt;!-- read in preparation: https://en.wikipedia.org/wiki/Broyden–Fletcher–Goldfarb–Shanno_algorithm and find reference to the paper for footnotes. --&gt;
+
+.footnote[ 
+https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/optim
+]
+
+---
+
+## QSA - Flavors and Extensions 
+
+The **postforecasts** package offers three flavors of QSA where each restricts `\(\mathbf{w}\)` differently:
+- uniform: `\(i \in [0, 1, \ldots, p-1, p] \quad w_i = c\)`
+- flexibel: No Restrictions
+- flexibel-symmetric: `\(i \in [0, 1, \ldots, m-1] \quad w_i = w_{p-i}\)`
+
+--
+
+Furthermore, **postforecasts** provides regularization towards QSA Uniform by adding a regularization term `\(Pen(w)\)` with the weight `\(r\)` to the score function: 
+
+$$
+`\begin{aligned}
+\mathbf{w}^*
+&amp;= \operatorname*{arg\,min}_{\mathbf{w} \in \mathbb{R}^p} \ WIS_\alpha(\mathbf{y}) + r \cdot Pen(\mathbf{w}), \quad Pen(\mathbf{w}) = \sum_{i=1}^p (w_i - \bar{w})^2 \\
+\text{s.t.} \qquad \bar{w} &amp;= \frac{1}{p} \sum_{i=1}^p w_i
+\end{aligned}`
+$$
+---
+
+## QSA for the UK Dataset
+
+.left-30[ 
+
+- Note: following slides refer to QSA Uniform as QSA
+
+- Does QSA improve the Weighted Interval Score? 
+
+- What adjustments to the prediction intervals does it make?
+
+- Is there any pattern visible in QSA adjustments across dimensions?
+
+]
+
+--
+
+.right-65[
+
+.pull-left[
+
+results **aggregated**:
+
+<div id="hjzgbezngl" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#hjzgbezngl .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: 0;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#hjzgbezngl .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#hjzgbezngl .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#hjzgbezngl .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#hjzgbezngl .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#hjzgbezngl .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#hjzgbezngl .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#hjzgbezngl .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#hjzgbezngl .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#hjzgbezngl .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#hjzgbezngl .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#hjzgbezngl .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#hjzgbezngl .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#hjzgbezngl .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#hjzgbezngl .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#hjzgbezngl .gt_row {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#hjzgbezngl .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#hjzgbezngl .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#hjzgbezngl .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#hjzgbezngl .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#hjzgbezngl .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#hjzgbezngl .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#hjzgbezngl .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#hjzgbezngl .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#hjzgbezngl .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#hjzgbezngl .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#hjzgbezngl .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#hjzgbezngl .gt_left {
+  text-align: left;
+}
+
+#hjzgbezngl .gt_center {
+  text-align: center;
+}
+
+#hjzgbezngl .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#hjzgbezngl .gt_font_normal {
+  font-weight: normal;
+}
+
+#hjzgbezngl .gt_font_bold {
+  font-weight: bold;
+}
+
+#hjzgbezngl .gt_font_italic {
+  font-style: italic;
+}
+
+#hjzgbezngl .gt_super {
+  font-size: 65%;
+}
+
+#hjzgbezngl .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 65%;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">method</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">interval_score</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">dispersion</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">original</td>
+<td class="gt_row gt_right">65.739</td>
+<td class="gt_row gt_right">12.001</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">qsa_uniform</td>
+<td class="gt_row gt_right gt_striped">59.169</td>
+<td class="gt_row gt_right gt_striped">24.982</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+
+]
+
+.pull-right[
+
+Unraveled by **models**:
+
+<div id="kyvdjofnja" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#kyvdjofnja .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: 0;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#kyvdjofnja .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#kyvdjofnja .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#kyvdjofnja .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#kyvdjofnja .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#kyvdjofnja .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#kyvdjofnja .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#kyvdjofnja .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#kyvdjofnja .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#kyvdjofnja .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#kyvdjofnja .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#kyvdjofnja .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#kyvdjofnja .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#kyvdjofnja .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#kyvdjofnja .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#kyvdjofnja .gt_row {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#kyvdjofnja .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#kyvdjofnja .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kyvdjofnja .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#kyvdjofnja .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kyvdjofnja .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#kyvdjofnja .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#kyvdjofnja .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#kyvdjofnja .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#kyvdjofnja .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#kyvdjofnja .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#kyvdjofnja .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#kyvdjofnja .gt_left {
+  text-align: left;
+}
+
+#kyvdjofnja .gt_center {
+  text-align: center;
+}
+
+#kyvdjofnja .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#kyvdjofnja .gt_font_normal {
+  font-weight: normal;
+}
+
+#kyvdjofnja .gt_font_bold {
+  font-weight: bold;
+}
+
+#kyvdjofnja .gt_font_italic {
+  font-style: italic;
+}
+
+#kyvdjofnja .gt_super {
+  font-size: 65%;
+}
+
+#kyvdjofnja .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 65%;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">model</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">relative_change</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">epiforecasts-EpiExpert</td>
+<td class="gt_row gt_right">-0.122</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">epiforecasts-EpiExpert_direct</td>
+<td class="gt_row gt_right gt_striped">-0.124</td></tr>
+    <tr><td class="gt_row gt_left">epiforecasts-EpiExpert_Rt</td>
+<td class="gt_row gt_right">-0.102</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">EuroCOVIDhub-baseline</td>
+<td class="gt_row gt_right gt_striped">0.029</td></tr>
+    <tr><td class="gt_row gt_left">EuroCOVIDhub-ensemble</td>
+<td class="gt_row gt_right">-0.034</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">seabbs</td>
+<td class="gt_row gt_right gt_striped">-0.144</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+]
+
+]
+
+---
+&lt;!-- ## How are improvements distributed around quantiles and horizons? --&gt;
+
+&lt;img src="second-presentation_files/figure-html/uk-qsa-plots2-1.png" width="100%" /&gt;
+
+---
+
+&lt;img src="second-presentation_files/figure-html/uk-qsa-plots3-1.png" width="100%" /&gt;
+
+---
+
+## QSA for European Forecast Hub Data
+
+- Can we replicate QSA benefits across countries?
+
+--
+
+- Due to run time restrictions we limit our analysis to the **Epiforecasts-EpiNow2** model and the target type **Cases**
+
+--
+
+- For Germany QSA tends to extend original forecast intervals for **Cases** as seen in the UK data:
+
+&lt;img src="second-presentation_files/figure-html/hub-qsa-plots1-1.png" width="100%" /&gt;
+
+---
+
+&lt;!-- ## how are the benefits distributed around countries as well as around quantiles and horizons? 
+
+- no poland issue indicates that QSA adjusts faster to new distributions
+--&gt;
+
+&lt;img src="second-presentation_files/figure-html/hub-qsa-plots2-1.png" width="100%" /&gt;
+
+---
+
+## Where might the issue lie?
+
+- QSA Uniform might not be well suited to improve predictions for the **Epiforecasts-EpiNow2** model
+
+--
+
+- QSA Uniform could not be flexible enough if different quantiles need different relative adjustments
+
+--
+
+- Requires further analysis of QSA on different models and using the flexibel and symmetric flavors
+
+
+---
+class: inverse, center, middle
+
+# Method Comparison
+
+---
+
+## Comparison of CQR and QSA Results
+
+- Nature of adjustments majorly depends on specific covariate combination
+
+--
+
+- First example with **epiforecasts-EpiExpert** model: Overall only small corrections of original forecasts
+
+--
+
+- As usual CQR makes intervals larger, however QSA makes them **smaller**
+
+--
+
+- In this case, **neither** of the methods improve the weighted interval score
+
+<div id="ydysuabwtd" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#ydysuabwtd .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#ydysuabwtd .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#ydysuabwtd .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#ydysuabwtd .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#ydysuabwtd .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ydysuabwtd .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#ydysuabwtd .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#ydysuabwtd .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#ydysuabwtd .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#ydysuabwtd .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#ydysuabwtd .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#ydysuabwtd .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#ydysuabwtd .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#ydysuabwtd .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#ydysuabwtd .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#ydysuabwtd .gt_row {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#ydysuabwtd .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#ydysuabwtd .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ydysuabwtd .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#ydysuabwtd .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ydysuabwtd .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#ydysuabwtd .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#ydysuabwtd .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ydysuabwtd .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#ydysuabwtd .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#ydysuabwtd .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#ydysuabwtd .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#ydysuabwtd .gt_left {
+  text-align: left;
+}
+
+#ydysuabwtd .gt_center {
+  text-align: center;
+}
+
+#ydysuabwtd .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#ydysuabwtd .gt_font_normal {
+  font-weight: normal;
+}
+
+#ydysuabwtd .gt_font_bold {
+  font-weight: bold;
+}
+
+#ydysuabwtd .gt_font_italic {
+  font-style: italic;
+}
+
+#ydysuabwtd .gt_super {
+  font-size: 65%;
+}
+
+#ydysuabwtd .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 65%;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">method</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">model</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">target_type</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">horizon</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">quantile</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">interval_score</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">dispersion</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">original</td>
+<td class="gt_row gt_left">epiforecasts-EpiExpert</td>
+<td class="gt_row gt_left">Cases</td>
+<td class="gt_row gt_right">1</td>
+<td class="gt_row gt_right">0.1</td>
+<td class="gt_row gt_right">36.550</td>
+<td class="gt_row gt_right">15.291</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">cqr</td>
+<td class="gt_row gt_left gt_striped">epiforecasts-EpiExpert</td>
+<td class="gt_row gt_left gt_striped">Cases</td>
+<td class="gt_row gt_right gt_striped">1</td>
+<td class="gt_row gt_right gt_striped">0.1</td>
+<td class="gt_row gt_right gt_striped">37.485</td>
+<td class="gt_row gt_right gt_striped">19.417</td></tr>
+    <tr><td class="gt_row gt_left">qsa_uniform</td>
+<td class="gt_row gt_left">epiforecasts-EpiExpert</td>
+<td class="gt_row gt_left">Cases</td>
+<td class="gt_row gt_right">1</td>
+<td class="gt_row gt_right">0.1</td>
+<td class="gt_row gt_right">39.623</td>
+<td class="gt_row gt_right">13.137</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+
+---
+
+&lt;img src="second-presentation_files/figure-html/unnamed-chunk-11-1.png" width="100%" /&gt;
+
+---
+
+## Comparison of CQR and QSA Results
+
+- Second Example with **seabbs** model: Both methods produce much larger intervals
+
+--
+
+- CQR intervals are centered around the original median prediction, this is not the case for QSA!
+
+--
+
+- Thus, CQR and QSA intervals can have equal length but they are **shifted** in space
+
+--
+
+- In this example **both** models improve interval score a lot, however QSA effect is much stronger 
+
+<div id="mmhwnkcdeg" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#mmhwnkcdeg .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#mmhwnkcdeg .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#mmhwnkcdeg .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#mmhwnkcdeg .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#mmhwnkcdeg .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#mmhwnkcdeg .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#mmhwnkcdeg .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#mmhwnkcdeg .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#mmhwnkcdeg .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#mmhwnkcdeg .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#mmhwnkcdeg .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#mmhwnkcdeg .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#mmhwnkcdeg .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#mmhwnkcdeg .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#mmhwnkcdeg .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#mmhwnkcdeg .gt_row {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#mmhwnkcdeg .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#mmhwnkcdeg .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#mmhwnkcdeg .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#mmhwnkcdeg .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#mmhwnkcdeg .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#mmhwnkcdeg .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#mmhwnkcdeg .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#mmhwnkcdeg .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#mmhwnkcdeg .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#mmhwnkcdeg .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#mmhwnkcdeg .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#mmhwnkcdeg .gt_left {
+  text-align: left;
+}
+
+#mmhwnkcdeg .gt_center {
+  text-align: center;
+}
+
+#mmhwnkcdeg .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#mmhwnkcdeg .gt_font_normal {
+  font-weight: normal;
+}
+
+#mmhwnkcdeg .gt_font_bold {
+  font-weight: bold;
+}
+
+#mmhwnkcdeg .gt_font_italic {
+  font-style: italic;
+}
+
+#mmhwnkcdeg .gt_super {
+  font-size: 65%;
+}
+
+#mmhwnkcdeg .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 65%;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">method</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">model</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">target_type</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">horizon</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">quantile</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">interval_score</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">dispersion</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">qsa_uniform</td>
+<td class="gt_row gt_left">seabbs</td>
+<td class="gt_row gt_left">Cases</td>
+<td class="gt_row gt_right">3</td>
+<td class="gt_row gt_right">0.05</td>
+<td class="gt_row gt_right">78.068</td>
+<td class="gt_row gt_right">75.785</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">cqr</td>
+<td class="gt_row gt_left gt_striped">seabbs</td>
+<td class="gt_row gt_left gt_striped">Cases</td>
+<td class="gt_row gt_right gt_striped">3</td>
+<td class="gt_row gt_right gt_striped">0.05</td>
+<td class="gt_row gt_right gt_striped">117.864</td>
+<td class="gt_row gt_right gt_striped">66.510</td></tr>
+    <tr><td class="gt_row gt_left">original</td>
+<td class="gt_row gt_left">seabbs</td>
+<td class="gt_row gt_left">Cases</td>
+<td class="gt_row gt_right">3</td>
+<td class="gt_row gt_right">0.05</td>
+<td class="gt_row gt_right">170.995</td>
+<td class="gt_row gt_right">24.825</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+
+---
+
+&lt;img src="second-presentation_files/figure-html/unnamed-chunk-13-1.png" width="100%" /&gt;
+
+---
+
+## Comparison by Category
+
+- For UK Data Set QSA performs **better** than CQR within each category of **model**, **target type**, **horizon** and **quantile**
+
+--
+
+- For EU Hub Data the effects are more diverse: Depending on the covariate combination QSA might perform better or worse than CQR
+
+--
+
+- However, the absolute **magnitude** of relative changes is usually **greater** for QSA (both in positive and negative direction)
+
+--
+
+- Both QSA and CQR increase overall dispersion, yet the interval score is **only improved by CQR**
+
+<div id="ihffchilom" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#ihffchilom .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#ihffchilom .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#ihffchilom .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#ihffchilom .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#ihffchilom .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ihffchilom .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#ihffchilom .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#ihffchilom .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#ihffchilom .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#ihffchilom .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#ihffchilom .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#ihffchilom .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#ihffchilom .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#ihffchilom .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#ihffchilom .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#ihffchilom .gt_row {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#ihffchilom .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#ihffchilom .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ihffchilom .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#ihffchilom .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ihffchilom .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#ihffchilom .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#ihffchilom .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ihffchilom .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#ihffchilom .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#ihffchilom .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#ihffchilom .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#ihffchilom .gt_left {
+  text-align: left;
+}
+
+#ihffchilom .gt_center {
+  text-align: center;
+}
+
+#ihffchilom .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#ihffchilom .gt_font_normal {
+  font-weight: normal;
+}
+
+#ihffchilom .gt_font_bold {
+  font-weight: bold;
+}
+
+#ihffchilom .gt_font_italic {
+  font-style: italic;
+}
+
+#ihffchilom .gt_super {
+  font-size: 65%;
+}
+
+#ihffchilom .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 65%;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">method</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">interval_score</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">dispersion</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">cqr</td>
+<td class="gt_row gt_right">72.746</td>
+<td class="gt_row gt_right">30.029</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">original</td>
+<td class="gt_row gt_right gt_striped">73.438</td>
+<td class="gt_row gt_right gt_striped">27.132</td></tr>
+    <tr><td class="gt_row gt_left">qsa_uniform</td>
+<td class="gt_row gt_right">73.748</td>
+<td class="gt_row gt_right">33.171</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+
+---
+
+&lt;img src="second-presentation_files/figure-html/unnamed-chunk-15-1.png" width="100%" /&gt;
+
+---
+class: center, middle, inverse
+
+# Outlook
+
+---
+
+## More Methods
+
+- Stable package infrastructure that generalizes well to further Post-Processing methods 
+
+--
+
+- Candidate methods: **Quantile Regression Averaging** and **modified versions of CQR**
+
+--
+
+- Comprehensive analysis of strength and weaknesses of each method across the the entire Data Sets
+
+--
+
+- Exponential Smoothing approach to enable faster/more flexible reactions to distribution shifts 
+
+--
+
+- Ensemble Model of all implemented Post-Processing procedures
+
+---
+
+## References
+
+**Traditional CQR Method**
+
+Romano Y., Patterson E., and Candès E. (2019). Conformalized Quantile Regression. *NeurIPS Annual Conference on Neural Information Processing Systems*.
+  - Paper: https://proceedings.neurips.cc/paper/2019/file/5103c3584b063c431bd1268e9b5e76fb-Paper.pdf
+  
+  - Poster: https://github.com/yromano/cqr/blob/master/poster/CQR_Poster.pdf
+
+&lt;br&gt;
+
+**Variations and Extensions of CQR**
+
+Tibshirani R. (2019). Advances and Challenges in Conformal Inference. *Carnegie Mellon University*.
+  - Slides: .underline[www.stat.cmu.edu/~ryantibs/talks/conformal-2019.pdf]
+
+---
+
+## References
+
+**More Information about the UK Covid-19 Forecasting Challenge**
+
+- Website: https://www.crowdforecastr.org/2021/05/11/uk-challenge/
+
+- Evaluation &amp; Ranking: https://epiforecasts.io/uk-challenge/
+
+&lt;br&gt;
+
+**More Information about the European Forecasting Hub**
+
+- Website: https://covid19forecasthub.eu/index.html
+
+- GitHub: https://github.com/epiforecasts/covid19-forecast-hub-europe
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"slideNumberFormat": "%current% / %total%",
+"highlightStyle": "github",
+"highlightLines": true,
+"highlightSpans": true,
+"ratio": "16:9",
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

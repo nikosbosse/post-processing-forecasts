@@ -1,0 +1,764 @@
+---
+title: "Post-Processing COVID-19 Forecasts"
+subtitle: "- Second Presentation -<br><br>"
+author: "Matthias Herp & Joel Beck"
+date: "11.02.2022"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    nature:
+      slideNumberFormat: "%current% / %total%"
+      beforeInit: "https://platform.twitter.com/widgets.js"
+      # List of highlighting styles: https://highlightjs.org/static/demo/
+      # not all of them work with xaringan
+      highlightStyle: github
+      highlightLines: true
+      highlightSpans: true
+      ratio: 16:9
+      countIncrementalSlides: false
+    # Adds logo to all slides except title slide
+    # set slide class 'hide_logo' to hide logo on particular slides
+    # modify insert-logo.html file with correct file path to logo and desired 
+    # logo position 
+    # https://www.garrickadenbuie.com/blog/xaringan-tip-logo-all-slides/
+    # includes:
+    #   after_body: insert-logo.html
+---
+<!-- here classes for second slide -->
+
+```{r, child="xaringan-setup.Rmd", echo=FALSE}
+
+```
+
+```{r, include=FALSE}
+devtools::load_all(".")
+library(dplyr)
+library(patchwork)
+
+# cache chunks that take a long time
+cache <- FALSE
+
+uk_cqr <- readr::read_rds(here::here("data_results", "uk_cqr.rds"))
+hub_1 <- readr::read_rds(here::here("data_results", "hub_cqr_1.rds"))
+hub_2 <- readr::read_rds(here::here("data_results", "hub_cqr_2.rds"))
+hub_cqr <- dplyr::bind_rows(hub_1, hub_2)
+
+uk_cqr_qsa_ensemble <- readr::read_rds(
+  here::here("data_results", "uk_cqr_qsa_uniform_ensemble.rds")
+)
+hub_cqr_qsa_ensemble <- readr::read_rds(
+  here::here("data_results", "hub_cqr_qsa_uniform_ensemble_subset.rds")
+)
+
+# helper functions to round values in data frame for nicer display in slides
+round_output <- function(df, digits) {
+  df |> mutate(across(.cols = where(is.numeric), .fns = ~ round(.x, digits)))
+}
+
+display_table <- function(df, digits = 3, align = "left") {
+  df |>
+    round_output(digits = digits) |>
+    gt::gt() |>
+    gt::tab_options(
+      table.align = align, row.striping.include_table_body = TRUE,
+      data_row.padding = gt::px(15)
+    )
+}
+```
+
+<!-- here content of second slide -->
+
+## Setting
+
+- Post-Processing Covid19 forecasts: Systematically adjust existing prediction intervals with the goal of better out-of-sample performance
+
+--
+
+- Original forecasts from two data sources: The **UK Covid-19 Crowd Forecasting Challenge**<sup>1</sup> (includes forecasts of non-expert individuals) and the **European Forecast Hub**<sup>2</sup> (forecasts from international research groups)
+
+.footnote[ 
+[1] https://www.crowdforecastr.org/2021/05/11/uk-challenge/ <br>
+[2] https://covid19forecasthub.eu/index.html
+]
+
+--
+
+- We consider five dimensions: **location**, **model**, **target type**, **horizon** and **quantile**
+
+--
+
+- The quality of prediction intervals is measured by the **Weighted Interval Score** based on a trade-off between interval coverage and precision  
+
+---
+class: inverse, center, middle
+
+# Conformalized Quantile Regression (CQR)
+
+---
+
+```{r, echo=FALSE, fig.height=5}
+plot_intervals(
+  uk_cqr,
+  model = "seabbs", target_type = "Cases", horizon = 3, quantile = 0.1
+)
+```
+
+---
+
+## CQR for UK Data
+
+.left-30[ 
+- For most models (particular by individual humans) CQR makes the prediction intervals **wider** increasing the coverage at the cost of precision
+
+- Often leads to improvement of Weighted Interval Score
+]
+
+--
+
+.right-65[
+
+For this specific covariate combination:
+
+```{r, echo=FALSE}
+uk_cqr |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model", "target_type", "horizon", "quantile")) |>
+  dplyr::filter(model == "seabbs", target_type == "Cases", horizon == 3, quantile == 0.1) |>
+  dplyr::select(method:dispersion) |>
+  display_table()
+```
+
+Aggregated over all **models**, **target types**, **horizons** and **quantiles**:
+
+```{r, echo=FALSE}
+uk_cqr |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method")) |>
+  dplyr::select(method:dispersion) |>
+  display_table()
+```
+
+]
+
+---
+
+## Evaluation
+
+- Apart from the **absolute** interval score, the **relative** or **percentage** change after applying CQR might be of interest
+
+--
+
+- New evaluation functions: **eval_methods()** and **plot_eval()**   
+
+--
+
+- **Negative** values indicate a score improvement, **positive** values a larger/worse interval score
+
+--
+
+- All displayed values are computed exclusively from the **validation** (out-of-sample) data 
+
+---
+
+## Which model benefits most?
+
+.pull-left[ 
+
+```{r}
+eval_methods(uk_cqr, summarise_by = "model") |>
+  display_table()
+```
+
+]
+
+--
+
+.pull-right[ 
+
+- For many categories the magnitudes of the relative change is difficult to compare in the table output
+
+- Solution: visualize table either as barplot or heatmap with **plot_eval()** 
+
+- Allows for two-dimensional grid for **covariate combinations** 
+
+]
+
+---
+
+```{r uk-cqr-plots1, echo=FALSE, fig.height=5, cache=cache}
+df_eval <- eval_methods(uk_cqr, summarise_by = "model")
+
+p1 <- plot_eval(df_eval, heatmap = FALSE, base_size = 8) +
+  ggplot2::labs(y = NULL) +
+  ggplot2::labs(title = "CQR Improvements by Model")
+p2 <- plot_eval(df_eval, base_size = 8) +
+  ggplot2::labs(y = NULL) +
+  ggplot2::labs(title = "CQR Improvements by Model")
+
+p1 + p2
+```
+
+---
+
+## CQR for European Forecast Hub Data
+
+- We selected $18$ European countries to conduct the analysis
+
+--
+
+- Several interesting questions to investigate:
+
+--
+
+- Do CQR improvements vary across countries?
+
+--
+
+- Do the findings from the much smaller UK Data Set generalize?
+
+--
+
+- Result: Same trends exist in both Data Sets, but more moderate effect for EU Hub Data
+
+--
+
+- In contrast to the UK Data: For Germany, CQR tends to **extend** original forecast intervals for Cases as before but **decrease** their widths for Deaths 
+
+---
+
+```{r, echo=FALSE, fig.height=5}
+plot_intervals_grid(hub_cqr, model = "EuroCOVIDhub-ensemble", location = "DE", quantiles = 0.1)
+```
+
+---
+
+## What's wrong with Poland?
+
+.left-60[ 
+
+```{r hub-cqr-all, echo=FALSE, fig.height=5, cache=cache}
+df_mod_loc <- eval_methods(hub_cqr, summarise_by = c("model", "location"))
+plot_eval(df_mod_loc) + ggplot2::labs(y = NULL)
+```
+
+]
+
+.right-35[ 
+
+- Visualization is dominated by the very large negative impact of CQR on Poland
+
+- To gain further insight about the remaining countries we would have to exclude Poland
+
+- Why is Poland such an outlier?
+
+- Since CQR is beneficial for the **training set** by construction, the issue must be in the **validation set**
+
+]
+
+---
+
+.pull-left[ 
+
+## Training Set
+
+```{r hub-cqr-poland-1, echo=FALSE, cache=cache}
+cqr_poland <- hub_cqr |>
+  dplyr::filter(location_name == "Poland")
+
+cqr_poland |>
+  extract_training_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model")) |>
+  dplyr::arrange(model) |>
+  dplyr::select(method:dispersion) |>
+  dplyr::slice_head(n = 6) |>
+  display_table()
+```
+
+]
+
+--
+
+.pull-right[ 
+
+## Validation Set
+
+```{r hub-cqr-poland-2, echo=FALSE, cache=cache}
+cqr_poland |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model")) |>
+  dplyr::arrange(model) |>
+  dplyr::select(method:dispersion) |>
+  dplyr::slice_head(n = 6) |>
+  display_table()
+```
+
+]
+
+--
+
+<br>
+
+Hypothesis: **Distribution Shift** between training period and validation period!
+
+---
+
+```{r hub-cqr-poland-3, echo=FALSE, fig.height=5, cache=cache}
+p1 <- cqr_poland |>
+  plot_intervals(model = "IEM_Health-CovidProject", target_type = "Cases", base_size = 8)
+
+p2 <- hub_cqr |>
+  dplyr::filter(location == "DE") |>
+  plot_intervals(model = "IEM_Health-CovidProject", target_type = "Cases", base_size = 8)
+
+p1 + p2
+```
+
+---
+class: inverse, center, middle
+
+# Quantile Spread Averaging (QSA)
+
+---
+
+## QSA - Intuition
+
+.left-30[ 
+- Three possibilities to define quantile spreads
+
+- We choose median based quantile spreads due to the advantages:
+    + spreads are independent of quantile number 
+    + non-symmetric adjustments are possible
+
+- Disadvantage: quantile crossing
+
+]
+
+.right-65[ 
+
+![](Images/qs_all.png)
+]
+
+---
+
+## QSA - Theory 
+
+Let $n$ specify the number of observations in the training set within this combination, $\mathbf{y} \in \mathbb{R}^n$ the vector of true values and $\hat{\mathbf{q}}_1, \ldots, \hat{\mathbf{q}}_p \in \mathbb{R}^n$ vectors of quantile estimates for $p$ different probability levels.
+
+Then, for each time series, the quantile spread adjustment computes the quantile spread factors $\mathbf{w}^* \in \mathbb{R}^p$ by minimizing the weighted interval score:
+$$
+\begin{aligned}
+\mathbf{w}^*
+&= \operatorname*{arg\,min}_{\mathbf{w} \in \mathbb{R}^p} WIS_\alpha(\mathbf{y}) \\
+&= \operatorname*{arg\,min}_{\mathbf{w} \in \mathbb{R}^p} \sum_{i=1}^p \sum_{j=1}^n (u_{i,j}^*-l_{i,j}^*) + \frac{2}{\alpha} \cdot (l_{i,j}^*-y_j) \cdot \mathbf{1} (y_j \leq l_{i,j}^*) + \frac{2}{\alpha} \cdot (y_j-u_{i,j}^*) \cdot \mathbf{1}(y_j \geq u_{i,j}^*) \\
+\text{s.t.} \qquad l_{i,j}^* &= l_{i,j} + (l_{i,j}-m) \cdot w_i \quad \text{and} \quad 
+u_{i,j}^* = u_{i,j} + (u_{i,j}-m) \cdot w_i 
+\end{aligned}
+$$
+
+--
+
+The optimization uses the **optim** function from the **stats**<sup>1</sup> package. 
+As optimization method we use the quasi-Newton method **BFGS** named after Broyden, Fletcher, Goldfarb and Shanno.
+
+<!-- read in preparation: https://en.wikipedia.org/wiki/Broyden–Fletcher–Goldfarb–Shanno_algorithm and find reference to the paper for footnotes. -->
+
+.footnote[ 
+https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/optim
+]
+
+---
+
+## QSA - Flavors and Extensions 
+
+The **postforecasts** package offers three flavors of QSA where each restricts $\mathbf{w}$ differently:
+- uniform: $i \in [0, 1, \ldots, p-1, p] \quad w_i = c$
+- flexibel: No Restrictions
+- flexibel-symmetric: $i \in [0, 1, \ldots, m-1] \quad w_i = w_{p-i}$
+
+--
+
+Furthermore, **postforecasts** provides regularization towards QSA Uniform by adding a regularization term $Pen(w)$ with the weight $r$ to the score function: 
+
+$$
+\begin{aligned}
+\mathbf{w}^*
+&= \operatorname*{arg\,min}_{\mathbf{w} \in \mathbb{R}^p} \ WIS_\alpha(\mathbf{y}) + r \cdot Pen(\mathbf{w}), \quad Pen(\mathbf{w}) = \sum_{i=1}^p (w_i - \bar{w})^2 \\
+\text{s.t.} \qquad \bar{w} &= \frac{1}{p} \sum_{i=1}^p w_i
+\end{aligned}
+$$
+---
+
+## QSA for the UK Dataset
+
+.left-30[ 
+
+- Note: following slides refer to QSA Uniform as QSA
+
+- Does QSA improve the Weighted Interval Score? 
+
+- What adjustments to the prediction intervals does it make?
+
+- Is there any pattern visible in QSA adjustments across dimensions?
+
+]
+
+--
+
+.right-65[
+
+.pull-left[
+
+results **aggregated**:
+
+```{r, echo=FALSE}
+uk_qsa_uniform <- uk_cqr_qsa_ensemble |> 
+  dplyr::filter(method %in% c("original", "qsa_uniform"))
+
+uk_qsa_uniform |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method")) |>
+  dplyr::select(method:dispersion) |>
+  display_table()
+```
+
+]
+
+.pull-right[
+
+Unraveled by **models**:
+
+```{r, echo=FALSE}
+eval_methods(uk_qsa_uniform, summarise_by = "model") |>
+  display_table()
+```
+]
+
+]
+
+---
+<!-- ## How are improvements distributed around quantiles and horizons? -->
+
+```{r uk-qsa-plots2, echo=FALSE, fig.height=5, cache=cache}
+df_mod_quant <- eval_methods(uk_qsa_uniform, summarise_by = c("model", "quantile"))
+
+b <- "black"
+t <- "transparent"
+
+p1 <- plot_eval(df_mod_quant, base_size = 8) +
+  ggplot2::labs(
+    y = NULL,
+    title = "QSA Improvements by Model and Quantile",
+    subtitle = NULL
+  ) +
+  ggplot2::theme(
+    # 'hack' to display only every second label on x - axis
+    axis.text.x = ggplot2::element_text(color = c(b, rep(c(t, b), 11)))
+  )
+
+df_mod_hor <- eval_methods(uk_cqr, summarise_by = c("model", "horizon"))
+p2 <- plot_eval(df_mod_hor, base_size = 8) +
+  ggplot2::labs(
+    y = NULL, title = "QSA Improvements by Model and Horizon",
+    subtitle = NULL
+  )
+
+p1 + p2
+```
+
+---
+
+```{r uk-qsa-plots3, echo=FALSE, fig.height=5, cache=cache}
+df_mod_tar <- eval_methods(
+  uk_qsa_uniform,
+  summarise_by = c("model", "target_type"),
+  row_averages = TRUE, col_averages = TRUE
+)
+
+b <- "black"
+t <- "transparent"
+
+p1 <- plot_eval(df_mod_tar, base_size = 8) +
+  ggplot2::labs(
+    y = NULL,
+    title = "QSA Improvements by Model and Target Type",
+    subtitle = NULL
+  ) +
+  ggplot2::theme(
+    # 'hack' to display only every second label on x - axis
+    axis.text.x = ggplot2::element_text(color = c(b, rep(c(t, b), 11)))
+  )
+
+p1
+```
+
+---
+
+## QSA for European Forecast Hub Data
+
+- Can we replicate QSA benefits across countries?
+
+--
+
+- Due to run time restrictions we limit our analysis to the **Epiforecasts-EpiNow2** model and the target type **Cases**
+
+--
+
+- For Germany QSA tends to extend original forecast intervals for **Cases** as seen in the UK data:
+
+```{r hub-qsa-plots1, echo=FALSE, fig.height=2.7, cache=cache}
+hub_qsa_uniform <- readr::read_rds(here::here("data_results", "hub_cqr_qsa_uniform_ensemble_subset.rds")) |> 
+  dplyr::filter( method %in%  c("original", "qsa_uniform"))
+
+
+plot_intervals_grid(hub_qsa_uniform, model = "epiforecasts-EpiNow2", location = "DE", quantiles = 0.1) +
+  ggplot2::labs(
+    y = NULL,
+    title = "QSA Improvements in Germany",
+    subtitle = NULL
+  )
+```
+
+---
+
+<!-- ## how are the benefits distributed around countries as well as around quantiles and horizons? 
+
+- no poland issue indicates that QSA adjusts faster to new distributions
+-->
+
+```{r hub-qsa-plots2, echo=FALSE, fig.height=5, cache=cache}
+df_mod_loc <- eval_methods(hub_qsa_uniform, summarise_by = c("location_name"))
+
+b <- "black"
+t <- "transparent"
+
+p1 <- plot_eval(df_mod_loc, heatmap = FALSE) +
+  ggplot2::labs(
+    y = NULL,
+    title = "QSA Improvements by Country",
+    subtitle = NULL
+  ) +
+  ggplot2::theme(
+    # 'hack' to display only every second label on x - axis
+    axis.text.x = ggplot2::element_text(color = c(b, rep(c(t, b), 11)))
+  )
+
+df_mod_quant <- eval_methods(hub_qsa_uniform, summarise_by = c("horizon", "quantile"))
+p2 <- plot_eval(df_mod_quant, base_size = 8) +
+  ggplot2::labs(
+    y = NULL, title = "QSA Improvements by Horizon and Quantile",
+    subtitle = NULL
+  )
+
+p1 + p2
+```
+
+---
+
+## Where might the issue lie?
+
+- QSA Uniform might not be well suited to improve predictions for the **Epiforecasts-EpiNow2** model
+
+--
+
+- QSA Uniform could not be flexible enough if different quantiles need different relative adjustments
+
+--
+
+- Requires further analysis of QSA on different models and using the flexibel and symmetric flavors
+
+
+---
+class: inverse, center, middle
+
+# Method Comparison
+
+---
+
+## Comparison of CQR and QSA Results
+
+- Nature of adjustments majorly depends on specific covariate combination
+
+--
+
+- First example with **epiforecasts-EpiExpert** model: Overall only small corrections of original forecasts
+
+--
+
+- As usual CQR makes intervals larger, however QSA makes them **smaller**
+
+--
+
+- In this case, **neither** of the methods improve the weighted interval score
+
+```{r, echo=FALSE}
+uk_cqr_qsa <- uk_cqr_qsa_ensemble |> dplyr::filter(method != "ensemble")
+
+uk_cqr_qsa |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model", "target_type", "horizon", "quantile")) |>
+  dplyr::filter(model == "epiforecasts-EpiExpert", target_type == "Cases", horizon == 1, quantile == 0.1) |>
+  dplyr::select(method:dispersion) |>
+  dplyr::arrange(interval_score) |>
+  display_table(align = "center")
+```
+
+---
+
+```{r, echo=FALSE, fig.height=5}
+plot_intervals(
+  uk_cqr_qsa,
+  model = "epiforecasts-EpiExpert", target_type = "Cases", horizon = 1, quantile = 0.1
+)
+```
+
+---
+
+## Comparison of CQR and QSA Results
+
+- Second Example with **seabbs** model: Both methods produce much larger intervals
+
+--
+
+- CQR intervals are centered around the original median prediction, this is not the case for QSA!
+
+--
+
+- Thus, CQR and QSA intervals can have equal length but they are **shifted** in space
+
+--
+
+- In this example **both** models improve interval score a lot, however QSA effect is much stronger 
+
+```{r, echo=FALSE}
+uk_cqr_qsa |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model", "target_type", "horizon", "quantile")) |>
+  dplyr::filter(model == "seabbs", target_type == "Cases", horizon == 3, quantile == 0.05) |>
+  dplyr::select(method:dispersion) |>
+  dplyr::arrange(interval_score) |>
+  display_table(align = "center")
+```
+
+---
+
+```{r, echo=FALSE, fig.height=5}
+plot_intervals(
+  uk_cqr_qsa,
+  model = "seabbs", target_type = "Cases", horizon = 3, quantile = 0.05
+)
+```
+
+---
+
+## Comparison by Category
+
+- For UK Data Set QSA performs **better** than CQR within each category of **model**, **target type**, **horizon** and **quantile**
+
+--
+
+- For EU Hub Data the effects are more diverse: Depending on the covariate combination QSA might perform better or worse than CQR
+
+--
+
+- However, the absolute **magnitude** of relative changes is usually **greater** for QSA (both in positive and negative direction)
+
+--
+
+- Both QSA and CQR increase overall dispersion, yet the interval score is **only improved by CQR**
+
+```{r, echo=FALSE}
+hub_cqr_qsa <- hub_cqr_qsa_ensemble |> dplyr::filter(method != "ensemble")
+
+hub_cqr_qsa |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method")) |>
+  dplyr::select(method:dispersion) |>
+  dplyr::arrange(interval_score) |>
+  display_table(align = "center")
+```
+
+---
+
+```{r, echo=FALSE, fig.height=5}
+df_loc <- eval_methods(
+  hub_cqr_qsa |> dplyr::filter(!location %in% c("PL", "FI")),
+  summarise_by = "location_name"
+)
+
+plot_eval(df_loc) + ggplot2::labs(
+  y = NULL, 
+  title = "Performance Comparison by Location",
+  subtitle = NULL
+)
+```
+
+---
+class: center, middle, inverse
+
+# Outlook
+
+---
+
+## More Methods
+
+- Stable package infrastructure that generalizes well to further Post-Processing methods 
+
+--
+
+- Candidate methods: **Quantile Regression Averaging** and **modified versions of CQR**
+
+--
+
+- Comprehensive analysis of strength and weaknesses of each method across the the entire Data Sets
+
+--
+
+- Exponential Smoothing approach to enable faster/more flexible reactions to distribution shifts 
+
+--
+
+- Ensemble Model of all implemented Post-Processing procedures
+
+---
+
+## References
+
+**Traditional CQR Method**
+
+Romano Y., Patterson E., and Candès E. (2019). Conformalized Quantile Regression. *NeurIPS Annual Conference on Neural Information Processing Systems*.
+  - Paper: https://proceedings.neurips.cc/paper/2019/file/5103c3584b063c431bd1268e9b5e76fb-Paper.pdf
+  
+  - Poster: https://github.com/yromano/cqr/blob/master/poster/CQR_Poster.pdf
+
+<br>
+
+**Variations and Extensions of CQR**
+
+Tibshirani R. (2019). Advances and Challenges in Conformal Inference. *Carnegie Mellon University*.
+  - Slides: .underline[www.stat.cmu.edu/~ryantibs/talks/conformal-2019.pdf]
+
+---
+
+## References
+
+**More Information about the UK Covid-19 Forecasting Challenge**
+
+- Website: https://www.crowdforecastr.org/2021/05/11/uk-challenge/
+
+- Evaluation & Ranking: https://epiforecasts.io/uk-challenge/
+
+<br>
+
+**More Information about the European Forecasting Hub**
+
+- Website: https://covid19forecasthub.eu/index.html
+
+- GitHub: https://github.com/epiforecasts/covid19-forecast-hub-europe

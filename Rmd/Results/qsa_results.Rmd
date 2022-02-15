@@ -1,0 +1,267 @@
+---
+title: "QSA Uniform Results for UK Data and European Forecast Hub"
+author: "Matthias Herp"
+output:
+  bookdown::html_document2:
+    theme: flatly
+    highlight: pygments  # kate
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 2
+    number_sections: FALSE
+    df_print: tibble
+  bookdown::pdf_document2:
+    highlight: tango  # pygments
+    toc: FALSE
+    number_sections: FALSE
+    df_print: tibble
+    latex_engine: pdflatex
+    keep_tex: FALSE
+urlcolor: blue
+---
+
+```{r knitr-opts, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center",
+  out.width = "100%", dpi = 300, fig.asp = 0.618, collapse = TRUE
+)
+```
+
+```{r libraries}
+devtools::load_all(".")
+library(patchwork)
+```
+
+The following analysis of QSA Uniform results is meant as a continuation to the CQR analysis of the same data. Readers are thus advised to have a look at the CQR markdown document as it goes into more detail in regard to the data sets and the used package functions.
+
+# UK Data
+
+We load the QSA Uniform results by filtering them out of the data set also containing the CQR results. Note that in the following we will refer to the QSA Uniform postprocessing method simply as QSA as we do not consider other QSA methods in this analysis.
+
+```{r}
+uk_qsa_uniform <- readr::read_rds(here::here("data_results", "uk_cqr_qsa_uniform_ensemble.rds")) |> dplyr::filter( method %in%  c("original", "qsa_uniform"))
+```
+
+## Visualizing the raw data
+
+First, we visualize a particular covariate combination.
+
+```{r}
+plot_intervals(
+  uk_qsa_uniform,
+  model = "seabbs", target_type = "Cases", horizon = 3, quantile = 0.1
+)
+```
+
+Next we visualize the trend along the horizon dimension or for different quantiles for each `target_type` separately:
+
+```{r}
+plot_intervals_grid(
+  uk_qsa_uniform,
+  model = "seabbs", quantile = 0.1, facet_by = "horizon"
+)
+```
+
+The plots reveal two main findings:
+
+- QSA seems to make the prediction intervals larger.
+Since the `seabbs` forecasts are contributed by a single human, this finding confirms the hypothesis that humans tend to be too confident in their own forecasts leading to narrow prediction intervals.
+
+- A larger forecast horizon strongly correlates with higher uncertainty and, thus, wider prediction intervals.
+
+According to this impression QSA produces adjusted, often larger, interval forecasts.
+However, up to now we can **not** make a statement if the post-processed predictions are actually 'better'.
+
+## Weighted Interval Score example
+
+Let us first replicate the setting from the first plot and analyze if QSA actually improved the forecasts.
+Since we are primarily interested in out-of-sample performance we filter the data frame down to the validation set:
+
+```{r}
+uk_qsa_uniform |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model", "target_type", "horizon", "quantile")) |>
+  dplyr::filter(model == "seabbs", target_type == "Cases", horizon == 3, quantile == 0.1) |>
+  dplyr::select(method:dispersion)
+```
+
+Indeed, QSA leads to a lower interval score by increasing the dispersion/spread resulting in larger intervals compared to the original forecasts.
+
+## Results over the full UK data set
+
+### Aggregate Results
+
+In contrast, we can aggregate over all models, target types, horizons and quantiles and evaluate the *overall* performance of the QSA method. In the following, as we evaluate the preformance of QSA we always use the validation set data.
+
+```{r}
+uk_qsa_uniform |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method")) |>
+  dplyr::select(method:dispersion)
+```
+
+### Model Results
+
+The result shows the same trend: better and wider overall prediction intervals.
+
+Of particular interest might be the question which models benefited most from QSA adjustments. We print the table results as well as two plot representation of the same table.
+
+```{r}
+eval_methods(uk_qsa_uniform, summarise_by = "model")
+```
+
+```{r}
+df_eval <- eval_methods(uk_qsa_uniform, summarise_by = "model")
+
+p1 <- plot_eval(df_eval, heatmap = FALSE, base_size = 8) + ggplot2::labs(y = NULL)
+p2 <- plot_eval(df_eval, base_size = 8) + ggplot2::labs(y = NULL)
+
+p1 + p2
+```
+
+The output reveals that QSA lead to improved performance for all models except `EuroCOVIDhub-baseline`. We also see that QSA provides the strongest benefit for the human forecast models (seabbs, EpiExpert variations). The model based ensemble of the EU Forecasting Hub has a lower but still considerable improvement.
+
+### Model, Quantile and Horizon Results
+
+Varying one series parameter is a very high level view. We thus look at combinations of `model` and `quantile` and `model` and `horizon`, respectively:
+
+```{r}
+df_mod_quant <- eval_methods(uk_qsa_uniform, summarise_by = c("model", "quantile"))
+p1 <- plot_eval(df_mod_quant, base_size = 8) + ggplot2::labs(x = NULL)
+
+df_mod_hor <- eval_methods(uk_qsa_uniform, summarise_by = c("model", "horizon"))
+p2 <- plot_eval(df_mod_hor, base_size = 8) + ggplot2::labs(y = NULL)
+
+p1 + p2
+```
+
+The plots reveal several notable patterns:
+
+- For larger quantiles and horizons QSA tends to have a more positive impact. The pattern of quantiles is particularly consistent.
+
+- QSA preforms better for human forecasted models than for modelling based approaches. This relationship is strongest along the outskirts of quantiles and larger horizons. For lower horizons and smaller intervals the improvement differences are negligable.
+
+- Interestingly for the `EuroCOVIDhub-baseline` model, the predictions become worse with larger quantiles and horizons. This might be because QSA tends to increase the adjustment with larger quantiles and horizons. As the method is not well suitted for the `EuroCOVIDhub-baseline` model, stonger adjustments might worsen the forecast.
+
+- The 1 week ahead prediction for the `epiforecasts-EpiExpert_Rt` model seems to be an outlier. Allthough QSA doesn't improve the WIS at a horizon of one over all models, the strong worsening of the forecast is notable.
+
+In conclusion extreme quantiles, large horizons and human forecast models benefit most.
+
+### Target Type and Model Results
+
+The target type preformance is of particular interest, as we suspect cases (incidence) forecast to have a higher uncertainty than death forecasts. Our reasoning is that deaths can be reasonably well predicted as a fraction of infected people in a certain past time frame. Thus deaths are correlated with lags of cases.
+
+```{r}
+df_mod_tar <- eval_methods(
+  uk_qsa_uniform,
+  summarise_by = c("model", "target_type"),
+  row_averages = TRUE, col_averages = TRUE
+)
+df_mod_tar
+```
+This table can be visualized in the same way as before:
+
+```{r}
+plot_eval(df_mod_tar)
+```
+
+The plot and table reveal several noticable patterns:
+
+- The results confirm our intuition as except for the `EuroCOVIDhub-baseline` model, we find the cases forecast models to benefit stonger from the QSA adjustment than the deaths forecast models. 
+
+- Furthermore we even see how a high desirable impact of QSA in the cases, hides an undesirable deaths model preformance, in the aggregate. This becomes especially clear for the `epiforecasts-EpiExpert` and `epiforecasts-EpiExpert_direct` model.
+
+- Surprisingly, the by far best performance of QSA is with the deaths prediction of the `EuroCOVIDhub-baseline` model. QSA can reduce the WIS be about 30%, which is more than double its best effect on a human forecast model, e.g. `seabbs`. In our prior analysis, where we aggregated along target types, this positive effect of QSA on the `EuroCOVIDhub-baseline` model was not visible.
+
+
+# European Forecast Hub
+
+```{r}
+hub_qsa_uniform <- readr::read_rds(here::here("data_results", "hub_cqr_qsa_uniform_ensemble_subset.rds")) |> dplyr::filter( method %in%  c("original", "qsa_uniform"))
+```
+
+For analyzing the impact of QSA on the European Hub Data, we restrict the analysis to one model and target type due to computational limitations. We choose the `epiforecasts-EpiNow2` model for the target type `cases`. Thus we focus on the strengths of the QSA models we identified in the UK data set, a human forecast model for cases.
+
+## Visualizing the raw data
+
+Using the EU Hub data set we can now analyze performance differences between $18$ European countries.
+
+```{r}
+hub_qsa_uniform |> dplyr::count(model)
+hub_qsa_uniform |> dplyr::count(location_name)
+```
+
+Let us first get a quick impression for the predictions in Germany:
+
+```{r}
+plot_intervals_grid(hub_qsa_uniform, model = "epiforecasts-EpiNow2", location = "DE", quantiles = 0.1)
+```
+
+Here the QSA adjustments confirm results form the UK Data:
+QSA appears to extend the prediction intervals for increasing forecasting horizons. Interestingly for the one week ahead prediction QSA even slightly tightens the forecasting intervals. These results remain consistent across the entire time span, there are no noticable differences.
+
+## Results
+
+To get a first overview of the results we check the aggregated results over all `horizon` and `quantile`and `location_name` combinations:
+
+```{r}
+hub_qsa_uniform |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method","model")) |>
+  dplyr::arrange(model) |>
+  dplyr::select(method:dispersion)
+
+```
+Overall we see a slight worsening of the WIS due to the application of QSA. QSA increases the aggregated dispersion, thus the size of the intervals, but can't seem to be able to justify this by a large enough increase in coverage, to subsequently reduce the WIS.
+
+### Quantile and Horizon Results
+
+We can check if this statement holds averaged across all quantile and horizon combinations:
+
+```{r}
+df_mod_quant <- eval_methods(hub_qsa_uniform, summarise_by = c("horizon", "quantile"))
+p1 <- plot_eval(df_mod_quant, base_size = 8)
+
+p1
+```
+
+We observe that over all quantiles the effect of QSA results in a less clear pattern. We still see the highest improvements at the most extrem quantiles, allthough that is also where we see the strongest worsening for the one week ahead horizon. Noticably, the strongest imrpovements, which are quite faint in comparison to the strongest deteriorations, arn't at the longest horizon of 4 but rather at that of 3 weeks. In addition we even find slight worsening in the WIS for more moderate quantiles with incresing horizon. 
+These findings contradict with the prior findings in the UK data set. These might be restiricted to the model in question and thus deserve further investigation.
+
+### Country Results
+
+Next, we consider the effects of QSA for each country:
+
+```{r}
+df_mod_loc <- eval_methods(hub_qsa_uniform, summarise_by = c("location_name"))
+plot_eval(df_mod_loc, heatmap = FALSE)
+```
+
+We find encouraging results for only a third of the countries, e.g. 6 out of the 18. Finland especially stands out as it prediction is worsened by a 30 percent increqse in the interval score. 
+
+We now look at `horizon` and `quantile`for different `location_name` to see if there is any pattern visible here:
+
+```{r}
+df_mod_quant <- eval_methods(hub_qsa_uniform, summarise_by = c("horizon", "location_name"))
+p1 <- plot_eval(df_mod_quant, base_size = 8)
+
+df_mod_quant <- eval_methods(hub_qsa_uniform, summarise_by = c("quantile", "location_name"))
+p2 <- plot_eval(df_mod_quant, base_size = 8)
+
+p1 + p2
+```
+Finland, as the country where QSA most strongly deteriorates the WIS, has the highest negative effects for increasing horizons and more extreme quantiles. For other countries we observe that the positive and negative effects become stronger at more extreme quantiles. For horizons no clear pattern remains. 
+
+# Conclusion
+
+We find overall desirable effects of QSA in the validation set, for larger horizons and more extreme quantiles in the UK data set, aggregated over the six models and both target types. These results are in line with our expectations. 
+We cannot confirm these results for the `epiforecasts-EpiNow2` model and the target type `cases` in the EU Hub data where we investigate predictions for 18 different countries. Here we overall find a deterioration in the WIS after applying QSA.
+Both data set results due have in common that the effect QSA has on the WIS increases for more extreme quantiles, and to a degree also for larger forecasting horizons. 
+
+## Next Steps
+
+The first intuitive step would be to analyze the `epiforecasts-EpiNow2` model results in the UK data set to see if our results in the Eu hub data might be driven by the model. The `epiforecasts-EpiNow2` model is however not part of the UK data set models. Thus we might want to choose another model from the UK data set which is also in the EU hub data to repeat the EU Hub analysis.
+Possible candidates are the `EuroCOVIDhub-ensemble` or the `EuroCOVIDhub-baseline ` model. One might rather choose the former as it preformed better under QSA and the latter was the only model that preformed worse, aggregated over all variables except model.

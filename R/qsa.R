@@ -3,7 +3,7 @@ qsa <- function(subset, spread_factor_vec, method) {
   # subset_updated <- subset
 
   # extracting all quantiles that arnt the median
-  quantiles_list <- na.omit(unique(subset$quantile))
+  quantiles_list <- stats::na.omit(unique(subset$quantile))
   quantiles_list_no_median <- quantiles_list[!quantiles_list == 0.50]
 
   # extracting the median
@@ -13,7 +13,7 @@ qsa <- function(subset, spread_factor_vec, method) {
     dplyr::pull(.data$prediction)
 
   # creating a matrix in which to return the updated quantile values
-  target_end_date_uniques <- na.omit(unique(subset$target_end_date))
+  target_end_date_uniques <- stats::na.omit(unique(subset$target_end_date))
   return_matrix <- matrix(
     nrow = length(target_end_date_uniques),
     ncol = length(quantiles_list_no_median)
@@ -92,7 +92,7 @@ wrapper <- function(spread_factor_vec, subset, method_pp, penalty_weight) {
   subset_updated <- subset
 
   # extracting all quantiles that arnt the median
-  quantiles_list <- na.omit(unique(subset$quantile))
+  quantiles_list <- stats::na.omit(unique(subset$quantile))
   quantiles_list_no_median <- quantiles_list[!quantiles_list == 0.50]
 
   # updating the subset by exchanging the values in the dataframe with the ones from the update matrix
@@ -172,7 +172,8 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
     # By default cv_init_training is equal to NULL and therefore equal to the complete data.
     # e.g. by default no split in training and validation set
 
-    subset <- dplyr::filter(df, model == m & location == l & target_type == t & horizon == h)
+    subset <- dplyr::filter(
+      df, .data$model == m & .data$location == l & .data$target_type == t & .data$horizon == h)
 
     # Run optimization to get the optimal spread factor
     optimal_spread_factor <- optimize_spread_factor(method = method,subset = subset,
@@ -181,14 +182,14 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
     # function to apply optimal spread factor to data
     # We return a matrix containing the updates of the quantiles
     updates_matrix <- qsa(
-      subset = subset, spread_factor = optimal_spread_factor, method = method
+      subset = subset, spread_factor_vec = optimal_spread_factor, method = method
     )
 
     # copy of subset to fill with updates
     subset_updated <- subset
 
     # extracting all quantiles that arnt the median
-    quantiles_list <- na.omit(unique(subset$quantile))
+    quantiles_list <- stats::na.omit(unique(subset$quantile))
     quantiles_list_no_median <- quantiles_list[!quantiles_list == 0.50]
 
     # updating the subset by exchanging the values in the dataframe with the ones from the update matrix
@@ -210,21 +211,21 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
     # then extract the sorted list of target end dates and from there the training target end dates
     target_end_date_train <- sort(unique(subset$target_end_date))[0:cv_init_training]
     # reduce subset to the training period
-    subset_train <- dplyr::filter(subset, target_end_date %in% target_end_date_train)
+    subset_train <- dplyr::filter(subset, .data$target_end_date %in% target_end_date_train)
 
     # target end date for val
     target_end_date_val <- sort(unique(subset$target_end_date))[cv_init_training + 1]
     # subset for one step ahead prediction
-    subset_val <- dplyr::filter(subset, target_end_date == target_end_date_val)
+    subset_val <- dplyr::filter(subset, .data$target_end_date == target_end_date_val)
 
     # Run optimization to get the optimal spread factor
     optimal_spread_factor <- optimize_spread_factor(method = method, subset = subset,
                                                     penalty_weight = penalty_weight, par = NULL)
     
     # training set
-    updates_matrix <- qsa(subset = subset, spread_factor = optimal_spread_factor, method = method)
+    updates_matrix <- qsa(subset = subset, spread_factor_vec = optimal_spread_factor, method = method)
     # one step ahead prediction adjustment
-    val_row <- qsa(subset = subset_val, spread_factor = optimal_spread_factor, method = method)
+    val_row <- qsa(subset = subset_val, spread_factor_vec = optimal_spread_factor, method = method)
 
     # appending the one step ahead prediciton to the update matrix
     updates_matrix <- rbind(updates_matrix, val_row)
@@ -238,18 +239,19 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
       # gets subset of the data
       subset <- dplyr::filter(df, model == m & location == l & target_type == t & horizon == h)
       target_end_date_train <- sort(unique(subset$target_end_date))[0:training_length]
-      subset_train <- dplyr::filter(subset, target_end_date %in% target_end_date_train)
+      subset_train <- dplyr::filter(subset, .data$target_end_date %in% target_end_date_train)
 
       target_end_date_val <- sort(unique(subset$target_end_date))[training_length + 1]
-      subset_val <- dplyr::filter(subset, target_end_date == target_end_date_val)
+      subset_val <- dplyr::filter(subset, .data$target_end_date == target_end_date_val)
 
       # for faster computation it starts optimization at the optimal spread factor of the last iteration
+
       # Run optimization to get the optimal spread factor
       optimal_spread_factor <- optimize_spread_factor(method = method,subset = subset,
                                                       penalty_weight = penalty_weight, par = optimal_spread_factor)
       
       # For the iteration forward we only need the validation set prediction
-      val_row <- qsa(subset = subset_val, spread_factor = optimal_spread_factor, method = method)
+      val_row <- qsa(subset = subset_val, spread_factor_vec = optimal_spread_factor, method = method)
 
       updates_matrix <- rbind(updates_matrix, val_row)
     }
@@ -258,7 +260,7 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
     subset_updated <- subset
 
     # extracting all quantiles that arnt the median
-    quantiles_list <- na.omit(unique(subset$quantile))
+    quantiles_list <- stats::na.omit(unique(subset$quantile))
     quantiles_list_no_median <- quantiles_list[!quantiles_list == 0.50]
 
     # updating the subset by exchanging the values in the dataframe with the ones from the update matrix
@@ -277,7 +279,7 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
     subset_updated <- subset_updated |>
       dplyr::arrange(.data$quantile, .data$target_end_date)
 
-    quantiles_list <- na.omit(unique(subset$quantile))
+    quantiles_list <- stats::na.omit(unique(subset$quantile))
     quantiles_list_no_median <- quantiles_list[!quantiles_list == 0.50]
 
     # Again we first arrange the data to make we can pass the prediction column to the updated df directly

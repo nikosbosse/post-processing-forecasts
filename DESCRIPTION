@@ -33,13 +33,16 @@ Imports:
     ggplot2,
     forcats,
     lubridate,
+    pracma,
     rlang,
     scales,
     scoringutils,
     stats,
     stringr,
-    tidyr
+    tidyr,
+    tidyselect
 Suggests: 
-    testthat (>= 3.0.0),
-    readr
+    here,
+    readr,
+    testthat (>= 3.0.0)
 Config/testthat/edition: 3

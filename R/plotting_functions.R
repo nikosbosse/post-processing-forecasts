@@ -1,6 +1,7 @@
 #' @importFrom rlang .data
 
-plot_quantiles <- function(df, model = NULL, location = NULL, quantiles = c(0.05, 0.5, 0.95)) {
+plot_quantiles <- function(df, model = NULL, location = NULL,
+                           quantiles = c(0.05, 0.5, 0.95)) {
   l <- process_model_input(df, model)
   df <- l$df
   model <- l$model
@@ -39,7 +40,8 @@ plot_quantiles <- function(df, model = NULL, location = NULL, quantiles = c(0.05
 
 plot_intervals <- function(df, model = NULL, location = NULL,
                            target_type = c("Cases", "Deaths"),
-                           quantile = 0.05, horizon = 1, highlight_cv = TRUE) {
+                           quantile = 0.05, horizon = 1, 
+                           highlight_cv = TRUE, base_size = 9) {
   target <- rlang::arg_match(arg = target_type, values = c("Cases", "Deaths"))
   h <- paste_horizon(horizon)
 
@@ -57,12 +59,14 @@ plot_intervals <- function(df, model = NULL, location = NULL,
     filter_horizons(horizon) |>
     setup_intervals_plot() +
     ggplot2::labs(
-      title = stringr::str_glue("Predicted {target} in {location_name} {h}"),
+      title = stringr::str_glue(
+        "Predicted Incidences ({target} per 100k) in {location_name} {h}"
+      ),
       subtitle = stringr::str_glue("model: {model}   |   quantile: {quantile}")
     ) +
     set_labels() +
     # making theme specifications before setting general theme does not work!
-    ggplot2::theme_minimal() +
+    ggplot2::theme_minimal(base_size = base_size) +
     modify_theme()
 
   if (highlight_cv) {
@@ -77,7 +81,8 @@ plot_intervals <- function(df, model = NULL, location = NULL,
 
 plot_intervals_grid <- function(df, model = NULL, location = NULL,
                                 facet_by = c("horizon", "quantile"),
-                                quantiles = NULL, horizon = NULL, highlight_cv = FALSE) {
+                                quantiles = NULL, horizon = NULL, 
+                                highlight_cv = FALSE, base_size = 9) {
   facet_by <- rlang::arg_match(arg = facet_by, values = c("horizon", "quantile"))
 
   l <- process_model_input(df, model)
@@ -122,11 +127,13 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
         scales = "free_y"
       ) +
       ggplot2::labs(
-        title = stringr::str_glue("Prediction Intervals in {location_name}"),
+        title = stringr::str_glue(
+          "Predicted Incidences (per 100k) in {location_name}"
+        ),
         subtitle = stringr::str_glue("model: {model}   |   quantile: {q}")
       ) +
       set_labels() +
-      ggplot2::theme_light() +
+      ggplot2::theme_light(base_size = base_size) +
       modify_theme()
   } else if (facet_by == "quantile") {
     p <- p +
@@ -136,11 +143,13 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
         scales = "free_y"
       ) +
       ggplot2::labs(
-        title = stringr::str_glue("Prediction Intervals in {location_name} {h}"),
+        title = stringr::str_glue(
+          "Predicted Incidenced (per 100k) in {location_name} {h}"
+        ),
         subtitle = stringr::str_glue("model: {model}")
       ) +
       set_labels() +
-      ggplot2::theme_light() +
+      ggplot2::theme_light(base_size = base_size) +
       modify_theme()
   }
 
@@ -148,10 +157,6 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
 }
 
 plot_eval <- function(df_eval, heatmap = TRUE, base_size = 9) {
-  # use attributes for axis labels
-  orig_columns <- attr(df_eval, which = "summarise_by")
-  first_colname <- orig_columns[1]
-
   if (ncol(df_eval) > 2 && !heatmap) {
     stop(paste(
       "Barplot is only available in one dimension",
@@ -159,27 +164,20 @@ plot_eval <- function(df_eval, heatmap = TRUE, base_size = 9) {
     ))
   }
 
-  if (length(orig_columns) == 2) {
-    xlabel <- orig_columns[2]
-  } else {
-    xlabel <- NULL
-  }
+  title <- get_plot_title(df_eval)
+
+  summarise_by <- attr(df_eval, which = "summarise_by")
+  xlabel <- get_xlabel(summarise_by)
+  first_colname <- summarise_by[1]
 
   # for limits of color palette
-  max_value <- df_eval |>
-    # exclude numeric quantile column when taking max of dataframe
-    # where() leads to warning in RCMDCHECK, prefixing with tidyselect:::where()
-    # does not solve it, discussed here:
-    # https://github.com/r-lib/tidyselect/issues/201
-    dplyr::select(-1 & tidyselect:::where(is.numeric)) |>
-    abs() |>
-    max(na.rm = TRUE)
+  max_value <- get_max_value(df_eval)
 
   # keep y-axis order the same as in input dataframe
   df_eval[[1]] <- factor(df_eval[[1]], levels = df_eval[[1]])
 
   if (!heatmap) {
-    return(plot_bars(df_eval, first_colname, max_value, base_size))
+    return(plot_bars(df_eval, title, first_colname, max_value, base_size))
   }
 
   # this part belongs to heatmap plot
@@ -197,5 +195,5 @@ plot_eval <- function(df_eval, heatmap = TRUE, base_size = 9) {
     df_plot[[2]] <- ""
   }
 
-  plot_heatmap(df_plot, first_colname, max_value, xlabel, base_size)
+  plot_heatmap(df_plot, title, first_colname, max_value, xlabel, base_size)
 }

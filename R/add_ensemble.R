@@ -1,23 +1,17 @@
-update_subset_ensemble <- function(df_combined, ensemble_df, cv_init_training, methods, m, t, h, q) {
-  X_y_training <- df_combined |>
-    # TODO: fraction input of cv_init_training is not possible here
-    extract_training_set(cv_init_training = cv_init_training) |>
+#' @importFrom rlang .data
+
+get_X_y <- function(df_combined, methods, m, t, h, q) {
+  df_combined |>
     dplyr::filter(
-      model == m, target_type == t, horizon == h, quantile %in% q
+      .data$model == m, .data$target_type == t, .data$horizon == h, .data$quantile %in% q
     ) |>
     tidyr::pivot_wider(
       names_from = "method", values_from = "prediction"
     ) |>
-    dplyr::select(dplyr::all_of(methods), true_value)
+    dplyr::select(dplyr::all_of(methods), .data$true_value)
+}
 
-  # (m x 1) matrix with true values
-  y_training <- as.matrix(X_y_training$true_value)
-
-  # (m x n) matrix where each column is part of the convex combination
-  X_training <- X_y_training |>
-    dplyr::select(-true_value) |>
-    as.matrix()
-
+compute_weights <- function(X_training, y_training) {
   # divide X matrix and y vector by L2-Norm to avoid numerical overflow
   scaling_factor <- sqrt(norm(X_training, "2"))
 
@@ -42,19 +36,9 @@ update_subset_ensemble <- function(df_combined, ensemble_df, cv_init_training, m
       Aeq = Aeq, beq = beq, lb = lb, ub = ub
     )
   }
+}
 
-  X_inference <- df_combined |>
-    dplyr::filter(
-      model == m, target_type == t, horizon == h, quantile %in% q
-    ) |>
-    tidyr::pivot_wider(
-      names_from = "method", values_from = "prediction"
-    ) |>
-    dplyr::select(dplyr::all_of(methods)) |>
-    as.matrix()
-
-  ensemble_predictions <- X_inference %*% weights
-
+assign_method <- function(ensemble_df, m, t, h, q) {
   ensemble_df[
     ensemble_df$model == m &
       ensemble_df$target_type == t &
@@ -62,7 +46,9 @@ update_subset_ensemble <- function(df_combined, ensemble_df, cv_init_training, m
       ensemble_df$quantile %in% q,
     "method"
   ] <- "ensemble"
+}
 
+assign_predictions <- function(ensemble_df, ensemble_predictions, m, t, h, q) {
   ensemble_df[
     ensemble_df$model == m &
       ensemble_df$target_type == t &
@@ -70,6 +56,36 @@ update_subset_ensemble <- function(df_combined, ensemble_df, cv_init_training, m
       ensemble_df$quantile %in% q,
     "prediction"
   ] <- ensemble_predictions
+}
+
+update_subset_ensemble <- function(df_combined, ensemble_df, cv_init_training,
+                                   methods, m, t, h, q) {
+  X_y_training <- df_combined |>
+    # compute weights only with training set
+    # TODO: fraction input of cv_init_training is not possible here
+    extract_training_set(cv_init_training = cv_init_training) |>
+    get_X_y(methods, m, t, h, q)
+
+  # (m x n) matrix where each column is part of the convex combination
+  X_training <- X_y_training |>
+    dplyr::select(-.data$true_value) |>
+    as.matrix()
+
+  # (m x 1) matrix with true values
+  y_training <- as.matrix(X_y_training$true_value)
+
+  weights <- compute_weights(X_training, y_training)
+
+  X_inference <- df_combined |>
+    # compute predictions on training and validation set
+    get_X_y(methods, m, t, h, q) |>
+    dplyr::select(-.data$true_value) |>
+    as.matrix()
+
+  ensemble_predictions <- X_inference %*% weights
+
+  ensemble_df <- assign_method(ensemble_df, m, t, h, q)
+  ensemble_df <- assign_predictions(ensemble_df, ensemble_predictions, m, t, h, q)
 
   return(ensemble_df)
 }
@@ -85,7 +101,7 @@ add_ensemble <- function(df_combined, per_quantile_weights = TRUE,
 
   # overwrite subset of prediction column in each iteration
   # same dimensions as data for single method => can be appended at the end
-  ensemble_df <- df_combined |> dplyr::filter(method == "original")
+  ensemble_df <- df_combined |> dplyr::filter(.data$method == "original")
 
   methods <- unique(df_combined$method)
   methods <- methods[methods != "original"]

@@ -1,0 +1,191 @@
+---
+title: "Detailed UK-Data Analysis"
+author: "Joel Beck"
+output:
+  bookdown::pdf_document2:
+    highlight: tango
+    toc: FALSE
+    number_sections: FALSE
+    df_print: tibble
+    latex_engine: pdflatex
+    keep_tex: FALSE
+  bookdown::html_document2:
+    theme: flatly
+    highlight: pygments
+    toc: TRUE
+    toc_float: TRUE
+    number_sections: FALSE
+    df_print: tibble
+urlcolor: blue
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center",
+  out.width = "100%", dpi = 300, fig.asp = 0.618, collapse = TRUE
+)
+```
+
+
+```{r}
+devtools::load_all()
+library(patchwork)
+library(dplyr)
+
+#uk_combined <- readr::read_rds(here::here("data_results", "uk_cqr.rds"))
+
+#hub_1 <- readr::read_rds(here::here("data_results", "hub_cqr_1.rds"))
+#hub_2 <- readr::read_rds(here::here("data_results", "hub_cqr_2.rds"))
+#hub_combined <- dplyr::bind_rows(hub_1, hub_2)
+```
+
+```{r}
+df <- read.csv(here::here("data", "full-data-uk-challenge.csv"))
+```
+
+```{r}
+model <- "epiforecasts-EpiExpert"
+location <- "GB"
+
+#df_list <- update_predictions(df, methods = "qsa_uniform", model, location, cv_init_training = 3)
+
+#df_combined_1 <- collect_predictions(df_list)
+
+# Save an object to a file
+#saveRDS(df_combined_1, file = "data_results/uk_qsa_uniform_nopen.rds")
+
+df_combined_1 <- readr::read_rds("data_results/uk_qsa_uniform_nopen.rds")
+df_combined_cqr <- readr::read_rds("data_results/uk_cqr.rds")
+
+df_combined_both <- dplyr::full_join(df_combined_1, df_combined_cqr) 
+```
+
+# Numerical Analysis
+
+```{r}
+df_combined_1 |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model", "target_type")) |>
+  arrange(target_type, desc(method))
+```
+
+## analyze Performance on Training and Validation Set separately
+
+```{r}
+
+training_results <- df_combined_1 |>
+  extract_training_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model", "target_type"))
+training_results
+
+validation_results <- df_combined_1 |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model", "target_type"))
+validation_results
+```
+
+# Graphical Analysis
+
+## for given `model`, `location`, `target_type`, `quantile` and `horizon`
+
+```{r}
+#TODO: add the spread factors as attributes to df updated
+plot_intervals(df_combined_1, model, location, target_type = "Cases", quantile = 0.05, horizon = 1)
+plot_intervals(df_combined_cqr, model, location, target_type = "Cases", quantile = 0.05, horizon = 1)
+
+# not useful right now since true value equals incidences for cqr and absolute cases for qsa
+#TODO: The plot below generates weird black lines connecting dots.
+plot_intervals(df_combined_both, model, location, target_type = "Cases", quantile = 0.05, horizon = 1)
+```
+
+## for given `model`, `location` and `quantile` and different `horizons`
+
+```{r}
+plot_intervals_grid(df_combined_1, model, facet_by = "horizon", highlight_cv = TRUE)
+```
+
+## for given `model`, `location` and `horizon` and different `quantiles`
+
+```{r}
+plot_intervals_grid(df_combined_1, model, facet_by = "quantile", highlight_cv = TRUE)
+```
+
+################################################################################################################################################################
+# eval
+################################################################################################################################################################
+
+# UK Data
+
+## By single category
+
+```{r}
+eval_methods(df_combined_1, summarise_by = "model")
+eval_methods(df_combined_1, summarise_by = "target_type")
+eval_methods(df_combined_1, summarise_by = "horizon")
+df_eval <- eval_methods(df_combined_1, summarise_by = "quantile")
+
+plot_eval(df_eval)
+plot_eval(df_eval, heatmap = FALSE)
+```
+
+
+## By combination of two categories
+
+```{r}
+eval_methods(df_combined_1, summarise_by = c("model", "target_type"))
+eval_methods(df_combined_1, summarise_by = c("model", "horizon"))
+
+df_eval <- eval_methods(df_combined_1, summarise_by = c("horizon", "target_type"))
+plot_eval(df_eval)
+```
+
+## Add marginal relative changes
+
+```{r}
+# not really informative, since margins are dominated by category with largest
+# values, here "Cases"
+# => these margins are almost identical to one row / column of table
+
+# sorted by increasing relative changes
+eval_methods(df_combined_1, summarise_by = "model")
+eval_methods(df_combined_1, summarise_by = "target_type")
+
+# not sorted by relative changes
+df_eval <- eval_methods(
+  df_combined_1,
+  summarise_by = c("model", "target_type"), margins = TRUE
+)
+plot_eval(df_eval)
+#TODO: why is there an NA in the second row of the heatmap. what is meant by margins, how can the WIS adjust with marginsß
+```
+
+
+## Add 'average' (geometric mean) relative changes of rows and columns
+
+```{r}
+df_eval <- eval_methods(
+  df_combined_1,
+  summarise_by = c("horizon", "target_type"), row_averages = TRUE
+)
+plot_eval(df_eval)
+
+df_eval <- eval_methods(
+  df_combined_1,
+  summarise_by = c("horizon", "target_type"), col_averages = TRUE
+)
+plot_eval(df_eval)
+
+df_eval <- eval_methods(
+  df_combined_1,
+  summarise_by = c("horizon", "target_type"), row_averages = TRUE,
+  col_averages = TRUE
+)
+plot_eval(df_eval)
+#TODO: why do we have an NA in the rows of all these plots? DO we need to clean the data?
+```
+
+

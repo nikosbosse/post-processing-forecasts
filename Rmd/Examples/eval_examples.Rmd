@@ -1,0 +1,226 @@
+---
+title: "Examples of `eval_methods()` and `plot_eval()` Functions"
+author: "Joel Beck"
+output:
+  bookdown::pdf_document2:
+    highlight: tango
+    toc: FALSE
+    number_sections: FALSE
+    df_print: tibble
+    latex_engine: pdflatex
+    keep_tex: FALSE
+  bookdown::html_document2:
+    theme: flatly
+    highlight: pygments
+    toc: TRUE
+    toc_float: TRUE
+    number_sections: FALSE
+    df_print: tibble
+urlcolor: blue
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center",
+  out.width = "100%", dpi = 300, fig.asp = 0.618, collapse = TRUE
+)
+```
+
+
+```{r}
+devtools::load_all()
+library(patchwork)
+
+uk_cqr <- readr::read_rds(here::here("data_results", "uk_cqr.rds"))
+uk_cqr_qsa <- readr::read_rds(here::here("data_results", "uk_cqr_qsa_uniform.rds"))
+uk_cqr_qsa_ensemble <- readr::read_rds(here::here("data_results", "uk_cqr_qsa_uniform_ensemble.rds"))
+
+hub_1 <- readr::read_rds(here::here("data_results", "hub_cqr_1.rds"))
+hub_2 <- readr::read_rds(here::here("data_results", "hub_cqr_2.rds"))
+hub_cqr <- dplyr::bind_rows(hub_1, hub_2)
+hub_cqr_qsa_ensemble <- readr::read_rds(here::here("data_results", "hub_cqr_qsa_uniform_ensemble_subset.rds"))
+```
+
+# UK Data
+
+## CQR + Single Category
+
+```{r}
+df_eval <- eval_methods(uk_cqr, summarise_by = "model")
+eval_methods(uk_cqr, summarise_by = "target_type")
+eval_methods(uk_cqr, summarise_by = "horizon")
+eval_methods(uk_cqr, summarise_by = "quantile")
+
+plot_eval(df_eval)
+plot_eval(df_eval, heatmap = FALSE)
+```
+
+
+## CQR + 2 Categories
+
+```{r}
+eval_methods(uk_cqr, summarise_by = c("model", "target_type"))
+
+# plots actually quite nice :)
+df_eval <- eval_methods(uk_cqr, summarise_by = c("quantile", "model"))
+plot_eval(df_eval) + ggplot2::labs(x = NULL)
+
+df_eval <- eval_methods(uk_cqr, summarise_by = c("model", "horizon"))
+plot_eval(df_eval) + ggplot2::labs(y = NULL)
+```
+
+## Add marginal relative changes
+
+```{r}
+# not really informative, since margins are dominated by category with largest
+# values, here "Cases"
+# => these margins are almost identical to one row / column of table
+eval_methods(uk_cqr, summarise_by = "model")
+eval_methods(uk_cqr, summarise_by = "horizon")
+
+df_eval <- eval_methods(
+  uk_cqr,
+  summarise_by = c("model", "horizon"), margins = TRUE
+)
+plot_eval(df_eval)
+```
+
+
+## Add 'average' (geometric mean) relative changes of rows and columns
+
+```{r}
+df_eval <- eval_methods(
+  uk_cqr,
+  summarise_by = c("horizon", "target_type"), row_averages = TRUE
+)
+plot_eval(df_eval)
+
+df_eval <- eval_methods(
+  uk_cqr,
+  summarise_by = c("horizon", "target_type"), col_averages = TRUE
+)
+plot_eval(df_eval)
+
+df_eval <- eval_methods(
+  uk_cqr,
+  summarise_by = c("horizon", "target_type"), row_averages = TRUE,
+  col_averages = TRUE
+)
+plot_eval(df_eval)
+```
+
+## Multiple Methods
+
+### CQR + QSA Uniform
+
+```{r}
+eval_methods(uk_cqr_qsa, summarise_by = "model")
+eval_methods(uk_cqr_qsa, summarise_by = "target_type")
+eval_methods(uk_cqr_qsa, summarise_by = "horizon")
+eval_methods(uk_cqr_qsa, summarise_by = "quantile")
+```
+
+
+```{r}
+df_eval <- eval_methods(uk_cqr_qsa, summarise_by = "model")
+p1 <- plot_eval(df_eval, base_size = 8) + ggplot2::labs(y = NULL)
+
+df_eval <- eval_methods(uk_cqr_qsa, summarise_by = "target_type")
+p2 <- plot_eval(df_eval, base_size = 8) + ggplot2::labs(y = NULL)
+
+df_eval <- eval_methods(uk_cqr_qsa, summarise_by = "horizon")
+p3 <- plot_eval(df_eval, base_size = 8)
+
+df_eval <- eval_methods(uk_cqr_qsa, summarise_by = "quantile")
+p4 <- plot_eval(df_eval, base_size = 8)
+
+(p1 + p2) / (p3 + p4)
+```
+
+### CQR + QSA Uniform + Ensemble
+
+```{r}
+eval_methods(uk_cqr_qsa_ensemble, summarise_by = "model")
+eval_methods(uk_cqr_qsa_ensemble, summarise_by = "target_type")
+eval_methods(uk_cqr_qsa_ensemble, summarise_by = "horizon")
+eval_methods(uk_cqr_qsa_ensemble, summarise_by = "quantile")
+```
+
+```{r}
+df_eval <- eval_methods(uk_cqr_qsa_ensemble, summarise_by = "model")
+p1 <- plot_eval(df_eval, base_size = 8) + ggplot2::labs(y = NULL)
+
+df_eval <- eval_methods(uk_cqr_qsa_ensemble, summarise_by = "target_type")
+p2 <- plot_eval(df_eval, base_size = 8) + ggplot2::labs(y = NULL)
+
+df_eval <- eval_methods(uk_cqr_qsa_ensemble, summarise_by = "horizon")
+p3 <- plot_eval(df_eval, base_size = 8)
+
+df_eval <- eval_methods(uk_cqr_qsa_ensemble, summarise_by = "quantile")
+p4 <- plot_eval(df_eval, base_size = 8)
+
+(p1 + p2) / (p3 + p4)
+```
+
+
+# European Forecast Hub Data
+
+```{r}
+# data set very large, choose e.g. one model to avoid time limit error
+hub_cqr <- hub_cqr |>
+  dplyr::filter(model == "epiforecasts-EpiNow2")
+```
+
+
+## CQR + Single Category
+
+```{r}
+df_eval <- eval_methods(hub_cqr, summarise_by = "location_name")
+p1 <- plot_eval(df_eval, heatmap = FALSE, base_size = 8) + ggplot2::labs(y = NULL)
+
+df_eval <- eval_methods(hub_cqr, summarise_by = "target_type")
+p2 <- plot_eval(df_eval, heatmap = FALSE, base_size = 8) + ggplot2::labs(y = NULL)
+
+df_eval <- eval_methods(hub_cqr, summarise_by = "horizon")
+p3 <- plot_eval(df_eval, heatmap = FALSE, base_size = 8)
+
+df_eval <- eval_methods(hub_cqr, summarise_by = "quantile")
+p4 <- plot_eval(df_eval, base_size = 8)
+
+(p1 + p2) / (p3 + p4)
+```
+
+## CQR + 2 Categories
+
+```{r}
+df_eval <- eval_methods(
+  hub_cqr,
+  summarise_by = c("horizon", "target_type")
+)
+plot_eval(df_eval) + ggplot2::labs(x = NULL)
+```
+
+
+## CQR + QSA Uniform + Ensemble
+
+```{r}
+df_eval <- eval_methods(hub_cqr_qsa_ensemble, summarise_by = "location_name")
+p1 <- plot_eval(df_eval, base_size = 8) + ggplot2::labs(y = NULL)
+
+df_eval <- eval_methods(
+  hub_cqr_qsa_ensemble |>
+    dplyr::filter(!location_name %in% c("Poland", "Finland")),
+  summarise_by = "location_name"
+)
+p2 <- plot_eval(df_eval, base_size = 8) + ggplot2::labs(y = NULL)
+
+df_eval <- eval_methods(hub_cqr_qsa_ensemble, summarise_by = "horizon")
+p3 <- plot_eval(df_eval, base_size = 8)
+
+df_eval <- eval_methods(hub_cqr_qsa_ensemble, summarise_by = "quantile")
+p4 <- plot_eval(df_eval, base_size = 8)
+
+(p1 + p2) / (p3 + p4)
+```

@@ -1,0 +1,553 @@
+---
+title: "Testing QSA Methods and Evaluating Optimizers"
+author: "Matthias Herp"
+output:
+  bookdown::html_document2:
+    theme: flatly
+    highlight: pygments  # kate
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 2
+    number_sections: FALSE
+    df_print: tibble
+  bookdown::pdf_document2:
+    highlight: tango  # pygments
+    toc: FALSE
+    number_sections: FALSE
+    df_print: tibble
+    latex_engine: pdflatex
+    keep_tex: FALSE
+urlcolor: blue
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r knitr-opts, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center",
+  out.width = "100%", dpi = 300, fig.asp = 0.618, collapse = TRUE
+)
+```
+
+```{r libraries, include=FALSE}
+devtools::load_all(".")
+library(scoringutils)
+library(dplyr)
+library(patchwork)
+library(ggplot2)
+```
+
+# Notebook Purpose
+
+We evaluate QSA on testing data in order to see if it acts how we would expect it to. Furthermore we also analyze how different optimizers lead to different QSA results. The main purpose of this notebook is to document our findings in a manner we can reuse when we write our report.
+
+# Testing function
+
+First we define a testing function we can use for creating simulation data and applying QSA to it. It preforms the following steps:
+1. Get a subset of original data as template. We allow users to set the number of observations for simulation data. However it is capped at a maximum number of 25 observations, like in the EU Hub data.
+2. Changing the quantile predictions to the value of the quantile * 100 * error_factor. We thus change the szenarios by adjustung true values and keep the initial qunatile predictions at these fixed factors to make it simpler. Further we include an error_factor. which is initially at 1 but is allowed to change as a way to define what adjustment QSA should do if we start with optimal quantiles.
+3. Change True values as defined by user. The length of the true values defines the number of observations.
+4. Runs QSA and returns a plot with the prediction interval to see how qsa adjusted the intervals.
+
+```{r,include=FALSE}
+df <- read.csv(here::here("data_modified", "hub_data_2_incidences.csv"))
+m <- "epiforecasts-EpiExpert"
+l <- "GB"
+t <- "Cases"
+h <- 1
+
+test <- function(qs = c(0.25, 0.5, 0.75),
+                 error_factor = 1,
+                 true_values_new = c(rep(50,4), 55, rep(5,5), rep(c(50,5),8),50),
+                 methods = "qsa_uniform",
+                 cv_init_training = NULL,
+                 quantile_plot = 0.25,
+                 optim_method = "BFGS",
+                 lower_bound_optim = -Inf, 
+                 upper_bound_optim = Inf,
+                 optim_multiple_bounds_brent = FALSE){
+  
+  # Get a subset of original data as template 
+  # We only make it have the length of the true values (max remains 25)
+  subset <- dplyr::filter(df, model == m & location == l 
+                          & target_type == t & horizon == h 
+                          & quantile %in% qs 
+                          & target_end_date %in% sort(unique(df$target_end_date))[0:length(true_values_new)])
+  
+  # Changing the quantile predictions to the value of the quantile * 100 * error_factor
+  subset_generated <- subset
+  for (qi in qs) {
+    subset_generated <- subset_generated |>
+      dplyr::mutate(prediction = replace(
+        .data$prediction, .data$quantile == qi,
+        values = rep(qi * 100 * error_factor,length(unique(subset$target_end_date)))
+      ))
+  }
+  
+  # Changing the true values at each time point (for each quantile the same)
+  for (i in seq(0,length(unique(subset_generated$target_end_date))) ) {
+    date <- unique(subset_generated$target_end_date)[i]
+    value <- true_values_new[i]
+    
+    subset_generated <- subset_generated |>
+      dplyr::mutate(true_value = replace(
+        .data$true_value, .data$target_end_date == date,
+        values = rep(value,length(unique(subset_generated$quantile)))
+      ))
+  }
+  
+  # Run QSA
+  df_updated <- update_predictions(subset_generated, methods = methods,
+                                   models = m, locations = l, target_types = t,
+                                   horizons = h, quantiles = qs,
+                                   cv_init_training = cv_init_training, penalty_weight=NULL, 
+                                   optim_method = optim_method, 
+                                   lower_bound_optim = lower_bound_optim, 
+                                   upper_bound_optim = upper_bound_optim,
+                                   optim_multiple_bounds_brent = optim_multiple_bounds_brent,
+                                   return_list = TRUE)
+  
+  # Combine DataFrames so that we can plot results
+  df_combined <- df_updated |> collect_predictions()
+  
+  # Plot results for a specific quantile
+  plot_intervals(df_combined, model = m, location = l, target_type = t, quantile = quantile_plot, horizon = h)
+  
+}
+```
+
+## WIS 
+
+Here is a short reminder of the WIS (see Presentation 1):
+
+$$
+Score_\alpha(y) = (u-l) + \frac{2}{\alpha} \cdot (l-y) \cdot \mathbf{1} (y \leq l) + \frac{2}{\alpha} \cdot (y-u) \cdot \mathbf{1}(y \geq u)
+$$
+We define a function that returns WIS for one intervall so the IS actually. It can be used to check what the correct adjustment is.
+
+```{r}
+wis_calc <- function(x_vec = c(-20:20),
+                     qs = c(0.25, 0.5, 0.75),
+                     true_values_new = c(rep(50,4), 60, rep(20,5))){
+  
+  wis_vec <- c()
+  for (x in x_vec){
+    l <- qs[1] * 100 - x
+    u <- qs[3] * 100 + x
+    a <- qs[3] - qs[1]
+    
+    wis_val <- abs(u-l) #length(true_values_new) * 
+    
+    for (obs in true_values_new){
+      if (obs > l && obs < u){
+        wis_val <- wis_val #+ min(obs-l,u-obs)
+      } else if (obs > l && obs > u){
+        wis_val <- wis_val + 2/a + (obs-u)
+      } else if (obs < l && obs < u) {
+        wis_val <- wis_val + 2/a* (l-obs)
+      }
+    }
+    wis_vec <- c(wis_vec,wis_val)
+  }
+  
+  return(wis_vec)
+}
+
+wis_calc_pac <- function(x_vec = seq(-2,2,0.1),
+                     qs = c(0.25, 0.5, 0.75),
+                     true_values_new = c(rep(50,4), 60, rep(20,5))){
+  
+
+  # Get a subset of original data as template 
+  # We only make it have the length of the true values (max remains 25)
+  subset <- dplyr::filter(df, model == m & location == l 
+                          & target_type == t & horizon == h 
+                          & quantile %in% qs 
+                          & target_end_date %in% sort(unique(df$target_end_date))[0:length(true_values_new)])
+  
+  # Changing the quantile predictions to the value of the quantile * 100 * error_factor
+  subset_generated <- subset
+  for (qi in qs) {
+    subset_generated <- subset_generated |>
+      dplyr::mutate(prediction = replace(
+        .data$prediction, .data$quantile == qi,
+        values = rep(qi * 100,length(unique(subset$target_end_date)))
+      ))
+  }
+  
+  # Changing the true values at each time point (for each quantile the same)
+  for (i in seq(0,length(unique(subset_generated$target_end_date))) ) {
+    date <- unique(subset_generated$target_end_date)[i]
+    value <- true_values_new[i]
+    
+    subset_generated <- subset_generated |>
+      dplyr::mutate(true_value = replace(
+        .data$true_value, .data$target_end_date == date,
+        values = rep(value,length(unique(subset_generated$quantile)))
+      ))
+  }
+  # adjustment based on x value e.g. line search
+  wis_vec <- c()
+  for (x in x_vec){
+    subset_generated <- subset_generated |>
+      dplyr::mutate(prediction = replace(
+        .data$prediction, .data$quantile == qs[1],
+        values = rep(qs[1] * 100 - (50-qs[1]*100) * (x-1),length(unique(subset$target_end_date)))
+      ))
+    subset_generated <- subset_generated |>
+      dplyr::mutate(prediction = replace(
+        .data$prediction, .data$quantile == qs[3],
+        values = rep(qs[3] * 100 + (50-qs[1]*100) * (x-1),length(unique(subset$target_end_date)))
+      ))
+    
+    res <- subset_generated |>
+      scoringutils::score() |>
+      scoringutils::summarise_scores(by = c("model"))
+
+    wis_val <- res$interval_score
+    wis_vec <- c(wis_vec,wis_val)
+    
+  }
+  return(wis_vec)
+}
+  
+```
+
+```{r}
+x <- seq(-3,3,0.1)
+y <- wis_calc_pac(x,
+              qs = c(0.25, 0.5, 0.75),
+              true_values_new = c(rep(50,4), 60, rep(20,5)))
+
+df_xy <- data.frame(x = x, y = y)
+
+ggplot() +
+  geom_line(data = df_xy, aes(x, y), colour = "black")
+
+x_abs <- (75-50) * x
+
+df_xy <- data.frame(x = x_abs, y = y)
+
+ggplot() +
+  geom_line(data = df_xy, aes(x, y), colour = "black")
+```
+
+# Testing QSA Uniform
+
+## Test 1: Using BFGS, if QSA covers the optimal number of observations but the intervals dont have the optimal size, does it adjust properly?
+
+### Make intervals smaller?
+
+- Expectation: QSA should make intervals smaller. Current WIS is 525, by reducing top and bottom intervall by 10 WIS is reduced to 375.
+- Observation: Intervals remain unchanged.
+
+```{r}
+x <- c(-20:20)
+y <- wis_calc(x,
+              qs = c(0.25, 0.5, 0.75),
+              true_values_new = c(rep(50,4), 60, rep(20,5)))
+
+df_xy <- data.frame(x = x, y = y)
+
+ggplot() +
+  geom_line(data = df_xy, aes(x, y), colour = "black")
+```
+
+
+
+```{r}
+test(qs = c(0.25, 0.5, 0.75),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 60, rep(20,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.25)
+```
+
+```{r}
+# Proof that implemented line search works
+test(qs = c(0.25, 0.5, 0.75),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 60, rep(20,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.25,
+     optim_method = "line_search")
+```
+
+### Make intervals larger?
+
+- Expectation: QSA should make intervals larger because observations outside the intervall are very far away
+- Observation: intervals stay the same
+
+```{r}
+x <- c(-20:200)
+y <- wis_calc(x,
+              qs = c(0.25, 0.5, 0.75),
+              true_values_new = c(rep(50,4), 60, rep(200,5)))
+
+df_xy <- data.frame(x = x, y = y)
+
+ggplot() +
+  geom_line(data = df_xy, aes(x, y), colour = "black")
+```
+
+```{r}
+test(qs = c(0.25, 0.5, 0.75),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 60, rep(200,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.25)
+```
+## Test 2: Using BFGS, if QSA covers to many observations and intervals dont have the optimal size, does it adjust properly?
+
+### Make intervals smaller?
+
+Expectation: QSA should make intervals smaller
+Observation: makes intervals smaller so that then encompase at least 5 values, which in this case means all values
+
+```{r}
+x <- c(-20:20)
+y <- wis_calc(x,
+              qs = c(0.25, 0.5, 0.75),
+              true_values_new = c(rep(50,4), 60, rep(40,5)))
+
+df_xy <- data.frame(x = x, y = y)
+
+ggplot() +
+  geom_line(data = df_xy, aes(x, y), colour = "black")
+```
+
+```{r}
+test(qs = c(0.25, 0.5, 0.75),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 60, rep(40,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.25)
+```
+
+Expectation: QSA should make intervals smaller as it has 3 values but only need 2 in the 20% Intervall
+Observation: makes intervals smaller, as both points are on the same line intervall colapses
+
+```{r}
+x <- c(-20:50)
+y <- wis_calc(x,
+              qs = c(0.4, 0.5, 0.6),
+              true_values_new = c(rep(50,2), 80, rep(5,5)))
+
+df_xy <- data.frame(x = x, y = y)
+
+ggplot() +
+  geom_line(data = df_xy, aes(x, y), colour = "black")
+```
+
+```{r}
+test(qs = c(0.4, 0.5, 0.6),
+     error_factor = 1,
+     true_values_new = c(rep(50,2), 80, rep(5,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.40)
+```
+
+### Make intervals larger?
+
+Expectation: QSA should make intervals larger
+Observation: makes intervals larger so that then encompase at least 5 values
+
+```{r}
+x <- c(-20:50)
+y <- wis_calc(x,
+              qs = c(0.25, 0.5, 0.75),
+              true_values_new = c(rep(50,4), 80, rep(5,5)))
+
+df <- data.frame(x = x, y = y)
+
+ggplot() +
+  geom_line(data = df, aes(x, y), colour = "black")
+```
+
+```{r}
+test(qs = c(0.25, 0.5, 0.75),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 80, rep(5,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.25)
+```
+## Conclusion
+
+QSA with the BFGS method doesnt work as expected. We see that it does adjust to encompass enough observations into the intervall. However it doesnt adjust the intervals to be smaller or larger as to minimize the distance to points penalty. 
+
+# Testing QSA Uniform with different Optimizers
+
+## Test 3: See if other optimizing methods, available in optim are able to adjust intervals even though the number of covered observations is correct?
+
+We thus repeat Test 1 with different optimizers.
+
+### Make intervals smaller?
+
+#### CG
+
+Method: unkown
+Observation: Doesnt work.
+
+```{r}
+x <- c(-20:50)
+y <- wis_calc(x,
+              qs = c(0.25, 0.5, 0.75),
+              true_values_new = c(rep(50,4), 60, rep(20,5)))
+
+df <- data.frame(x = x, y = y)
+
+ggplot() +
+  geom_line(data = df, aes(x, y), colour = "black")
+```
+
+```{r}
+test(qs = c(0.25, 0.5, 0.75),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 60, rep(20,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.25,
+     optim_method = "CG")
+```
+
+#### L-BFGS-B
+
+Method: BFGS with bounds and limited memory.
+Observation: Doesnt really work but makes a slight correct adjustment.
+
+```{r}
+test(qs = c(0.25, 0.5, 0.75),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 60, rep(20,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.25,
+     optim_method = "L-BFGS-B")
+```
+
+#### SANN
+
+Method: unkown
+Observation: Doesnt work, takes very long and destroys R session.
+
+```{r}
+#test(qs = c(0.25, 0.5, 0.75),
+#     error_factor = 1,
+#     true_values_new = c(rep(50,4), 60, rep(20,5)),
+#     methods = "qsa_uniform",
+#     cv_init_training = NULL,
+#     quantile_plot = 0.25,
+#     optim_method = "SANN")
+```
+
+#### Brent
+
+Method: works by using the bisection and secant methods. The first looks to reduce the interval in which optimum can lie, thats why the method requires bounds. The second comes closer to the optimum e.g. root by drawing secant lines to approximate the function.
+Observation: It works the best. Reduces the intervals as it should. However it gives back very different results for different bounds. Furthermore the smaller bounds are the faster it is. 
+
+```{r}
+test(qs = c(0.25, 0.5, 0.75),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 60, rep(20,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.25,
+     optim_method = "Brent",
+     lower_bound_optim = -100,
+     upper_bound_optim = 100)
+```
+
+```{r}
+test(qs = c(0.25, 0.5, 0.75),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 60, rep(20,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.25,
+     optim_method = "Brent",
+     lower_bound_optim = -50,
+     upper_bound_optim = 50)
+```
+
+```{r}
+test(qs = c(0.25, 0.5, 0.75),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 60, rep(20,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.25,
+     optim_method = "Brent",
+     lower_bound_optim = -10,
+     upper_bound_optim = 10)
+```
+
+```{r}
+test(qs = c(0.25, 0.5, 0.75),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 60, rep(20,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.25,
+     optim_method = "Brent",
+     lower_bound_optim = -8,
+     upper_bound_optim = 8)
+```
+
+```{r}
+test(qs = c(0.25, 0.5, 0.75),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 60, rep(20,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.25,
+     optim_method = "Brent",
+     lower_bound_optim = -5,
+     upper_bound_optim = 5)
+```
+
+## Conclusion
+
+Use the Brent method, however the setting of the bounds is key. It might make sense to run multiple optimisations with a set of start values each time and then take the one where results are best.
+
+```{r}
+test(qs = c(0.25, 0.5, 0.75),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 60, rep(20,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.25,
+     optim_method = "Brent",
+     optim_multiple_bounds_brent = TRUE
+     )
+```
+
+
+```{r}
+test(qs = c(0.3, 0.5, 0.7),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 60, rep(20,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.3,
+     optim_method = "Brent",
+     optim_multiple_bounds_brent = TRUE
+     )
+```
+
+
+```{r}
+test(qs = c(0.25, 0.5, 0.75),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 60, rep(200,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.25,
+     optim_method = "Brent",
+     optim_multiple_bounds_brent = TRUE)
+```

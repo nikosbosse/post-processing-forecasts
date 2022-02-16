@@ -112,7 +112,27 @@ wrapper <- function(spread_factor_vec, subset, method_pp, penalty_weight) {
   return(interval_score)
 }
 
-optimize_spread_factor <- function(method,subset,penalty_weight,par=NULL){
+line_search_optimizer <- function(factor_vec,subset){
+  
+  # Computing WIS for all values in the line search
+  wis_vec <- c()
+  for (factor in factor_vec){
+    wis_val <- wrapper(spread_factor_vec=factor, subset, method_pp="qsa_uniform", penalty_weight=NULL)
+    wis_vec <- c(wis_vec,wis_val)
+    
+  }
+  
+  # There can be multiple optima, in that case choose the middle value
+  optimal_spread_factor <- factor_vec[which(wis_vec == min(wis_vec))]
+  
+  if (length(optimal_spread_factor) > 1){
+    optimal_spread_factor <- optimal_spread_factor[which(abs(optimal_spread_factor-1) == min(abs(optimal_spread_factor-1)) )]
+  }
+  
+  return(optimal_spread_factor)
+}
+
+optimize_spread_factor <- function(method,subset,penalty_weight,optim_method,lower_bound_optim,upper_bound_optim,optim_multiple_bounds_brent,par=NULL){
   # TODO: Decide if it is makes sense to write a gradient function that gives back the gradient dependent on the subset at that time point
   
   # optim minimizes the wrapper function
@@ -121,12 +141,40 @@ optimize_spread_factor <- function(method,subset,penalty_weight,par=NULL){
   if (method == "qsa_uniform") {
     if (is.null(par)) {par <- c(1)}
     
-    optim_results <- optim(
-      par = par, fn = wrapper, subset = subset, method_pp = method, penalty_weight = penalty_weight,
-      gr = NULL, method = "BFGS"
-    ) # , hessian=T)
-    optimal_spread_factor <- optim_results$par
-    
+    if (optim_method == "line_search"){
+      factor_vec <- seq(-3,3,0.1)
+      optimal_spread_factor <- line_search_optimizer(factor_vec,subset)
+      
+    } else {
+      if (optim_multiple_bounds_brent == TRUE){
+        optim_method <- "Brent"
+        
+        symmetric_bounds <- c(10,9,8,7,6,5)
+        wis_value_best <- Inf
+        for (bound in symmetric_bounds){
+          
+          optim_results <- optim(
+            par = par, fn = wrapper, subset = subset, method_pp = method, penalty_weight = penalty_weight,
+            gr = NULL, method = optim_method, lower = -bound, upper = +bound
+          ) 
+          wis_value_current <- optim_results$value
+          optimal_spread_factor_current <- optim_results$par
+          
+          if (wis_value_current < wis_value_best){
+            wis_value_best <- wis_value_current
+            optimal_spread_factor_best <- optimal_spread_factor_current
+          }
+        }
+        optimal_spread_factor <- optimal_spread_factor_best
+        }
+      else {
+        optim_results <- optim(
+          par = par, fn = wrapper, subset = subset, method_pp = method, penalty_weight = penalty_weight,
+          gr = NULL, method = optim_method, lower = lower_bound_optim, upper = upper_bound_optim #optim_method = "BFGS"
+        ) # , hessian=T)
+        optimal_spread_factor <- optim_results$par
+      }
+    }
   } else if (method == "qsa_flexibel") {
     # getting number of spreads as: number of quantiles without the mean
     num_spreads <- length(na.omit(unique(subset$quantile))) - 1 #-1 due to mean
@@ -135,7 +183,7 @@ optimize_spread_factor <- function(method,subset,penalty_weight,par=NULL){
     
     optim_results <- optim(
       par = par, fn = wrapper, subset = subset, method_pp = method,
-      penalty_weight = penalty_weight, gr = NULL, method = "BFGS"
+      penalty_weight = penalty_weight, gr = NULL, method = optim_method, lower = lower_bound_optim, upper = upper_bound_optim
     ) # , hessian=T)
     optimal_spread_factor <- optim_results$par
     
@@ -148,7 +196,7 @@ optimize_spread_factor <- function(method,subset,penalty_weight,par=NULL){
     
     optim_results <- optim(
       par = par, fn = wrapper, subset = subset, method_pp = method,
-      penalty_weight = penalty_weight, gr = NULL, method = "BFGS"
+      penalty_weight = penalty_weight, gr = NULL, method = optim_method,  lower = lower_bound_optim, upper = upper_bound_optim
     ) # , hessian=T)
     optimal_spread_factor <- optim_results$par
   }
@@ -156,7 +204,7 @@ optimize_spread_factor <- function(method,subset,penalty_weight,par=NULL){
 }
 
 
-update_subset_qsa <- function(df, method, model, location, target_type, horizon, cv_init_training, penalty_weight) {
+update_subset_qsa <- function(df, method, model, location, target_type, horizon, cv_init_training, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim, optim_multiple_bounds_brent) {
   # must be placed on filtered data frame (i.e. lowest level, not in
   # update_predictions()) such that fractional inputs can be correctly converted
   cv_init_training <- validate_cv_init(df, cv_init_training)
@@ -176,8 +224,11 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
       df, .data$model == m & .data$location == l & .data$target_type == t & .data$horizon == h)
 
     # Run optimization to get the optimal spread factor
-    optimal_spread_factor <- optimize_spread_factor(method = method,subset = subset,
-                                                    penalty_weight = penalty_weight, par = NULL)
+    optimal_spread_factor <- optimize_spread_factor(method = method, subset = subset,
+                                                    penalty_weight = penalty_weight, optim_method = optim_method, 
+                                                    lower_bound_optim = lower_bound_optim, upper_bound_optim = upper_bound_optim,
+                                                    optim_multiple_bounds_brent = optim_multiple_bounds_brent,
+                                                    par = NULL)
 
     # function to apply optimal spread factor to data
     # We return a matrix containing the updates of the quantiles
@@ -219,11 +270,11 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
     subset_val <- dplyr::filter(subset, .data$target_end_date == target_end_date_val)
 
     # Run optimization to get the optimal spread factor
-    optimal_spread_factor <- optimize_spread_factor(method = method, subset = subset,
-                                                    penalty_weight = penalty_weight, par = NULL)
+    optimal_spread_factor <- optimize_spread_factor(method = method, subset = subset_train, ###########Big typo: before we had only subset here so trained on full subset no CV!
+                                                    penalty_weight = penalty_weight, optim_method = optim_method, par = NULL)
     
     # training set
-    updates_matrix <- qsa(subset = subset, spread_factor_vec = optimal_spread_factor, method = method)
+    updates_matrix <- qsa(subset = subset_train, spread_factor_vec = optimal_spread_factor, method = method) ###########Big typo: before we had only subset here so trained on full subset no CV!
     # one step ahead prediction adjustment
     val_row <- qsa(subset = subset_val, spread_factor_vec = optimal_spread_factor, method = method)
 
@@ -247,8 +298,8 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
       # for faster computation it starts optimization at the optimal spread factor of the last iteration
 
       # Run optimization to get the optimal spread factor
-      optimal_spread_factor <- optimize_spread_factor(method = method,subset = subset,
-                                                      penalty_weight = penalty_weight, par = optimal_spread_factor)
+      optimal_spread_factor <- optimize_spread_factor(method = method,subset = subset_train, ###########Big typo: before we had only subset here so trained on full subset no CV!
+                                                      penalty_weight = penalty_weight, optim_method = optim_method, par = optimal_spread_factor)
       
       # For the iteration forward we only need the validation set prediction
       val_row <- qsa(subset = subset_val, spread_factor_vec = optimal_spread_factor, method = method)
@@ -273,28 +324,28 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
           values = updates_matrix[, which(quantiles_list_no_median == q)]
         ))
     }
+  } ##########this closed bracket was at the end of the file before. therefore the no cv version returned no updated values!
 
-    # Make sure the updated subset is arranged by quantiles and then target end dates
-    # That way we can pass its prediction column to the updated df directly
-    subset_updated <- subset_updated |>
-      dplyr::arrange(.data$quantile, .data$target_end_date)
+  # Make sure the updated subset is arranged by quantiles and then target end dates
+  # That way we can pass its prediction column to the updated df directly
+  subset_updated <- subset_updated |>
+    dplyr::arrange(.data$quantile, .data$target_end_date)
 
-    quantiles_list <- stats::na.omit(unique(subset$quantile))
-    quantiles_list_no_median <- quantiles_list[!quantiles_list == 0.50]
+  quantiles_list <- stats::na.omit(unique(subset$quantile))
+  quantiles_list_no_median <- quantiles_list[!quantiles_list == 0.50]
 
-    # Again we first arrange the data to make we can pass the prediction column to the updated df directly
-    df_updated <- df |>
-      dplyr::arrange(.data$quantile, .data$target_end_date) |>
-      dplyr::mutate(prediction = replace(
-        .data$prediction,
-        .data$model == m & .data$location == l & .data$target_type == t & .data$horizon == h, # no quantile specified in quantile spread post processing
-        values = subset_updated$prediction
-      ))
+  # Again we first arrange the data to make we can pass the prediction column to the updated df directly
+  df_updated <- df |>
+    dplyr::arrange(.data$quantile, .data$target_end_date) |>
+    dplyr::mutate(prediction = replace(
+      .data$prediction,
+      .data$model == m & .data$location == l & .data$target_type == t & .data$horizon == h, # no quantile specified in quantile spread post processing
+      values = subset_updated$prediction
+    ))
 
-    # set training length as attribute for plotting vertical line
-    attr(df_updated, "cv_init_training") <- cv_init_training
+  # set training length as attribute for plotting vertical line
+  attr(df_updated, "cv_init_training") <- cv_init_training
 
-    return(df_updated)
-  }
+  return(df_updated)
 }
 #TODO: write helper function that computes the applied optimal spread parameters of a qsa approach as well as the actual absolute adjustment. this is a nice way to compare the different adjustments different methods do

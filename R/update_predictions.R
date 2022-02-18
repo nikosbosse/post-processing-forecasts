@@ -26,6 +26,12 @@ update_predictions <- function(df, methods = c(
   updated_list <- list()
 
   for (method in c(methods)) {
+    # symmetric cqr always considers pairs => only needs lower quantiles
+    # set at the beginning to only perform subsetting once
+    if (method == "cqr") {
+      quantiles <- quantiles[quantiles < 0.5]
+    }
+
     # start with original data frame for each method
     df_updated <- df_preprocessed
 
@@ -33,32 +39,26 @@ update_predictions <- function(df, methods = c(
       for (location in locations) {
         if (verbose) {
           cat(
-            "method = ", method, " | model = ", model, " | location = ",
-            location, "\n",
+            "method = ", method, " | model = ", model, " | location = ", location, "\n",
             sep = ""
           )
         }
         for (target_type in target_types) {
           for (horizon in horizons) {
-
-            # distinction of which method we use at this step in the nested loop
-            # as cqr loops over qunatiles but qsa uses all quantiles in one run
-            if (method == "cqr") {
-              quantiles <- quantiles[quantiles < 0.5]
-
+            # qsa uses all quantiles in one run
+            if (stringr::str_detect(method, "qsa")) {
+              df_updated <- update_subset_qsa(
+                df_updated, method, model, location, target_type, horizon,
+                cv_init_training, penalty_weight
+              )
+            } else {
+              # cqr uses one (pair of) quantile(s) at a time
               for (quantile in quantiles) {
                 df_updated <- update_subset_cqr(
                   df_updated, method, model, location, target_type, horizon,
                   quantile, cv_init_training
                 )
               }
-            }
-
-            if (stringr::str_detect(method, "qsa")) {
-              df_updated <- update_subset_qsa(
-                df_updated, method, model, location, target_type, horizon,
-                cv_init_training, penalty_weight
-              ) # no quantile is passed
             }
           }
         }

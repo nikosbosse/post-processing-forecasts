@@ -189,7 +189,8 @@ validate_cv_init <- function(df, cv_init_training) {
 
 validate_methods <- function(methods) {
   implemented_methods <- c(
-    "cqr", "qsa_uniform", "qsa_flexibel", "qsa_flexibel_symmetric"
+    "cqr", "cqr_asymmetric", "cqr_multiplicative",
+    "qsa_uniform", "qsa_flexibel", "qsa_flexibel_symmetric"
   )
 
   if (!all(methods %in% implemented_methods)) {

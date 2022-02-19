@@ -182,11 +182,12 @@ cross_validate_cqr <- function(method, quantile, true_values, quantiles_low,
 
 update_subset_cqr <- function(df, method, model, location, target_type,
                               horizon, quantile, cv_init_training) {
+  quantiles_list <- filter_combination(df, model, location, target_type, horizon, quantile)
+  
   # 'validate_cv_init' must be placed on filtered data frame (i.e. lowest level,
   # not in update_predictions()) such that fractional inputs can be correctly
   # converted
-  cv_init_training <- validate_cv_init(df, cv_init_training)
-  quantiles_list <- filter_combination(df, model, location, target_type, horizon, quantile)
+  cv_init_training <- validate_cv_init(quantiles_list$df_subset, cv_init_training)
 
   true_values <- quantiles_list$true_values
   quantiles_low <- quantiles_list$quantiles_low

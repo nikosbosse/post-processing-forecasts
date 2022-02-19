@@ -92,7 +92,17 @@ cqr3_results <- readr::read_rds(here::here("data_results", "uk_cqr3.rds"))
 ```
 
 ```{r}
-# check if results are equal for cqr method after refactoring, right now they are not !!
+library(scoringutils)
+cqr3_results |>
+  extract_training_set() |>
+  # scoringutils::eval_forecasts(summarise_by = c("method"))
+  score() |> 
+  summarise_scores(by = c("method"))
+  # dplyr::arrange(model, interval_score)
+```
+
+```{r}
+# check if results are equal for old results of cqr method, right now they are not !!
 library(dplyr)
 sub1 <- cqr_results |> filter(method == "cqr")
 sub2 <- cqr3_results |> filter(method == "cqr")
@@ -101,11 +111,47 @@ sub1[sub1$prediction != sub2$prediction, ] |> count(target_end_date)
 ```
 
 
-```{r}
-scoringutils::score(cqr3_results) |>
-  scoringutils::summarise_scores(by = c("method", "model")) |>
-  arrange(model)
-```
+ 
+ 
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  
  
  

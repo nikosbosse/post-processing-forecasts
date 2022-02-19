@@ -1,3 +1,33 @@
+fix_quantile_crossing <- function(df_updated, model, location, target_type, horizon) {
+  target_end_dates <- unique(df_updated$target_end_date)
+
+  for (target_end_date in target_end_dates) {
+    # first sort by quantiles, then replace prediction column for each target_end_date with
+    # sorted predictions
+    df_updated <- df_updated |> dplyr::arrange(.data$target_end_date, .data$quantile)
+
+    df_updated[
+      df_updated$model == model &
+      df_updated$location == location &
+      df_updated$target_type == target_type &
+      df_updated$horizon == horizon &
+      df_updated$target_end_date == target_end_date,
+      "prediction"
+    ] <- df_updated[
+      df_updated$model == model &
+      df_updated$location == location &
+      df_updated$target_type == target_type &
+      df_updated$horizon == horizon &
+      df_updated$target_end_date == target_end_date,
+      "prediction"
+    ] |>
+      dplyr::arrange(.data$prediction)
+  }
+
+  return(df_updated)
+}
+
+
 update_predictions <- function(df, methods = c(
                                  "cqr", "cqr_asymmetric", "cqr_multiplicative",
                                  "qsa_uniform", "qsa_flexibel", "qsa_flexibel_symmetric"
@@ -26,12 +56,6 @@ update_predictions <- function(df, methods = c(
   updated_list <- list()
 
   for (method in c(methods)) {
-    # symmetric cqr always considers pairs => only needs lower quantiles
-    # set at the beginning to only perform subsetting once
-    if (method == "cqr") {
-      quantiles <- quantiles[quantiles < 0.5]
-    }
-
     # start with original data frame for each method
     df_updated <- df_preprocessed
 
@@ -45,14 +69,15 @@ update_predictions <- function(df, methods = c(
         }
         for (target_type in target_types) {
           for (horizon in horizons) {
-            # qsa uses all quantiles in one run
+            # qsa methods use all quantiles in one run
             if (stringr::str_detect(method, "qsa")) {
               df_updated <- update_subset_qsa(
                 df_updated, method, model, location, target_type, horizon,
                 cv_init_training, penalty_weight
               )
             } else {
-              # cqr uses one (pair of) quantile(s) at a time
+              # cqr methods use pair of quantiles => only needs lower quantiles
+              quantiles <- quantiles[quantiles < 0.5]
               for (quantile in quantiles) {
                 df_updated <- update_subset_cqr(
                   df_updated, method, model, location, target_type, horizon,
@@ -60,6 +85,9 @@ update_predictions <- function(df, methods = c(
                 )
               }
             }
+            df_updated <- fix_quantile_crossing(
+              df_updated, model, location, target_type, horizon
+            )
           }
         }
       }

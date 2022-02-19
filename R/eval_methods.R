@@ -1,8 +1,13 @@
 #' @importFrom rlang .data
 
-apply_scoring <- function(df_combined, summarise_by) {
+apply_scoring <- function(df_combined, summarise_by, training_set) {
+  if (training_set) {
+    df_combined <- df_combined |> extract_training_set()
+  } else {
+    df_combined <- df_combined |> extract_validation_set()
+  }
+  
   df_combined |>
-    extract_validation_set() |>
     scoringutils::score() |>
     scoringutils::summarise_scores(by = c("method", summarise_by)) |>
     dplyr::select(.data$method:.data$interval_score)
@@ -19,12 +24,12 @@ output_single_method <- function(wide_format, method_names) {
     dplyr::select(-c(.data[[method_names]], .data$original))
 }
 
-eval_one_category <- function(df_combined, summarise_by) {
+eval_one_category <- function(df_combined, summarise_by, training_set) {
   if (dplyr::n_distinct(df_combined$method) > 2 && length(summarise_by) == 2) {
     stop("Multiple categories can only be evaluated for a single method.")
   }
 
-  wide_format <- apply_scoring(df_combined, summarise_by) |>
+  wide_format <- apply_scoring(df_combined, summarise_by, training_set) |>
     tidyr::pivot_wider(
       names_from = .data$method, values_from = .data$interval_score
     )
@@ -121,8 +126,8 @@ round_output <- function(df, round_digits) {
 }
 
 
-eval_methods <- function(df_combined, summarise_by, margins = FALSE,
-                         row_averages = FALSE, col_averages = FALSE,
+eval_methods <- function(df_combined, summarise_by, training_set = FALSE,
+                         margins = FALSE, row_averages = FALSE, col_averages = FALSE,
                          round_digits = 4) {
   if ((margins && row_averages) || (margins && col_averages)) {
     stop("Either margins or averages can be specified.")
@@ -132,7 +137,7 @@ eval_methods <- function(df_combined, summarise_by, margins = FALSE,
   methods <- unique(df_combined$method)
   methods <- methods[methods != "original"]
 
-  result_long_format <- eval_one_category(df_combined, summarise_by)
+  result_long_format <- eval_one_category(df_combined, summarise_by, training_set)
 
   # sort first column and then second column in increasing order, surprisingly this works
   result_long_format <- result_long_format |>
@@ -156,13 +161,13 @@ eval_methods <- function(df_combined, summarise_by, margins = FALSE,
 
   # either margins or table averages can be added
   if (margins) {
-    row_margins_df <- eval_one_category(df_combined, summarise_by = summarise_by[1])
+    row_margins_df <- eval_one_category(df_combined, summarise_by = summarise_by[1], training_set)
     # sort first column to keep same order as rows in 'result_wide_format'
     row_margins <- row_margins_df |>
       dplyr::arrange(row_margins_df[[1]]) |>
       dplyr::pull(.data$relative_change)
 
-    col_margins_df <-  eval_one_category(df_combined, summarise_by = summarise_by[2])
+    col_margins_df <-  eval_one_category(df_combined, summarise_by = summarise_by[2], training_set)
     # sort first column to keep same order as columns in 'result_wide_format'
     col_margins <- col_margins_df |> 
       dplyr::arrange(col_margins_df[[1]]) |> 

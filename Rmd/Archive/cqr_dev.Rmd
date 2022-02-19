@@ -77,14 +77,7 @@ list(
 )
 ```
 
-
-```{r}
-df <- readr::read_csv(here::here("data_modified", "uk_data_incidences.csv"))
-update_predictions(df,
-  methods = c("cqr", "cqr_asymmetric", "cqr_multiplicative"), verbose = TRUE,
-  cv_init_training = 0.5, model = unique(df$model)[2]
-)
-```
+# Check Reproducibility
 
 ```{r}
 cqr_results <- readr::read_rds(here::here("data_results", "uk_cqr.rds"))
@@ -96,9 +89,9 @@ library(scoringutils)
 cqr3_results |>
   extract_training_set() |>
   # scoringutils::eval_forecasts(summarise_by = c("method"))
-  score() |> 
+  score() |>
   summarise_scores(by = c("method"))
-  # dplyr::arrange(model, interval_score)
+# dplyr::arrange(model, interval_score)
 ```
 
 ```{r}
@@ -111,7 +104,29 @@ sub1[sub1$prediction != sub2$prediction, ] |> count(target_end_date)
 ```
 
 
- 
+# CQR Results for different training-validation splits
+
+```{r}
+full_results <- readr::read_rds(here::here("data_results", "uk_cqr3_cv.rds"))
+
+full_results |>
+  extract_training_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("cv_init_training", "method")) |>
+  dplyr::arrange(cv_init_training)
+```
+
+```{r}
+# training set
+df_eval <- eval_methods(full_results, summarise_by = "cv_init_training", training_set = TRUE)
+plot_eval(df_eval)
+```
+
+```{r}
+# validation set
+df_eval <- eval_methods(full_results, summarise_by = "cv_init_training")
+plot_eval(df_eval)
+```
  
 
 

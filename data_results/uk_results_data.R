@@ -35,9 +35,9 @@ if (CQR3) {
   df_updated <- update_predictions(
     df = uk_data, methods = c("cqr", "cqr_asymmetric", "cqr_multiplicative"),
     models = complete_models, cv_init_training = cv_init_training, verbose = TRUE
-  ) |> collect_predictions()
+  ) 
 
-  # df_combined <- df_updated |> collect_predictions()
+  df_combined <- df_updated |> collect_predictions()
 
   readr::write_rds(df_combined, file = here::here("data_results", "uk_cqr3.rds"))
 }

@@ -80,6 +80,42 @@ list(
 # Check Reproducibility
 
 ```{r}
+# Run this chunk to reproduce old values
+# The issue is only contained in the cqr file
+# When commenting new fix_quantiles_crossing() function out and replacing new with old cqr file, the result is reproducible !!
+# fix_quantiles_crossing() improves cqr result however!!
+# Do not forget to add method argument again to update_subset_cqr()
+cqr_results_old <- readr::read_rds(here::here("data_results", "uk_cqr.rds"))
+
+devtools::load_all()
+cv_init_training <- 0.5
+uk_data <- readr::read_csv(
+  here::here("data_modified", "uk_data_incidences.csv")
+)
+
+complete_models <- uk_data |>
+  dplyr::count(model) |>
+  dplyr::filter(n == max(n)) |>
+  dplyr::pull(model)
+
+df_updated <- update_predictions(
+  df = uk_data, methods = "cqr",
+  models = complete_models, cv_init_training = cv_init_training, verbose = TRUE
+)
+
+cqr_results_new <- df_updated |> collect_predictions()
+
+cqr_results_old |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method"))
+
+cqr_results_new |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method"))
+```
+
+
+```{r}
 cqr_results <- readr::read_rds(here::here("data_results", "uk_cqr.rds"))
 cqr3_results <- readr::read_rds(here::here("data_results", "uk_cqr3.rds"))
 ```
@@ -128,6 +164,9 @@ df_eval <- eval_methods(full_results, summarise_by = "cv_init_training")
 plot_eval(df_eval)
 ```
  
+ 
+ 
+
 
 
 

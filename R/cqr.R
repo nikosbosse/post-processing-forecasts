@@ -317,17 +317,19 @@ select_cqr_method <- function(method) {
 }
 
 update_subset_cqr <- function(df, method, model, location, target_type, horizon, quantile, cv_init_training) {
-  cqr_method <- select_cqr_method(method)
-
+  quantiles_list <- filter_combination(df, model, location, target_type, horizon, quantile)
+  
   # must be placed on filtered data frame (i.e. lowest level, not in
   # update_predictions()) such that fractional inputs can be correctly converted
   cv_init_training <- validate_cv_init(df, cv_init_training)
-  quantiles_list <- filter_combination(df, model, location, target_type, horizon, quantile)
 
   true_values <- quantiles_list$true_values
   quantiles_low <- quantiles_list$quantiles_low
   quantiles_high <- quantiles_list$quantiles_high
 
+  
+  cqr_method <- select_cqr_method(method)
+  
   if (is.null(cv_init_training)) {
     # By default cv_init_training is equal to NULL and therefore equal to the complete data.
     # e.g. by default no split in training and validation set

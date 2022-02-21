@@ -85,9 +85,9 @@ update_predictions <- function(df, methods = c(
                 )
               }
             }
-            # df_updated <- fix_quantile_crossing(
-            #   df_updated, model, location, target_type, horizon
-            # )
+            df_updated <- fix_quantile_crossing(
+              df_updated, model, location, target_type, horizon
+            )
           }
         }
       }

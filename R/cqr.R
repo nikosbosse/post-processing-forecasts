@@ -230,7 +230,7 @@ compute_scores_symmetric <- function(true_values, quantiles_low, quantiles_high)
 compute_scores_asymmetric <- function(true_values, quantiles_low, quantiles_high) {
   scores_lower <- quantiles_low - true_values
   scores_upper <- true_values - quantiles_high
-  
+
   list(scores_lower = scores_lower, scores_upper = scores_upper)
 }
 
@@ -238,7 +238,7 @@ compute_scores_multiplicative <- function(true_values, quantiles_low, quantiles_
   # lower quantile might be 0 or negative => threshold scores_lower at zero
   scores_lower <- ifelse(quantiles_low > 0, true_values / quantiles_low, 0)
   scores_upper <- true_values / quantiles_high
-  
+
   list(scores_lower = scores_lower, scores_upper = scores_upper)
 }
 
@@ -264,7 +264,7 @@ cqr_symmetric <- function(quantile, true_values, quantiles_low, quantiles_high) 
   # same margin for adjusting lower and upper quantile for symmetric cqr version
   margin_lower <- margin
   margin_upper <- margin
-  
+
   # each cqr version is designed to return same output format as input for
   # cross_validate_cqr()
   list(
@@ -277,10 +277,10 @@ cqr_symmetric <- function(quantile, true_values, quantiles_low, quantiles_high) 
 
 cqr_asymmetric <- function(quantile, true_values, quantiles_low, quantiles_high) {
   scores_list <- compute_scores_asymmetric(true_values, quantiles_low, quantiles_high)
-  
+
   margin_lower <- compute_margin(scores_list$scores_lower, quantile)
   margin_upper <- compute_margin(scores_list$scores_upper, quantile)
-  
+
   list(
     # different margins for adjusting lower and upper quantile for asymmetric cqr
     # version
@@ -293,10 +293,10 @@ cqr_asymmetric <- function(quantile, true_values, quantiles_low, quantiles_high)
 
 cqr_multiplicative <- function(quantile, true_values, quantiles_low, quantiles_high) {
   scores_list <- compute_scores_multiplicative(true_values, quantiles_low, quantiles_high)
-  
+
   margin_lower <- compute_margin(scores_list$scores_lower, quantile)
   margin_upper <- compute_margin(scores_list$scores_upper, quantile)
-  
+
   list(
     # adjust lower and upper bound with multiplicative margin factor
     margin_lower = margin_lower,
@@ -316,10 +316,9 @@ select_cqr_method <- function(method) {
   }
 }
 
-
 update_subset_cqr <- function(df, method, model, location, target_type, horizon, quantile, cv_init_training) {
   cqr_method <- select_cqr_method(method)
-  
+
   # must be placed on filtered data frame (i.e. lowest level, not in
   # update_predictions()) such that fractional inputs can be correctly converted
   cv_init_training <- validate_cv_init(df, cv_init_training)
@@ -353,9 +352,24 @@ update_subset_cqr <- function(df, method, model, location, target_type, horizon,
     upper_bound_updated <- results$upper_bound
     margin_lower <- results$margin_lower
     margin_upper <- results$margin_upper
-    
-    quantiles_low_updated <- c(lower_bound_updated, (quantiles_low[cv_init_training + 1] - margin_lower))
-    quantiles_high_updated <- c(upper_bound_updated, (quantiles_high[cv_init_training + 1] + margin_upper))
+
+    # multiplicative adjustments
+    if (method == "cqr_multiplicative") {
+      quantiles_low_updated <- c(
+        lower_bound_updated, (quantiles_low[cv_init_training + 1] * margin_lower)
+      )
+      quantiles_high_updated <- c(
+        upper_bound_updated, (quantiles_high[cv_init_training + 1] * margin_upper)
+      )
+    } else {
+      # additive adjustments
+      quantiles_low_updated <- c(
+        lower_bound_updated, (quantiles_low[cv_init_training + 1] - margin_lower)
+      )
+      quantiles_high_updated <- c(
+        upper_bound_updated, (quantiles_high[cv_init_training + 1] + margin_upper)
+      )
+    }
 
     # 2. The loop goes increases the training set by one observation each step
     #    and computes the next validation set
@@ -371,9 +385,22 @@ update_subset_cqr <- function(df, method, model, location, target_type, horizon,
 
       margin_lower <- results$margin_lower
       margin_upper <- results$margin_upper
-      
-      quantiles_low_updated <- c(quantiles_low_updated, (quantiles_low[training_length + 1] - margin_lower))
-      quantiles_high_updated <- c(quantiles_high_updated, (quantiles_high[training_length + 1] + margin_upper))
+
+      if (method == "cqr_multiplicative") {
+        quantiles_low_updated <- c(
+          quantiles_low_updated, (quantiles_low[training_length + 1] * margin_lower)
+        )
+        quantiles_high_updated <- c(
+          quantiles_high_updated, (quantiles_high[training_length + 1] * margin_upper)
+        )
+      } else {
+        quantiles_low_updated <- c(
+          quantiles_low_updated, (quantiles_low[training_length + 1] - margin_lower)
+        )
+        quantiles_high_updated <- c(
+          quantiles_high_updated, (quantiles_high[training_length + 1] + margin_upper)
+        )
+      }
     }
   }
 

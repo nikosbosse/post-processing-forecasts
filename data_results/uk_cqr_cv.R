@@ -20,7 +20,7 @@ fit_cqr <- function(cv_init_training) {
     dplyr::mutate(cv_init_training = cv_init_training)
 }
 
-cv_init_training <- seq(0, 0.9, 0.1)
+cv_init_training <- seq(0, 0.8, 0.1)
 
 full_results <- purrr::map_dfr(.x = cv_init_training, .f = fit_cqr)
 

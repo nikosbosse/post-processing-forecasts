@@ -1,0 +1,14 @@
+---
+output:
+  bookdown::pdf_document2:
+    highlight: tango
+    number_sections: TRUE
+    df_print: tibble
+    latex_engine: pdflatex
+bibliography: [paper.bib, packages.bib]
+biblio-style: apalike
+urlcolor: blue
+linkcolor: blue
+---
+
+# Data & Package

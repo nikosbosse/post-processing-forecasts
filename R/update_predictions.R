@@ -35,6 +35,7 @@ update_predictions <- function(df, methods = c(
                                target_types = NULL, horizons = NULL,
                                quantiles = NULL, cv_init_training = NULL,
                                penalty_weight = NULL, return_list = TRUE,
+                               regularize_scores = FALSE, constrain_margins = FALSE,
                                verbose = FALSE) {
   # stops function for invalid input values
   validate_inputs(df, methods, models, locations, target_types, horizons, quantiles)
@@ -80,8 +81,8 @@ update_predictions <- function(df, methods = c(
               quantiles <- quantiles[quantiles < 0.5]
               for (quantile in quantiles) {
                 df_updated <- update_subset_cqr(
-                  df_updated, method, model, location, target_type, horizon, 
-                  quantile, cv_init_training
+                  df_updated, method, model, location, target_type, horizon,
+                  quantile, cv_init_training, regularize_scores, constrain_margins
                 )
               }
             }

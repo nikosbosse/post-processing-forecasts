@@ -316,45 +316,39 @@ select_cqr_method <- function(method) {
   }
 }
 
-update_subset_cqr <- function(df, method, model, location, target_type, horizon, quantile, cv_init_training) {
-  quantiles_list <- filter_combination(df, model, location, target_type, horizon, quantile)
-  
-  # must be placed on filtered data frame (i.e. lowest level, not in
-  # update_predictions()) such that fractional inputs can be correctly converted
-  cv_init_training <- validate_cv_init(df, cv_init_training)
-
-  true_values <- quantiles_list$true_values
-  quantiles_low <- quantiles_list$quantiles_low
-  quantiles_high <- quantiles_list$quantiles_high
-
-  
+cross_validate_cqr <- function(method, quantile, true_values, quantiles_low,
+                               quantiles_high, cv_init_training) {
   cqr_method <- select_cqr_method(method)
   
   if (is.null(cv_init_training)) {
     # By default cv_init_training is equal to NULL and therefore equal to the complete data.
     # e.g. by default no split in training and validation set
-    result <- cqr_method(quantile * 2, true_values, quantiles_low, quantiles_high)
-
-    quantiles_low_updated <- result$lower_bound
-    quantiles_high_updated <- result$upper_bound
+    cqr_results <- cqr_method(quantile * 2, true_values, quantiles_low, quantiles_high)
+    
+    return(
+      list(
+        quantiles_low_updated = cqr_results$lower_bound,
+        quantiles_high_updated = cqr_results$upper_bound
+      )
+    )
   } else {
     # This Section runs the Time Series Cross validation.
     # 1. It runs cqr on the training set and updates all values of the training set.
     #    Then by using the margin it makes the first prediction in the validation set.
     #    The training values and the first adjusted validation set valued are stored in the lists
     #    quantiles_low_updated and quantiles_high_updated. The following section appends to these vectors.
-    results <- cqr_method(
+    cqr_results <- cqr_method(
       quantile * 2,
       true_values[1:cv_init_training],
       quantiles_low[1:cv_init_training],
       quantiles_high[1:cv_init_training]
     )
-
-    lower_bound_updated <- results$lower_bound
-    upper_bound_updated <- results$upper_bound
-    margin_lower <- results$margin_lower
-    margin_upper <- results$margin_upper
-
+    
+    lower_bound_updated <- cqr_results$lower_bound
+    upper_bound_updated <- cqr_results$upper_bound
+    margin_lower <- cqr_results$margin_lower
+    margin_upper <- cqr_results$margin_upper
+    
     # multiplicative adjustments
     if (method == "cqr_multiplicative") {
       quantiles_low_updated <- c(
@@ -372,22 +366,22 @@ update_subset_cqr <- function(df, method, model, location, target_type, horizon,
         upper_bound_updated, (quantiles_high[cv_init_training + 1] + margin_upper)
       )
     }
-
+    
     # 2. The loop goes increases the training set by one observation each step
     #    and computes the next validation set
     #    prediction. This is done by rerunning cqr with the new observations set and extracting the margin.
     #    Then with the new margin the one horizon step ahead prediction is updated.
     for (training_length in (cv_init_training + 1):(length(true_values) - 1)) {
-      results <- cqr_method(
+      cqr_results <- cqr_method(
         quantile * 2,
         true_values[1:training_length],
         quantiles_low[1:training_length],
         quantiles_high[1:training_length]
       )
-
-      margin_lower <- results$margin_lower
-      margin_upper <- results$margin_upper
-
+      
+      margin_lower <- cqr_results$margin_lower
+      margin_upper <- cqr_results$margin_upper
+      
       if (method == "cqr_multiplicative") {
         quantiles_low_updated <- c(
           quantiles_low_updated, (quantiles_low[training_length + 1] * margin_lower)
@@ -404,7 +398,33 @@ update_subset_cqr <- function(df, method, model, location, target_type, horizon,
         )
       }
     }
+    
+    return(
+      list(
+        quantiles_low_updated = quantiles_low_updated,
+        quantiles_high_updated = quantiles_high_updated
+      )
+    )
   }
+}
+
+update_subset_cqr <- function(df, method, model, location, target_type, horizon, quantile, cv_init_training) {
+  quantiles_list <- filter_combination(df, model, location, target_type, horizon, quantile)
+  
+  # must be placed on filtered data frame (i.e. lowest level, not in
+  # update_predictions()) such that fractional inputs can be correctly converted
+  cv_init_training <- validate_cv_init(df, cv_init_training)
+
+  true_values <- quantiles_list$true_values
+  quantiles_low <- quantiles_list$quantiles_low
+  quantiles_high <- quantiles_list$quantiles_high
+
+  quantiles_updated <- cross_validate_cqr(
+    method, quantile, true_values, quantiles_low, quantiles_high, cv_init_training
+  )
+  
+  quantiles_low_updated <- quantiles_updated$quantiles_low_updated
+  quantiles_high_updated <- quantiles_updated$quantiles_high_updated
 
   df_updated <- replace_combination(
     df, model, location, target_type, horizon, quantile,

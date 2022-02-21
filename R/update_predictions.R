@@ -8,17 +8,17 @@ fix_quantile_crossing <- function(df_updated, model, location, target_type, hori
 
     df_updated[
       df_updated$model == model &
-      df_updated$location == location &
-      df_updated$target_type == target_type &
-      df_updated$horizon == horizon &
-      df_updated$target_end_date == target_end_date,
+        df_updated$location == location &
+        df_updated$target_type == target_type &
+        df_updated$horizon == horizon &
+        df_updated$target_end_date == target_end_date,
       "prediction"
     ] <- df_updated[
       df_updated$model == model &
-      df_updated$location == location &
-      df_updated$target_type == target_type &
-      df_updated$horizon == horizon &
-      df_updated$target_end_date == target_end_date,
+        df_updated$location == location &
+        df_updated$target_type == target_type &
+        df_updated$horizon == horizon &
+        df_updated$target_end_date == target_end_date,
       "prediction"
     ] |>
       dplyr::arrange(.data$prediction)
@@ -80,14 +80,14 @@ update_predictions <- function(df, methods = c(
               quantiles <- quantiles[quantiles < 0.5]
               for (quantile in quantiles) {
                 df_updated <- update_subset_cqr(
-                  df_updated, method, model, location, target_type, horizon,
+                  df_updated, method, model, location, target_type, horizon, 
                   quantile, cv_init_training
                 )
               }
             }
-            df_updated <- fix_quantile_crossing(
-              df_updated, model, location, target_type, horizon
-            )
+            # df_updated <- fix_quantile_crossing(
+            #   df_updated, model, location, target_type, horizon
+            # )
           }
         }
       }

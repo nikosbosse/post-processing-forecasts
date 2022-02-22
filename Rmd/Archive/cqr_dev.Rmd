@@ -269,7 +269,15 @@ full_results |>
   extract_training_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("cv_init_training", "method")) |>
-  dplyr::arrange(cv_init_training)
+  dplyr::arrange(cv_init_training) |>
+  dplyr::select(cv_init_training:dispersion)
+
+full_results |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("cv_init_training", "method")) |>
+  dplyr::arrange(cv_init_training) |>
+  dplyr::select(cv_init_training:dispersion)
 ```
 
 ```{r}
@@ -283,8 +291,22 @@ plot_eval(df_eval)
 df_eval <- eval_methods(full_results, summarise_by = "cv_init_training")
 plot_eval(df_eval)
 ```
+
+```{r}
+# 0 means no training set, only validation set
+df_eval <- eval_methods(full_results, summarise_by = "cv_init_training")
+plot_eval(df_eval |> dplyr::select(-cqr_multiplicative))
+```
  
- 
+```{r}
+df_eval <- eval_methods(full_results, summarise_by = "cv_init_training")
+plot_eval(
+  df_eval |>
+    dplyr::select(-cqr_multiplicative) |>
+    dplyr::filter(cv_init_training > 0)
+)
+```
+  
  
 
 

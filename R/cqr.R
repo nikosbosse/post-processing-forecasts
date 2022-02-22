@@ -18,10 +18,11 @@ compute_scores_asymmetric <- function(true_values, quantiles_low, quantiles_high
 regularize_scores <- function(scores) {
   spread <- sd(scores)
 
+  # if score vector only contains one element => no adjustments
   # if score vector is constant there are no outliers => no adjustments
   # interestingly, making the spread larger when sd(scores) < 1 improves weighted
   # interval score!
-  if (spread == 0) {
+  if (is.na(spread) || spread == 0) {
     return(scores)
   }
   scores^(1 / spread)
@@ -90,6 +91,14 @@ cqr_asymmetric <- function(quantile, true_values, quantiles_low, quantiles_high)
 # if upper bound gets larger, lower bound has to get smaller
 # prevents issue that lower bound is always increased for extreme quantiles
 constrain_margins <- function(margin_lower, margin_upper) {
+  # in EuroCovidhubBaseline Model all score values can be 0
+  # => margin also equal to 0
+  if (margin_lower == 0 || margin_upper == 0) {
+    return(
+      list(margin_lower = margin_lower, margin_upper = margin_upper)
+    )
+  }
+
   scaled_lower <- margin_lower / sqrt(margin_lower * margin_upper)
   scaled_upper <- margin_upper / sqrt(margin_lower * margin_upper)
 

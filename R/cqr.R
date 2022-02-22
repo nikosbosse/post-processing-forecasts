@@ -13,20 +13,26 @@ compute_scores_asymmetric <- function(true_values, quantiles_low, quantiles_high
   list(scores_lower = scores_lower, scores_upper = scores_upper)
 }
 
+# add regularization by pulling all values in scores vector closer to 1
+# diminishes the impact of outliers
 regularize_scores <- function(scores) {
-  scores^(1 / sd(scores))
+  spread <- sd(scores)
+
+  # if score vector is constant there are no outliers => no adjustments
+  # interestingly, making the spread larger when sd(scores) < 1 improves weighted
+  # interval score!
+  if (spread == 0) {
+    return(scores)
+  }
+  scores^(1 / spread)
 }
 
-compute_scores_multiplicative <- function(true_values, quantiles_low, quantiles_high,
-                                          regularize_scores) {
+compute_scores_multiplicative <- function(true_values, quantiles_low, quantiles_high) {
   # lower quantile might be 0 or negative => threshold scores_lower at zero
-  scores_lower <- ifelse(quantiles_low > 0, true_values / quantiles_low, 0)
-  scores_upper <- true_values / quantiles_high
-
-  if (regularize_scores) {
-    scores_lower <- regularize_scores(scores_lower)
-    scores_upper <- regularize_scores(scores_upper)
-  }
+  scores_lower <- ifelse(quantiles_low > 0, true_values / quantiles_low, 0) |>
+    regularize_scores()
+  scores_upper <- (true_values / quantiles_high) |>
+    regularize_scores()
 
   list(scores_lower = scores_lower, scores_upper = scores_upper)
 }
@@ -45,7 +51,7 @@ compute_margin <- function(scores, quantile) {
 
 # returns corrected lower quantile and upper quantile predictions for a single
 # quantile value
-cqr_symmetric <- function(quantile, true_values, quantiles_low, quantiles_high, ...) {
+cqr_symmetric <- function(quantile, true_values, quantiles_low, quantiles_high) {
   scores <- compute_scores_symmetric(true_values, quantiles_low, quantiles_high)
   margin <- compute_margin(scores, quantile)
 
@@ -64,7 +70,7 @@ cqr_symmetric <- function(quantile, true_values, quantiles_low, quantiles_high, 
   )
 }
 
-cqr_asymmetric <- function(quantile, true_values, quantiles_low, quantiles_high, ...) {
+cqr_asymmetric <- function(quantile, true_values, quantiles_low, quantiles_high) {
   scores_list <- compute_scores_asymmetric(true_values, quantiles_low, quantiles_high)
 
   margin_lower <- compute_margin(scores_list$scores_lower, quantile)
@@ -80,6 +86,9 @@ cqr_asymmetric <- function(quantile, true_values, quantiles_low, quantiles_high,
   )
 }
 
+# add restriction that lower_margin * upper_margin = 1
+# if upper bound gets larger, lower bound has to get smaller
+# prevents issue that lower bound is always increased for extreme quantiles
 constrain_margins <- function(margin_lower, margin_upper) {
   scaled_lower <- margin_lower / sqrt(margin_lower * margin_upper)
   scaled_upper <- margin_upper / sqrt(margin_lower * margin_upper)
@@ -87,20 +96,17 @@ constrain_margins <- function(margin_lower, margin_upper) {
   list(margin_lower = scaled_lower, margin_upper = scaled_upper)
 }
 
-cqr_multiplicative <- function(quantile, true_values, quantiles_low, quantiles_high,
-                               regularize_scores, constrain_margins) {
+cqr_multiplicative <- function(quantile, true_values, quantiles_low, quantiles_high) {
   scores_list <- compute_scores_multiplicative(
-    true_values, quantiles_low, quantiles_high, regularize_scores
+    true_values, quantiles_low, quantiles_high
   )
 
   margin_lower <- compute_margin(scores_list$scores_lower, quantile)
   margin_upper <- compute_margin(scores_list$scores_upper, quantile)
 
-  if (constrain_margins) {
-    margins_list <- constrain_margins(margin_lower, margin_upper)
-    margin_lower <- margins_list$margin_lower
-    margin_upper <- margins_list$margin_upper
-  }
+  margins_list <- constrain_margins(margin_lower, margin_upper)
+  margin_lower <- margins_list$margin_lower
+  margin_upper <- margins_list$margin_upper
 
   list(
     # adjust lower and upper bound with multiplicative margin factor
@@ -122,17 +128,13 @@ select_cqr_method <- function(method) {
 }
 
 cross_validate_cqr <- function(method, quantile, true_values, quantiles_low,
-                               quantiles_high, cv_init_training,
-                               regularize_scores, constrain_margins) {
+                               quantiles_high, cv_init_training) {
   cqr_method <- select_cqr_method(method)
 
   if (is.null(cv_init_training)) {
     # By default cv_init_training is equal to NULL and therefore equal to the complete data.
     # e.g. by default no split in training and validation set
-    cqr_results <- cqr_method(
-      quantile * 2, true_values, quantiles_low, quantiles_high,
-      regularize_scores, constrain_margins
-    )
+    cqr_results <- cqr_method(quantile * 2, true_values, quantiles_low, quantiles_high)
 
     return(
       list(
@@ -151,8 +153,7 @@ cross_validate_cqr <- function(method, quantile, true_values, quantiles_low,
       quantile * 2,
       true_values[1:cv_init_training],
       quantiles_low[1:cv_init_training],
-      quantiles_high[1:cv_init_training],
-      regularize_scores, constrain_margins
+      quantiles_high[1:cv_init_training]
     )
 
     # multiplicative adjustments
@@ -182,8 +183,7 @@ cross_validate_cqr <- function(method, quantile, true_values, quantiles_low,
         quantile * 2,
         true_values[1:training_length],
         quantiles_low[1:training_length],
-        quantiles_high[1:training_length],
-        regularize_scores, constrain_margins
+        quantiles_high[1:training_length]
       )
 
       if (method == "cqr_multiplicative") {
@@ -213,8 +213,7 @@ cross_validate_cqr <- function(method, quantile, true_values, quantiles_low,
 }
 
 update_subset_cqr <- function(df, method, model, location, target_type,
-                              horizon, quantile, cv_init_training,
-                              regularize_scores, constrain_margins) {
+                              horizon, quantile, cv_init_training) {
   quantiles_list <- filter_combination(df, model, location, target_type, horizon, quantile)
 
   # 'validate_cv_init' must be placed on filtered data frame (i.e. lowest level,
@@ -227,8 +226,7 @@ update_subset_cqr <- function(df, method, model, location, target_type,
   quantiles_high <- quantiles_list$quantiles_high
 
   quantiles_updated <- cross_validate_cqr(
-    method, quantile, true_values, quantiles_low, quantiles_high, cv_init_training,
-    regularize_scores, constrain_margins
+    method, quantile, true_values, quantiles_low, quantiles_high, cv_init_training
   )
 
   quantiles_low_updated <- quantiles_updated$quantiles_low_updated

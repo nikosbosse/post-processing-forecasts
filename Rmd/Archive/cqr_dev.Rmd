@@ -108,7 +108,7 @@ true_values <- quantiles_list$true_values
 quantiles_high <- quantiles_list$quantiles_high
 
 # code of cqr_multiplicative
-scores_list <- compute_scores_multiplicative(true_values, quantiles_low, quantiles_high)
+scores_list <- compute_scores_multiplicative(true_values, quantiles_low, quantiles_high, regularize_scores = FALSE)
 
 # chooses maximum value for 0.05 quantile
 # max of true_values / quantiles_low will almost always be greater than 1
@@ -134,7 +134,7 @@ quantiles_low <- c(1, 1, rep(1000, 8))
 # upper quantiles should be adjusted downwards a lot, but are only adjusted slightly
 quantiles_high <- c(5.1, 5.1, rep(1000, 8))
 
-scores_list <- compute_scores_multiplicative(true_values, quantiles_low, quantiles_high)
+scores_list <- compute_scores_multiplicative(true_values, quantiles_low, quantiles_high, regularize_scores = FALSE)
 margin_lower <- compute_margin(scores_list$scores_lower, quantile)
 margin_upper <- compute_margin(scores_list$scores_upper, quantile)
 ```
@@ -159,7 +159,7 @@ true_values <- rep(5, 10)
 quantiles_low <- c(1, 1, rep(1000, 8))
 quantiles_high <- c(1000, 1000, rep(1, 8))
 
-scores_list <- compute_scores_multiplicative(true_values, quantiles_low, quantiles_high)
+scores_list <- compute_scores_multiplicative(true_values, quantiles_low, quantiles_high, regularize_scores = FALSE)
 margin_lower <- compute_margin(scores_list$scores_lower, quantile)
 margin_upper <- compute_margin(scores_list$scores_upper, quantile)
 
@@ -168,7 +168,6 @@ margin_upper <- compute_margin(scores_list$scores_upper, quantile)
 # Potential Candidate: Some kind of (square) root transformation
 # Regularization should be stronger, if spread in scores vector is larger
 # First approach: Let x = sd(score_vector) => scale by x'th root
-
 regularize_scores <- function(scores) {
   scores^(1 / sd(scores))
 }
@@ -185,32 +184,13 @@ regularize_scores(scores_list$scores_upper)
 ```{r}
 df <- readr::read_csv(here::here("data_modified", "uk_data_incidences.csv"))
 method <- "cqr_multiplicative"
-model <- "epiforecasts-EpiExpert"
+model <- "seabbs"
 
 old <- update_predictions(df, method, model, cv_init_training = 0.5)
 old <- collect_predictions(old)
-
-regularized_scores <- update_predictions(
-  df, method, model,
-  cv_init_training = 0.5, regularize_scores = TRUE
-)
-regularized_scores <- collect_predictions(regularized_scores)
-
-constrained_margins <- update_predictions(
-  df, method, model,
-  cv_init_training = 0.5, constrain_margins = TRUE
-)
-constrained_margins <- collect_predictions(constrained_margins)
-
-both <- update_predictions(
-  df, method, model,
-  cv_init_training = 0.5, regularize_scores = TRUE, constrain_margins = TRUE
-)
-both <- collect_predictions(both)
 ```
 
 ```{r}
-# training set
 old |>
   extract_training_set() |>
   scoringutils::score() |>
@@ -218,19 +198,7 @@ old |>
   dplyr::select(method:overprediction)
 
 regularized_scores |>
-  extract_training_set() |>
-  scoringutils::score() |>
-  scoringutils::summarise_scores(by = "method") |>
-  dplyr::select(method:overprediction)
-
-constrained_margins |>
-  extract_training_set() |>
-  scoringutils::score() |>
-  scoringutils::summarise_scores(by = "method") |>
-  dplyr::select(method:overprediction)
-
-both |>
-  extract_training_set() |>
+  extract_validation_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = "method") |>
   dplyr::select(method:overprediction)

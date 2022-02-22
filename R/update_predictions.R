@@ -82,7 +82,7 @@ update_predictions <- function(df, methods = c(
               for (quantile in quantiles) {
                 df_updated <- update_subset_cqr(
                   df_updated, method, model, location, target_type, horizon,
-                  quantile, cv_init_training, regularize_scores, constrain_margins
+                  quantile, cv_init_training
                 )
               }
             }

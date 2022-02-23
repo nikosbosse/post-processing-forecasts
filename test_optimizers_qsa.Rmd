@@ -123,25 +123,23 @@ Here is a short reminder of the WIS (see Presentation 1):
 $$
 Score_\alpha(y) = (u-l) + \frac{2}{\alpha} \cdot (l-y) \cdot \mathbf{1} (y \leq l) + \frac{2}{\alpha} \cdot (y-u) \cdot \mathbf{1}(y \geq u)
 $$
-We define a function that returns WIS for one intervall so the IS actually. It can be used to check what the correct adjustment is.
+We define two functions that returns WIS for one interval so the IS actually. It can be used to check what the correct adjustment is. Both give back the same minima. check the tetst_wis notebook to see that both functions do the same.
 
 ```{r}
-wis_calc <- function(x_vec = c(-20:20),
+wis_calc <- function(x_vec = seq(0,3,0.1),
                      qs = c(0.25, 0.5, 0.75),
                      true_values_new = c(rep(50,4), 60, rep(20,5))){
   
   wis_vec <- c()
   for (x in x_vec){
-    l <- qs[1] * 100 - x
-    u <- qs[3] * 100 + x
+    l <- qs[1] * 100 +  (qs[1]-qs[2])*100 * (x - 1)
+    u <- qs[3] * 100 +  (qs[3]-qs[2])*100 * (x - 1)
     a <- qs[3] - qs[1]
     
-    wis_val <- abs(u-l) #length(true_values_new) * 
+    wis_val <- length(true_values_new) * abs(u-l)
     
     for (obs in true_values_new){
-      if (obs > l && obs < u){
-        wis_val <- wis_val #+ min(obs-l,u-obs)
-      } else if (obs > l && obs > u){
+      if (obs > l && obs > u){
         wis_val <- wis_val + 2/a + (obs-u)
       } else if (obs < l && obs < u) {
         wis_val <- wis_val + 2/a* (l-obs)
@@ -150,7 +148,7 @@ wis_calc <- function(x_vec = c(-20:20),
     wis_vec <- c(wis_vec,wis_val)
   }
   
-  return(wis_vec)
+  return(wis_vec* a / 2)
 }
 
 wis_calc_pac <- function(x_vec = seq(-2,2,0.1),
@@ -176,7 +174,7 @@ wis_calc_pac <- function(x_vec = seq(-2,2,0.1),
   }
   
   # Changing the true values at each time point (for each quantile the same)
-  for (i in seq(0,length(unique(subset_generated$target_end_date))) ) {
+  for (i in seq(1,length(unique(subset_generated$target_end_date))) ) {
     date <- unique(subset_generated$target_end_date)[i]
     value <- true_values_new[i]
     
@@ -189,20 +187,21 @@ wis_calc_pac <- function(x_vec = seq(-2,2,0.1),
   # adjustment based on x value e.g. line search
   wis_vec <- c()
   for (x in x_vec){
+    
     subset_generated <- subset_generated |>
       dplyr::mutate(prediction = replace(
         .data$prediction, .data$quantile == qs[1],
-        values = rep(qs[1] * 100 - (50-qs[1]*100) * (x-1),length(unique(subset$target_end_date)))
+        values = rep(qs[1] * 100 + (qs[1]-qs[2])*100 * (x-1),length(unique(subset$target_end_date)))
       ))
     subset_generated <- subset_generated |>
       dplyr::mutate(prediction = replace(
         .data$prediction, .data$quantile == qs[3],
-        values = rep(qs[3] * 100 + (50-qs[1]*100) * (x-1),length(unique(subset$target_end_date)))
+        values = rep(qs[3] * 100 + (qs[3]-qs[2])*100 * (x-1),length(unique(subset$target_end_date)))
       ))
     
     res <- subset_generated |>
       scoringutils::score() |>
-      scoringutils::summarise_scores(by = c("model"))
+      scoringutils::summarise_scores(by = c("location"))
 
     wis_val <- res$interval_score
     wis_vec <- c(wis_vec,wis_val)
@@ -213,39 +212,22 @@ wis_calc_pac <- function(x_vec = seq(-2,2,0.1),
   
 ```
 
-```{r}
-x <- seq(-3,3,0.1)
-y <- wis_calc_pac(x,
-              qs = c(0.25, 0.5, 0.75),
-              true_values_new = c(rep(50,4), 60, rep(20,5)))
-
-df_xy <- data.frame(x = x, y = y)
-
-ggplot() +
-  geom_line(data = df_xy, aes(x, y), colour = "black")
-
-x_abs <- (75-50) * x
-
-df_xy <- data.frame(x = x_abs, y = y)
-
-ggplot() +
-  geom_line(data = df_xy, aes(x, y), colour = "black")
-```
-
 # Testing QSA Uniform
+
+We test the BFGS method in the WIS calculation and compare it to the results of a line search.
 
 ## Test 1: Using BFGS, if QSA covers the optimal number of observations but the intervals dont have the optimal size, does it adjust properly?
 
 ### Make intervals smaller?
 
-- Expectation: QSA should make intervals smaller. Current WIS is 525, by reducing top and bottom intervall by 10 WIS is reduced to 375.
-- Observation: Intervals remain unchanged.
+- Expectation: QSA should make intervals smaller by 50%.
+- Observation: Intervals become smaller by BFGs as well as line search.
 
 ```{r}
-x <- c(-20:20)
-y <- wis_calc(x,
-              qs = c(0.25, 0.5, 0.75),
-              true_values_new = c(rep(50,4), 60, rep(20,5)))
+x <- seq(-1,3,0.01)
+y <- wis_calc_pac(x,
+              qs = c(0.3, 0.5, 0.7),
+              true_values_new = c(rep(50,4), 60, rep(90,5)))
 
 df_xy <- data.frame(x = x, y = y)
 
@@ -253,38 +235,35 @@ ggplot() +
   geom_line(data = df_xy, aes(x, y), colour = "black")
 ```
 
-
-
 ```{r}
-test(qs = c(0.25, 0.5, 0.75),
+test(qs = c(0.3, 0.5, 0.7),
      error_factor = 1,
-     true_values_new = c(rep(50,4), 60, rep(20,5)),
+     true_values_new = c(rep(50,4), 60, rep(90,5)),
      methods = "qsa_uniform",
      cv_init_training = NULL,
-     quantile_plot = 0.25)
+     quantile_plot = 0.3)
 ```
 
 ```{r}
-# Proof that implemented line search works
-test(qs = c(0.25, 0.5, 0.75),
+test(qs = c(0.3, 0.5, 0.7),
      error_factor = 1,
-     true_values_new = c(rep(50,4), 60, rep(20,5)),
+     true_values_new = c(rep(50,4), 60, rep(90,5)),
      methods = "qsa_uniform",
      cv_init_training = NULL,
-     quantile_plot = 0.25,
+     quantile_plot = 0.3,
      optim_method = "line_search")
 ```
 
 ### Make intervals larger?
 
 - Expectation: QSA should make intervals larger because observations outside the intervall are very far away
-- Observation: intervals stay the same
+- Observation: intervals become larger in BFGS as well as line search. Both work.
 
 ```{r}
-x <- c(-20:200)
-y <- wis_calc(x,
-              qs = c(0.25, 0.5, 0.75),
-              true_values_new = c(rep(50,4), 60, rep(200,5)))
+x <- seq(0,5,0.1)
+y <- wis_calc_pac(x,
+              qs = c(0.2, 0.5, 0.8),
+              true_values_new = c(rep(50,4), 60, rep(100,5)))
 
 df_xy <- data.frame(x = x, y = y)
 
@@ -292,14 +271,27 @@ ggplot() +
   geom_line(data = df_xy, aes(x, y), colour = "black")
 ```
 
+
 ```{r}
-test(qs = c(0.25, 0.5, 0.75),
+test(qs = c(0.2, 0.5, 0.8),
      error_factor = 1,
-     true_values_new = c(rep(50,4), 60, rep(200,5)),
+     true_values_new = c(rep(50,4), 60, rep(100,5)),
      methods = "qsa_uniform",
      cv_init_training = NULL,
-     quantile_plot = 0.25)
+     quantile_plot = 0.2)
 ```
+
+```{r}
+test(qs = c(0.2, 0.5, 0.8),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 60, rep(100,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.2,
+     optim_method = "line_search")
+```
+
+
 ## Test 2: Using BFGS, if QSA covers to many observations and intervals dont have the optimal size, does it adjust properly?
 
 ### Make intervals smaller?
@@ -308,8 +300,8 @@ Expectation: QSA should make intervals smaller
 Observation: makes intervals smaller so that then encompase at least 5 values, which in this case means all values
 
 ```{r}
-x <- c(-20:20)
-y <- wis_calc(x,
+x <- seq(0,3,0.1)
+y <- wis_calc_pac(x,
               qs = c(0.25, 0.5, 0.75),
               true_values_new = c(rep(50,4), 60, rep(40,5)))
 
@@ -328,28 +320,14 @@ test(qs = c(0.25, 0.5, 0.75),
      quantile_plot = 0.25)
 ```
 
-Expectation: QSA should make intervals smaller as it has 3 values but only need 2 in the 20% Intervall
-Observation: makes intervals smaller, as both points are on the same line intervall colapses
-
 ```{r}
-x <- c(-20:50)
-y <- wis_calc(x,
-              qs = c(0.4, 0.5, 0.6),
-              true_values_new = c(rep(50,2), 80, rep(5,5)))
-
-df_xy <- data.frame(x = x, y = y)
-
-ggplot() +
-  geom_line(data = df_xy, aes(x, y), colour = "black")
-```
-
-```{r}
-test(qs = c(0.4, 0.5, 0.6),
+test(qs = c(0.25, 0.5, 0.75),
      error_factor = 1,
-     true_values_new = c(rep(50,2), 80, rep(5,5)),
+     true_values_new = c(rep(50,4), 60, rep(40,5)),
      methods = "qsa_uniform",
      cv_init_training = NULL,
-     quantile_plot = 0.40)
+     quantile_plot = 0.25,
+     optim_method = "line_search")
 ```
 
 ### Make intervals larger?
@@ -358,15 +336,15 @@ Expectation: QSA should make intervals larger
 Observation: makes intervals larger so that then encompase at least 5 values
 
 ```{r}
-x <- c(-20:50)
-y <- wis_calc(x,
+x <- seq(0,3,0.1)
+y <- wis_calc_pac(x,
               qs = c(0.25, 0.5, 0.75),
               true_values_new = c(rep(50,4), 80, rep(5,5)))
 
-df <- data.frame(x = x, y = y)
+df_xy <- data.frame(x = x, y = y)
 
 ggplot() +
-  geom_line(data = df, aes(x, y), colour = "black")
+  geom_line(data = df_xy, aes(x, y), colour = "black")
 ```
 
 ```{r}
@@ -377,57 +355,78 @@ test(qs = c(0.25, 0.5, 0.75),
      cv_init_training = NULL,
      quantile_plot = 0.25)
 ```
+
+```{r}
+test(qs = c(0.25, 0.5, 0.75),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 80, rep(5,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.25,
+     optim_method = "line_search")
+```
+
 ## Conclusion
 
-QSA with the BFGS method doesnt work as expected. We see that it does adjust to encompass enough observations into the intervall. However it doesnt adjust the intervals to be smaller or larger as to minimize the distance to points penalty. 
+QSA with the BFGS method works as expected. We see that it does the same adjustment as we would expect with a line search seen by the line search plots and its method results from optimizing. However BFGS is faster than the line search, especially the larger one sets the line search parameter space.
 
 # Testing QSA Uniform with different Optimizers
 
-## Test 3: See if other optimizing methods, available in optim are able to adjust intervals even though the number of covered observations is correct?
+## Test 3: See if other optimizing methods, available in optim are able to adjust intervals correctly?
 
 We thus repeat Test 1 with different optimizers.
 
 ### Make intervals smaller?
 
-#### CG
-
-Method: unkown
-Observation: Doesnt work.
-
 ```{r}
-x <- c(-20:50)
-y <- wis_calc(x,
-              qs = c(0.25, 0.5, 0.75),
+x <- seq(0,3,0.1)
+y <- wis_calc_pac(x,
+              qs = c(0.3, 0.5, 0.7),
               true_values_new = c(rep(50,4), 60, rep(20,5)))
 
-df <- data.frame(x = x, y = y)
+df_xy <- data.frame(x = x, y = y)
 
 ggplot() +
-  geom_line(data = df, aes(x, y), colour = "black")
+  geom_line(data = df_xy, aes(x, y), colour = "black")
 ```
+We look at the linesearch results as benchmark:
 
 ```{r}
-test(qs = c(0.25, 0.5, 0.75),
+test(qs = c(0.3, 0.5, 0.7),
      error_factor = 1,
      true_values_new = c(rep(50,4), 60, rep(20,5)),
      methods = "qsa_uniform",
      cv_init_training = NULL,
-     quantile_plot = 0.25,
+     quantile_plot = 0.3,
+     optim_method = "line_search")
+```
+#### CG
+
+Method: unkown
+Observation: makes the correct adjustment.
+
+```{r}
+test(qs = c(0.3, 0.5, 0.7),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 60, rep(20,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.3,
      optim_method = "CG")
 ```
 
 #### L-BFGS-B
 
 Method: BFGS with bounds and limited memory.
-Observation: Doesnt really work but makes a slight correct adjustment.
+Observation: Doesnt really work as it makes to small adjustments. But it is much faster than BFGS, probably due to limited memory.
 
 ```{r}
-test(qs = c(0.25, 0.5, 0.75),
+test(qs = c(0.3, 0.5, 0.7),
      error_factor = 1,
      true_values_new = c(rep(50,4), 60, rep(20,5)),
      methods = "qsa_uniform",
      cv_init_training = NULL,
-     quantile_plot = 0.25,
+     quantile_plot = 0.3,
      optim_method = "L-BFGS-B")
 ```
 
@@ -449,84 +448,8 @@ Observation: Doesnt work, takes very long and destroys R session.
 #### Brent
 
 Method: works by using the bisection and secant methods. The first looks to reduce the interval in which optimum can lie, thats why the method requires bounds. The second comes closer to the optimum e.g. root by drawing secant lines to approximate the function.
-Observation: It works the best. Reduces the intervals as it should. However it gives back very different results for different bounds. Furthermore the smaller bounds are the faster it is. 
 
-```{r}
-test(qs = c(0.25, 0.5, 0.75),
-     error_factor = 1,
-     true_values_new = c(rep(50,4), 60, rep(20,5)),
-     methods = "qsa_uniform",
-     cv_init_training = NULL,
-     quantile_plot = 0.25,
-     optim_method = "Brent",
-     lower_bound_optim = -100,
-     upper_bound_optim = 100)
-```
-
-```{r}
-test(qs = c(0.25, 0.5, 0.75),
-     error_factor = 1,
-     true_values_new = c(rep(50,4), 60, rep(20,5)),
-     methods = "qsa_uniform",
-     cv_init_training = NULL,
-     quantile_plot = 0.25,
-     optim_method = "Brent",
-     lower_bound_optim = -50,
-     upper_bound_optim = 50)
-```
-
-```{r}
-test(qs = c(0.25, 0.5, 0.75),
-     error_factor = 1,
-     true_values_new = c(rep(50,4), 60, rep(20,5)),
-     methods = "qsa_uniform",
-     cv_init_training = NULL,
-     quantile_plot = 0.25,
-     optim_method = "Brent",
-     lower_bound_optim = -10,
-     upper_bound_optim = 10)
-```
-
-```{r}
-test(qs = c(0.25, 0.5, 0.75),
-     error_factor = 1,
-     true_values_new = c(rep(50,4), 60, rep(20,5)),
-     methods = "qsa_uniform",
-     cv_init_training = NULL,
-     quantile_plot = 0.25,
-     optim_method = "Brent",
-     lower_bound_optim = -8,
-     upper_bound_optim = 8)
-```
-
-```{r}
-test(qs = c(0.25, 0.5, 0.75),
-     error_factor = 1,
-     true_values_new = c(rep(50,4), 60, rep(20,5)),
-     methods = "qsa_uniform",
-     cv_init_training = NULL,
-     quantile_plot = 0.25,
-     optim_method = "Brent",
-     lower_bound_optim = -5,
-     upper_bound_optim = 5)
-```
-
-## Conclusion
-
-Use the Brent method, however the setting of the bounds is key. It might make sense to run multiple optimisations with a set of start values each time and then take the one where results are best.
-
-```{r}
-test(qs = c(0.25, 0.5, 0.75),
-     error_factor = 1,
-     true_values_new = c(rep(50,4), 60, rep(20,5)),
-     methods = "qsa_uniform",
-     cv_init_training = NULL,
-     quantile_plot = 0.25,
-     optim_method = "Brent",
-     optim_multiple_bounds_brent = TRUE
-     )
-```
-
+Observation: It works but does not get the exact solution as it should. It gives back  different results for different bounds which is due to its heuristic approach. The smaller bounds are the faster it is. 
 
 ```{r}
 test(qs = c(0.3, 0.5, 0.7),
@@ -536,18 +459,46 @@ test(qs = c(0.3, 0.5, 0.7),
      cv_init_training = NULL,
      quantile_plot = 0.3,
      optim_method = "Brent",
-     optim_multiple_bounds_brent = TRUE
-     )
+     lower_bound_optim = -100,
+     upper_bound_optim = 100)
 ```
-
 
 ```{r}
-test(qs = c(0.25, 0.5, 0.75),
+test(qs = c(0.3, 0.5, 0.7),
      error_factor = 1,
-     true_values_new = c(rep(50,4), 60, rep(200,5)),
+     true_values_new = c(rep(50,4), 60, rep(20,5)),
      methods = "qsa_uniform",
      cv_init_training = NULL,
-     quantile_plot = 0.25,
+     quantile_plot = 0.3,
      optim_method = "Brent",
-     optim_multiple_bounds_brent = TRUE)
+     lower_bound_optim = -50,
+     upper_bound_optim = 50)
 ```
+
+```{r}
+test(qs = c(0.3, 0.5, 0.7),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 60, rep(20,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.3,
+     optim_method = "Brent",
+     lower_bound_optim = 0,
+     upper_bound_optim = 10)
+```
+
+```{r}
+test(qs = c(0.3, 0.5, 0.7),
+     error_factor = 1,
+     true_values_new = c(rep(50,4), 60, rep(20,5)),
+     methods = "qsa_uniform",
+     cv_init_training = NULL,
+     quantile_plot = 0.3,
+     optim_method = "Brent",
+     lower_bound_optim = 0,
+     upper_bound_optim = 3)
+```
+
+## Conclusion
+
+We can use the bfgS method without any issues.

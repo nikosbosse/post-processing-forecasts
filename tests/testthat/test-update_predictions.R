@@ -17,6 +17,7 @@ cv_init_training <- 5
 test_that("works for cv_init_training = NULL", {
   df_subset <- update_subset_cqr(
     df_preprocessed,
+    method = "cqr",
     model, location, target_type = "Cases", horizon = 1,
     quantile = 0.01, cv_init_training = NULL
   ) |> suppressMessages()
@@ -31,6 +32,7 @@ test_that("works for cv_init_training = NULL", {
 test_that("works for integer cv_init_training", {
   df_subset <- update_subset_cqr(
     df_preprocessed,
+    method = "cqr_asymmetric",
     model, location, target_type = "Cases", horizon = 1,
     quantile = 0.01, cv_init_training = 5
   ) |> suppressMessages()
@@ -42,6 +44,7 @@ test_that("works for integer cv_init_training", {
 test_that("works for fraction cv_init_training", {
   df_subset <- update_subset_cqr(
     df_preprocessed,
+    method = "cqr_multiplicative",
     model, location, target_type = "Cases", horizon = 1,
     quantile = 0.01, cv_init_training = 0.5
   ) |> suppressMessages()
@@ -53,6 +56,7 @@ test_that("works for fraction cv_init_training", {
 test_that("works for tibble object", {
   tbl_subset <- update_subset_cqr(
     tbl_preprocessed,
+    method = "cqr",
     model, location, target_type = "Cases", horizon = 1,
     quantile = 0.01, cv_init_training = NULL
   ) |> suppressMessages()

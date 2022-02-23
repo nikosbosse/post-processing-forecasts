@@ -277,7 +277,7 @@ full_results |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("cv_init_training", "method")) |>
   dplyr::arrange(cv_init_training) |>
-  dplyr::select(cv_init_training:dispersion)
+  dplyr::select(cv_init_training:dispersion):
 ```
 
 ```{r}

@@ -1,7 +1,7 @@
 fix_quantile_crossing <- function(df_updated, model, location, target_type, horizon) {
   target_end_dates <- unique(df_updated$target_end_date)
 
-  for (target_end_date in target_end_dates) {
+  for (date in target_end_dates) {
     # first sort by quantiles, then replace prediction column for each target_end_date with
     # sorted predictions
     df_updated <- df_updated |> dplyr::arrange(.data$target_end_date, .data$quantile)
@@ -11,15 +11,17 @@ fix_quantile_crossing <- function(df_updated, model, location, target_type, hori
         df_updated$location == location &
         df_updated$target_type == target_type &
         df_updated$horizon == horizon &
-        df_updated$target_end_date == target_end_date,
+        df_updated$target_end_date == date,
       "prediction"
     ] <- df_updated[
       df_updated$model == model &
         df_updated$location == location &
         df_updated$target_type == target_type &
         df_updated$horizon == horizon &
-        df_updated$target_end_date == target_end_date,
-      "prediction"
+        df_updated$target_end_date == date,
+      "prediction",
+      # prevents collapsing to vector, such that arrange() still works
+      drop = FALSE
     ] |>
       dplyr::arrange(.data$prediction)
   }

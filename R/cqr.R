@@ -16,7 +16,7 @@ compute_scores_asymmetric <- function(true_values, quantiles_low, quantiles_high
 # add regularization by pulling all values in scores vector closer to 1
 # diminishes the impact of outliers
 regularize_scores <- function(scores) {
-  spread <- sd(scores)
+  spread <- stats::sd(scores)
 
   # if score vector only contains one element => no adjustments
   # if score vector is constant there are no outliers => no adjustments

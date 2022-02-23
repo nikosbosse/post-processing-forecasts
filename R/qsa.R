@@ -27,12 +27,17 @@ qsa <- function(subset, spread_factor_vec, method) {
       dplyr::pull(.data$prediction)
 
     # getting quantile spread
+    # This is positive for upper and negativ for lower quantiles
     quantile_spread <- quantile - median_vals
 
     # computing absolute adjustment based on spread factor
     if (method == "qsa_uniform") {
-      absolute_quantile_adjustments <- quantile_spread * spread_factor_vec - quantile_spread
+      
+      # Define Quantile Spreads to make no adjustment if the spreadfactor is 1
+      absolute_quantile_adjustments <- quantile_spread * (spread_factor_vec-1)
+      
       quantile_updated <- quantile + absolute_quantile_adjustments
+      
     } else if (method == "qsa_flexibel") {
       # getting the index of the quantile to then get the corresponding spread factor
       index_of_quantile <- which(quantiles_list_no_median == q)
@@ -83,15 +88,15 @@ wis <- function(subset, spread_factor_vec, penalty_weight) {
 }
 
 
-wrapper <- function(spread_factor_vec, subset, method_pp, penalty_weight) {
-  # Note: called method method_pp as optim has an arguement called method
+wrapper <- function(spread_factor_vec, subset, method_pp, penalty_weight) { #TODO: make qsa the default function for the wrapper so that its possible to pass ensemble here
+  # Note: called method method_pp as optim has an argument called method
 
   # applies the quantile spread adjustment
   updates_matrix <- qsa(subset, spread_factor_vec, method_pp)
 
   subset_updated <- subset
 
-  # extracting all quantiles that arnt the median
+  # extracting all quantiles that arent the median
   quantiles_list <- stats::na.omit(unique(subset$quantile))
   quantiles_list_no_median <- quantiles_list[!quantiles_list == 0.50]
 
@@ -142,7 +147,7 @@ optimize_spread_factor <- function(method,subset,penalty_weight,optim_method,low
     if (is.null(par)) {par <- c(1)}
     
     if (optim_method == "line_search"){
-      factor_vec <- seq(-3,3,0.1)
+      factor_vec <- seq(-10,10,0.1)
       optimal_spread_factor <- line_search_optimizer(factor_vec,subset)
       
     } else {
@@ -166,8 +171,7 @@ optimize_spread_factor <- function(method,subset,penalty_weight,optim_method,low
           }
         }
         optimal_spread_factor <- optimal_spread_factor_best
-        }
-      else {
+        } else {
         optim_results <- optim(
           par = par, fn = wrapper, subset = subset, method_pp = method, penalty_weight = penalty_weight,
           gr = NULL, method = optim_method, lower = lower_bound_optim, upper = upper_bound_optim #optim_method = "BFGS"
@@ -271,7 +275,10 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
 
     # Run optimization to get the optimal spread factor
     optimal_spread_factor <- optimize_spread_factor(method = method, subset = subset_train, ###########Big typo: before we had only subset here so trained on full subset no CV!
-                                                    penalty_weight = penalty_weight, optim_method = optim_method, par = NULL)
+                                                    penalty_weight = penalty_weight, optim_method = optim_method,
+                                                    lower_bound_optim = lower_bound_optim, upper_bound_optim = upper_bound_optim,
+                                                    optim_multiple_bounds_brent = optim_multiple_bounds_brent,
+                                                    par = NULL)
     
     # training set
     updates_matrix <- qsa(subset = subset_train, spread_factor_vec = optimal_spread_factor, method = method) ###########Big typo: before we had only subset here so trained on full subset no CV!
@@ -299,7 +306,10 @@ update_subset_qsa <- function(df, method, model, location, target_type, horizon,
 
       # Run optimization to get the optimal spread factor
       optimal_spread_factor <- optimize_spread_factor(method = method,subset = subset_train, ###########Big typo: before we had only subset here so trained on full subset no CV!
-                                                      penalty_weight = penalty_weight, optim_method = optim_method, par = optimal_spread_factor)
+                                                      penalty_weight = penalty_weight, optim_method = optim_method,
+                                                      lower_bound_optim = lower_bound_optim, upper_bound_optim = upper_bound_optim,
+                                                      optim_multiple_bounds_brent = optim_multiple_bounds_brent,
+                                                      par = optimal_spread_factor)
       
       # For the iteration forward we only need the validation set prediction
       val_row <- qsa(subset = subset_val, spread_factor_vec = optimal_spread_factor, method = method)

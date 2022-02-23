@@ -3,7 +3,7 @@
 # including incomplete models as well requires individual treatment of models
 
 CQR <- FALSE
-QSA_UNIFORM <- FALSE
+QSA_UNIFORM <- TRUE
 QSA_FLEXIBEL <- FALSE
 QSA_FLEXIBEL_SYMMETRIC <- FALSE
 CQR_QSA_UNIFORM <- FALSE

@@ -1,0 +1,312 @@
+---
+title: "Testing WIS Functions"
+author: "Matthias Herp"
+output:
+  bookdown::html_document2:
+    theme: flatly
+    highlight: pygments  # kate
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 2
+    number_sections: FALSE
+    df_print: tibble
+  bookdown::pdf_document2:
+    highlight: tango  # pygments
+    toc: FALSE
+    number_sections: FALSE
+    df_print: tibble
+    latex_engine: pdflatex
+    keep_tex: FALSE
+urlcolor: blue
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r knitr-opts, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center",
+  out.width = "100%", dpi = 300, fig.asp = 0.618, collapse = TRUE
+)
+```
+
+```{r libraries, include=FALSE}
+devtools::load_all(".")
+library(scoringutils)
+library(dplyr)
+library(patchwork)
+library(ggplot2)
+```
+
+```{r libraries, include=FALSE}
+df <- read.csv(here::here("data_modified", "hub_data_2_incidences.csv"))
+m <- "epiforecasts-EpiExpert"
+l <- "GB"
+t <- "Cases"
+h <- 1
+```
+
+## Wis calculation
+
+We define two functions that calculate the WIS depending on a quantile spread adjustment for two quantiles. wis_calc is written custom while wis_calc_pac uses the scoring utiles package the WIS.
+
+```{r libraries, include=FALSE}
+wis_calc <- function(x_vec = seq(0,3,0.1),
+                     qs = c(0.25, 0.5, 0.75),
+                     true_values_new = c(rep(50,4), 60, rep(20,5))){
+  
+  wis_vec <- c()
+  for (x in x_vec){
+    l <- qs[1] * 100 +  (qs[1]-qs[2])*100 * (x - 1)
+    u <- qs[3] * 100 +  (qs[3]-qs[2])*100 * (x - 1)
+    m <- qs[2] * 100
+    a <- qs[3] - qs[1]
+    
+    sharp <- length(true_values_new) * abs(u-l) #length(true_values_new) * 
+    under <- 0
+    over <- 0
+    med <- 0
+    
+    for (obs in true_values_new){
+      #if (obs > l && obs < u){
+      #  wis_val <- wis_val #+ min(obs-l,u-obs)
+      if (obs > l && obs > u){
+        over <- over + 2/a + (obs-u)
+      } else if (obs < l && obs < u) {
+        under <- under + 2/a* (l-obs)
+      }
+      #add median term
+      med <- med + abs(obs-m)
+    }
+    wis_val <- (1 / (2 + 0.5)) * (1/2 * med + a/2 * (sharp+over+under))
+    wis_vec <- c(wis_vec,wis_val)
+  }
+  
+  return(wis_vec)
+}
+```
+
+```{r libraries, include=FALSE}
+wis_calc_pac <- function(x_vec = seq(-2,2,0.1),
+                     qs = c(0.25, 0.5, 0.75),
+                     true_values_new = c(rep(50,4), 60, rep(20,5)),
+                     df = df,
+                     m = m,
+                     l = l,
+                     t = t,
+                     h = h){
+  
+
+  # Get a subset of original data as template 
+  # We only make it have the length of the true values (max remains 25)
+  subset <- dplyr::filter(df, model == m & location == l 
+                          & target_type == t & horizon == h 
+                          & quantile %in% qs 
+                          & target_end_date %in% sort(unique(df$target_end_date))[0:length(true_values_new)])
+  
+  # Changing the quantile predictions to the value of the quantile * 100 * error_factor
+  subset_generated <- subset
+  for (qi in qs) {
+    subset_generated <- subset_generated |>
+      dplyr::mutate(prediction = replace(
+        .data$prediction, .data$quantile == qi,
+        values = rep(qi * 100,length(unique(subset$target_end_date)))
+      ))
+  }
+  
+  # Changing the true values at each time point (for each quantile the same)
+  for (i in seq(1,length(unique(subset_generated$target_end_date))) ) {
+    date <- unique(subset_generated$target_end_date)[i]
+    value <- true_values_new[i]
+    
+    subset_generated <- subset_generated |>
+      dplyr::mutate(true_value = replace(
+        .data$true_value, .data$target_end_date == date,
+        values = rep(value,length(unique(subset_generated$quantile)))
+      ))
+  }
+  
+  # adjustment based on x value e.g. line search
+  wis_vec <- c()
+  for (x in x_vec){
+    subset_generated <- subset_generated |>
+      dplyr::mutate(prediction = replace(
+        .data$prediction, .data$quantile == qs[1],
+        values = rep(qs[1] * 100 + (qs[1]-qs[2])*100 * (x-1),length(unique(subset$target_end_date)))
+      ))
+    subset_generated <- subset_generated |>
+      dplyr::mutate(prediction = replace(
+        .data$prediction, .data$quantile == qs[3],
+        values = rep(qs[3] * 100 + (qs[3]-qs[2])*100 * (x-1),length(unique(subset$target_end_date)))
+      ))
+    
+    res <- subset_generated |>
+      scoringutils::score() |>
+      scoringutils::summarise_scores(by = c("location"))
+
+    wis_val <- res$interval_score
+    wis_vec <- c(wis_vec,wis_val)
+    
+  }
+  return(wis_vec)
+}
+
+```
+
+## WIS depending on interval score adjustment
+
+We see that both the custom and the soring utils based WIs calculation give the same minimum value are allthough they have different values as the package version is multiplied by a constant.
+
+```{r}
+x <- seq(0,2,0.1)
+y <- wis_calc(x,
+              qs = c(0.25, 0.5, 0.75),
+              true_values_new = c(rep(50,4), 60, rep(20,5)))
+
+df_xy <- data.frame(x = x, y = y)
+
+ggplot() +
+  geom_line(data = df_xy, aes(x, y), colour = "black")
+
+```
+
+```{r}
+x <- seq(0,2,0.1)
+y <- wis_calc_pac(x,
+              qs = c(0.25, 0.5, 0.75),
+              true_values_new = c(rep(50,4), 60, rep(20,5)))
+
+df_xy <- data.frame(x = x, y = y)
+
+ggplot() +
+  geom_line(data = df_xy, aes(x, y), colour = "black")
+
+```
+
+We also show an example of quantiles that give the same WIS. This is due to the tradeoff between underprediction and sharpness which is 50/50 for the intervall covering 50% of the true values.
+
+```{r}
+#subset_generated is sorted
+
+x <- unique(subset_generated$target_end_date)
+
+y25 <- dplyr::filter(subset_generated, quantile==0.25)$prediction
+y50 <- dplyr::filter(subset_generated, quantile==0.5)$prediction
+y75 <- dplyr::filter(subset_generated, quantile==0.75)$prediction
+obs <- dplyr::filter(subset_generated, quantile==0.75)$true_value
+
+df_xy <- data.frame(x = x, y25 = y25, y50 = y50, y75 = y75, obs = obs)
+
+ggplot() +
+  geom_line(data = df_xy, aes(x, y25, group = 1), colour = "red") +
+  geom_line(data = df_xy, aes(x, y50, group = 2), colour = "red") +
+  geom_line(data = df_xy, aes(x, y75, group = 3), colour = "red") +
+  geom_line(data = df_xy, aes(x, obs, group = 4), colour = "black")
+
+```
+
+```{r}
+x = 0.4
+
+subset_generated_updated <- subset_generated |>
+      dplyr::mutate(prediction = replace(
+        .data$prediction, .data$quantile == qs[1],
+        values = rep(qs[1] * 100 + (qs[1]-qs[2])*100 * (x-1),length(unique(subset$target_end_date)))
+      ))
+subset_generated_updated <- subset_generated_updated |>
+      dplyr::mutate(prediction = replace(
+        .data$prediction, .data$quantile == qs[3],
+        values = rep(qs[3] * 100 + (qs[3]-qs[2])*100 * (x-1),length(unique(subset$target_end_date)))
+      ))
+    
+res <- subset_generated_updated |>
+      scoringutils::score() |>
+      scoringutils::summarise_scores(by = c("location"))
+
+print(res$interval_score)
+
+
+x <- unique(subset_generated_updated$target_end_date)
+
+y25 <- dplyr::filter(subset_generated_updated, quantile==0.25)$prediction
+y50 <- dplyr::filter(subset_generated_updated, quantile==0.5)$prediction
+y75 <- dplyr::filter(subset_generated_updated, quantile==0.75)$prediction
+obs <- dplyr::filter(subset_generated_updated, quantile==0.75)$true_value
+
+df_xy <- data.frame(x = x, y25 = y25, y50 = y50, y75 = y75, obs = obs)
+
+ggplot() +
+  geom_line(data = df_xy, aes(x, y25, group = 1), colour = "red") +
+  geom_line(data = df_xy, aes(x, y50, group = 2), colour = "red") +
+  geom_line(data = df_xy, aes(x, y75, group = 3), colour = "red") +
+  geom_line(data = df_xy, aes(x, obs, group = 4), colour = "black")
+
+
+```
+
+```{r}
+x = 0.5
+
+subset_generated_updated <- subset_generated |>
+      dplyr::mutate(prediction = replace(
+        .data$prediction, .data$quantile == qs[1],
+        values = rep(qs[1] * 100 + (qs[1]-qs[2])*100 * (x-1),length(unique(subset$target_end_date)))
+      ))
+subset_generated_updated <- subset_generated_updated |>
+      dplyr::mutate(prediction = replace(
+        .data$prediction, .data$quantile == qs[3],
+        values = rep(qs[3] * 100 + (qs[3]-qs[2])*100 * (x-1),length(unique(subset$target_end_date)))
+      ))
+    
+res <- subset_generated_updated |>
+      scoringutils::score() |>
+      scoringutils::summarise_scores(by = c("location"))
+
+print(res$interval_score)
+
+
+x <- unique(subset_generated_updated$target_end_date)
+
+y25 <- dplyr::filter(subset_generated_updated, quantile==0.25)$prediction
+y50 <- dplyr::filter(subset_generated_updated, quantile==0.5)$prediction
+y75 <- dplyr::filter(subset_generated_updated, quantile==0.75)$prediction
+obs <- dplyr::filter(subset_generated_updated, quantile==0.75)$true_value
+
+df_xy <- data.frame(x = x, y25 = y25, y50 = y50, y75 = y75, obs = obs)
+
+ggplot() +
+  geom_line(data = df_xy, aes(x, y25, group = 1), colour = "red") +
+  geom_line(data = df_xy, aes(x, y50, group = 2), colour = "red") +
+  geom_line(data = df_xy, aes(x, y75, group = 3), colour = "red") +
+  geom_line(data = df_xy, aes(x, obs, group = 4), colour = "black")
+
+
+```
+
+
+### Unanswered Question: Why are the two plots below for the two different computations now very different for a smaller intervall size?
+
+```{r}
+x <- seq(0,2,0.1)
+y <- wis_calc(x,
+              qs = c(0.3, 0.5, 0.7),
+              true_values_new = c(rep(50,4), 60, rep(20,5)))
+
+df_xy <- data.frame(x = x, y = y)
+
+ggplot() +
+  geom_line(data = df_xy, aes(x, y), colour = "black")
+
+```
+
+```{r}
+x <- seq(0,2,0.1)
+y <- wis_calc_pac(x,
+              qs = c(0.3, 0.5, 0.7),
+              true_values_new = c(rep(50,4), 60, rep(20,5)))
+
+df_xy <- data.frame(x = x, y = y)
+
+ggplot() +
+  geom_line(data = df_xy, aes(x, y), colour = "black")
+
+```

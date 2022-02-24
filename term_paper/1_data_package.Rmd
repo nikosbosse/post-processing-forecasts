@@ -93,7 +93,7 @@ plot_quantiles(
 ```
 
 The original predictions look quite noisy overall with the clear trend that uncertainty and the interval width increases with growing forecast horizon.
-Thus, we want to analyze if one particular post-processing method, *Conformalized Quantile Regression*, which is explained in much more detail in chapter \@ref(cqr) improves the predictive performance for this model on a validation set by computing the Weighted Interval Scores for Covid Cases and Covid Deaths separately:
+Thus, we want to analyze if one particular post-processing method, *Conformalized Quantile Regression*, which is explained in much more detail in chapter \@ref(cqr) improves the predictive performance for this model on a validation set by computing the Weighted Interval Scores for Covid Cases and Covid Deaths separately.
 
 ```{r}
 df_updated <- update_predictions(
@@ -113,7 +113,13 @@ df_combined |>
 ```
 
 On the validation set CQR improved the Weighted Interval Score for Covid Cases, whereas the predictive performance for Covid Deaths dropped slightly.
-Note that CQR increased the *dispersion* of the predictions for Cases significantly.
+
+The `update_predictions()` and `collect_predictions()` combination immediately generalize to multiple post-processing methods.
+The only syntax change is a vector input of strings for the `methods` argument instead of a single string.
+Hence, if not desired, the user does not have to worry about which input and output features each method requires in its raw form nor how exactly each method is implemented.
+This design allows for maximum syntactic consistency through masking internal functionality.
+
+In the output above CQR increased the *dispersion* of the predictions for Cases significantly.
 We can visualize these wider intervals for specific covariate combinations:
 
 ```{r}

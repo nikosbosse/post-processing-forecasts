@@ -5,10 +5,138 @@ output:
     number_sections: TRUE
     df_print: tibble
     latex_engine: pdflatex
+    toc: false
 bibliography: [paper.bib, packages.bib]
 biblio-style: apalike
 urlcolor: blue
 linkcolor: blue
 ---
 
-# Data & Package
+```{r, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center",
+  out.width = "100%", dpi = 300, fig.asp = 0.618, collapse = TRUE
+)
+
+devtools::load_all()
+```
+
+
+# Analysis Tools
+
+Data Analysis is inherently build upon two foundational components: High Quality Data that allows to gain insight into the underlying data generating process and a structured and reproducible way to extract information out of the collected data.
+
+Thus, section \@ref(data) introduces the two datasets we worked with whereas section \@ref(package) provides an overview about the `postforecasts` package, a unified framework to apply and analyze various post-processing methods.
+
+## Data {#data}
+
+## The `postforecasts` Package {#package}
+
+One core aspect of our project was the development of a fully functional R package that unites a collection of different post-processing algorithms into a well-designed and user friendly interface.
+This section can be understood as a compact guide how to use our package effectively and explains some of the thought process that went into the implementation.
+It is worth noting that the `postforecasts` package adheres to all formal requirements for an R package such that `RCMDCHECK` does not produce any warnings or errors.
+
+### Overview {#overview}
+
+The `postforecasts` functions that are meant to be visible to the end-user can be grouped into three categories:
+
+1. Exploratory
+
+    The `plot_quantiles()`, `plot_intervals()` and `plot_intervals_grid()` functions visualize the development of true Covid19 Cases and Deaths over time as well as corresponding original and post-processed quantile predictions.
+
+1. Model Fitting
+
+    The `update_predictions()` function is the workhorse of the entire `postforecasts` package.
+    It specifies both the raw data and the post-processing method(s) that should be applied to this data set.
+    The function returns a list of $k+1$ equally shaped data frames for $k$ selected post-processing methods, the first element being the original, possibly   filtered, data frame.
+
+    All list elements can be analyzed separately or collectively by stacking them into one large data frame with the `collect_predictions()` function.
+    The combined data frame is designed to work well with analysis functions that are provided by the `scoringutils` package.
+    Finally, an ensemble model of all selected methods can be appended which will be explained in chapter \@ref(comparison).
+
+1. Evaluation
+
+    As noted in section \@ref(data) the Weighted Interval Score is our primary metric to evaluate the *quality* of prediction intervals.
+    The `score()` function of the scoringutils package computes this score for each observation in   the data set which can then be aggregated by the related `summarise_scores()` function.
+    Depending on the *granularity* of the aggregation the output might contain many interval scores   of vastly different magnitudes.
+    To simplify interpretation the `eval_methods()` function computes *relative* or *percentage* changes in the Weighted Interval Score for each selected method compared to the original quantile predictions.
+    Finally, these relative changes can be conviniently visualized by the `plot_eval()` function.
+
+The following section demonstrates the complete workflow described above to give an impression how all these functions interact.
+
+
+### Workflow {#workflow}
+
+We use the Covid19 data for Germany in $2021$ that is provided by the European Forecast Hub.
+
+```{r, include=FALSE}
+hub_1 <- readr::read_csv(here::here("data_modified", "hub_data_1_incidences.csv"))
+hub_2 <- readr::read_csv(here::here("data_modified", "hub_data_2_incidences.csv"))
+hub_3 <- readr::read_csv(here::here("data_modified", "hub_data_3_incidences.csv"))
+
+hub <- dplyr::bind_rows(hub_1, hub_2, hub_3)
+
+hub_germany <- hub |>
+  dplyr::filter(location == "DE") |>
+  dplyr::distinct(model, target_end_date, target_type, quantile, horizon,
+    .keep_all = TRUE
+  )
+```
+
+The following plot illustrates the $5$%, $20$% $80$% and $95$% quantile predictions of the EuroCOVIDhub-ensemble during the summer months of $2021$ in Germany.
+
+```{r}
+plot_quantiles(
+  hub_germany,
+  model = "EuroCOVIDhub-ensemble", quantiles = c(0.05, 0.2, 0.8, 0.95)
+)
+```
+
+The original predictions look quite noisy overall with the clear trend that uncertainty and the interval width increases with growing forecast horizon.
+Thus, we want to analyze if one particular post-processing method, *Conformalized Quantile Regression*, which is explained in much more detail in chapter \@ref(cqr) improves the predictive performance for this model on a validation set by computing the Weighted Interval Scores for Covid Cases and Covid Deaths separately:
+
+```{r}
+df_updated <- update_predictions(
+  hub_germany,
+  methods = "cqr", models = "EuroCOVIDhub-ensemble", cv_init_training = 0.5
+)
+df_combined <- collect_predictions(df_updated)
+```
+
+```{r}
+df_combined |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "target_type")) |>
+  dplyr::select(method:dispersion) |>
+  dplyr::arrange(target_type)
+```
+
+On the validation set CQR improved the Weighted Interval Score for Covid Cases, whereas the predictive performance for Covid Deaths dropped slightly.
+Note that CQR increased the *dispersion* of the predictions for Cases significantly.
+We can visualize these wider intervals for specific covariate combinations:
+
+```{r}
+plot_intervals(df_combined, target_type = "Cases", horizon = 2, quantile = 0.05)
+```
+
+Indeed, the 2 weeks-ahead $90$% prediction intervals for Cases in Germany are increased by CQR.
+The grey dashed line indicates the end of the training set within the time-series cross validation process.
+
+Recall that uncertainty increases with larger horizons.
+Similarly, CQR adjustments also increase in size for forecasts that are submitted further in advance:
+
+```{r}
+plot_intervals_grid(df_combined, facet_by = "horizon", quantiles = 0.05)
+```
+
+Interestingly, CQR expands the intervals only for Cases whereas the forecasts for Deaths are narrowed!
+
+Besides the target type (Cases or Deaths), it is also useful to compare CQR effects across forecast horizons or quantiles.
+Quite intuitively, CQR generally has a stronger *relative* benefit for large time horizons and extreme quantiles, where the original forecaster faced a greater uncertainty.
+In special cases like this one the effect on the validation set can show rather mixed trends due to disadvantageous adjustments for the two and three weeks-ahead $98$% prediction intervals:
+
+```{r}
+df_eval <- eval_methods(df_combined, summarise_by = c("quantile", "horizon"))
+plot_eval(df_eval)
+```

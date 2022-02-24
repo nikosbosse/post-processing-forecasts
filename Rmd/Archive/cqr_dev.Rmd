@@ -277,7 +277,7 @@ full_results |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("cv_init_training", "method")) |>
   dplyr::arrange(cv_init_training) |>
-  dplyr::select(cv_init_training:dispersion):
+  dplyr::select(cv_init_training:dispersion)
 ```
 
 ```{r}
@@ -305,6 +305,39 @@ plot_eval(
     dplyr::select(-cqr_multiplicative) |>
     dplyr::filter(cv_init_training > 0)
 )
+```
+  
+```{r}
+library(patchwork)
+
+model <- "epiforecasts-EpiExpert"
+location <- "GB"
+target_type <- "Cases"
+horizon <- 1
+quantile <- 0.05
+
+p1 <- plot_intervals(
+  full_results |> dplyr::filter(cv_init_training == 0),
+  model, location, target_type, quantile, horizon,
+  highlight_cv = FALSE
+)
+p2 <- plot_intervals(
+  full_results |> dplyr::filter(cv_init_training == 0.2),
+  model, location, target_type, quantile, horizon,
+  highlight_cv = FALSE
+)
+p3 <- plot_intervals(
+  full_results |> dplyr::filter(cv_init_training == 0.4),
+  model, location, target_type, quantile, horizon,
+  highlight_cv = FALSE
+)
+p4 <- plot_intervals(
+  full_results |> dplyr::filter(cv_init_training == 0.8),
+  model, location, target_type, quantile, horizon,
+  highlight_cv = FALSE
+)
+
+(p1 + p2) / (p3 + p4)
 ```
   
  

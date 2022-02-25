@@ -1,7 +1,7 @@
 #' @importFrom rlang .data
 
 plot_quantiles <- function(df, model = NULL, location = NULL,
-                           quantiles = c(0.05, 0.5, 0.95)) {
+                           quantiles = c(0.05, 0.5, 0.95), base_size = 9) {
   l <- process_model_input(df, model)
   df <- l$df
   model <- l$model
@@ -31,7 +31,7 @@ plot_quantiles <- function(df, model = NULL, location = NULL,
     ) +
     set_labels() +
     ggplot2::guides(color = ggplot2::guide_legend(nrow = 1)) +
-    ggplot2::theme_light() +
+    ggplot2::theme_light(base_size = base_size) +
     modify_theme()
 }
 
@@ -40,7 +40,7 @@ plot_quantiles <- function(df, model = NULL, location = NULL,
 
 plot_intervals <- function(df, model = NULL, location = NULL,
                            target_type = c("Cases", "Deaths"),
-                           quantile = 0.05, horizon = 1, 
+                           quantile = 0.05, horizon = 1,
                            highlight_cv = TRUE, base_size = 9) {
   target <- rlang::arg_match(arg = target_type, values = c("Cases", "Deaths"))
   h <- paste_horizon(horizon)
@@ -81,7 +81,7 @@ plot_intervals <- function(df, model = NULL, location = NULL,
 
 plot_intervals_grid <- function(df, model = NULL, location = NULL,
                                 facet_by = c("horizon", "quantile"),
-                                quantiles = NULL, horizon = NULL, 
+                                quantiles = NULL, horizon = NULL,
                                 highlight_cv = FALSE, base_size = 9) {
   facet_by <- rlang::arg_match(arg = facet_by, values = c("horizon", "quantile"))
 

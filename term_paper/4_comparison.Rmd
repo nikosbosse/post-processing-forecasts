@@ -11,4 +11,4 @@ urlcolor: blue
 linkcolor: blue
 ---
 
-# Method Comparison
+# Method Comparison {#comparison}

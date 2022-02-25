@@ -2,7 +2,8 @@
 output:
   bookdown::pdf_document2:
     includes:
-        before_body: title.tex
+      in_header: preamble.tex
+      before_body: title.tex
     toc: FALSE
     highlight: tango
     number_sections: TRUE
@@ -12,6 +13,7 @@ bibliography: [paper.bib, packages.bib]
 biblio-style: apalike
 urlcolor: blue
 linkcolor: blue
+links-as-notes: true
 ---
 
 ```{r setup, include=FALSE}
@@ -26,7 +28,7 @@ knitr::opts_chunk$set(
 knitr::write_bib(
   c(
     "dplyr", "ggplot2", "forcats", "lubridate", "rlang", "scales", "scoringutils",
-    "stats", "stringr", "tidyr", "tidyselect", "here", "knitr", "readr",
+    "stats", "stringr", "tidyr", "tidyselect", "here", "kableExtra", "knitr", "readr",
     "rmarkdown", "testthat"
   ),
   file = here::here("term_paper", "packages.bib")

@@ -11,4 +11,4 @@ urlcolor: blue
 linkcolor: blue
 ---
 
-# QSA
+# Quantile Spread Averaging {#qsa}

@@ -48,8 +48,10 @@ df_ensemble <- add_ensemble(df_subset, verbose = TRUE)
 df_ensemble |>
   extract_training_set() |>
   scoringutils::score() |>
-  scoringutils::summarise_scores(by = "method") |>
-  dplyr::select(method:overprediction)
+  scoringutils::summarise_scores(by = c("method", "quantile")) |>
+  dplyr::select(method:dispersion) |>
+  dplyr::arrange(quantile) |>
+  print(n = Inf)
 ```
 
 # Interval Scores on Validation Set
@@ -61,4 +63,71 @@ df_ensemble |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method")) |>
   dplyr::select(method:overprediction)
+```
+
+# Debugging
+
+```{r}
+df_combined <- readr::read_rds(here::here("data_results", "uk_cqr3.rds"))
+l <- "GB"
+m <- unique(df_combined$model)[1]
+t <- "Cases"
+h <- 1
+# q <- 0.05
+
+methods <- unique(df_combined$method)
+methods <- methods[methods != "original"]
+
+
+# for (l in unique(df_combined$location)) {
+#   for (m in unique(df_combined$model)) {
+#     for (t in unique(df_combined$target_type)) {
+for (h in unique(df_combined$horizon)) {
+  for (q in quantiles) {
+    df_subset <- get_pairs_subset(df_combined, l, m, t, h, q)
+
+    true_values <- get_true_values(df_subset, methods)
+    quantiles_low_matrix <- get_quantiles_low_matrix(df_subset, q, methods)
+    quantiles_high_matrix <- get_quantiles_high_matrix(df_subset, q, methods)
+
+    weights <- compute_weights(
+      q, true_values, quantiles_low_matrix, quantiles_high_matrix,
+      max_iter = 1e4, print_level = 0
+    )
+
+    quantiles_low_ensemble <- as.numeric(quantiles_low_matrix %*% weights)
+    quantiles_high_ensemble <- as.numeric(quantiles_high_matrix %*% weights)
+
+    quantiles <- unique(df_combined$quantile)
+    quantiles <- quantiles[quantiles < 0.5]
+
+    wis_cqr <- compute_wis(q, true_values, quantiles_low_matrix[, 1], quantiles_high_matrix[, 1])
+    wis_asym <- compute_wis(q, true_values, quantiles_low_matrix[, 2], quantiles_high_matrix[, 2])
+    wis_mult <- compute_wis(q, true_values, quantiles_low_matrix[, 3], quantiles_high_matrix[, 3])
+    wis_ens <- compute_wis(q, true_values, quantiles_low_ensemble, quantiles_high_ensemble)
+
+    if (wis_ens != min(wis_cqr, wis_asym, wis_mult, wis_ens)) {
+      cat(
+        # "Mistake: \n",
+        # "Model = ", m, "\n",
+        # "Target Type = ", t, "\n",
+        "Horizon = ", h, "\n",
+        "Quantile = ", q, "\n",
+        "\n",
+        sep = ""
+      )
+      cat(
+        "CQR = ", wis_cqr, "\n",
+        "Asymmetric = ", wis_asym, "\n",
+        "Multiplicative = ", wis_mult, "\n",
+        "Ensemble = ", wis_ens, "\n",
+        "Weights = ", paste(round(weights, 3), collapse = ", "), "\n\n",
+        sep = ""
+      )
+    }
+  }
+}
+#     }
+#   }
+# }
 ```

@@ -98,7 +98,7 @@ As a consequence, no part of our data set must be dedicated to fitting the quant
 Instead of a hard cut-off between the splits we used *Time Series Cross Validation* to leverage a higher fraction of the data set for training.
 In contrast to classical cross validation for independent and identically distributed data, time series cross validation iterates through the data set along the time dimension one step at a time.
 
-The process is nicely illustrated in \Cref{fig:ch1-cv}^[Image Source: https://otexts.com/fpp3/tscv.html].
+The process is nicely illustrated in \Cref{fig:ch1-cv}^[Image Source: https://otexts.com/fpp3/tscv.html. @hyndman2021.].
 
 ```{r, ch1-cv, echo=FALSE, out.width="80%", fig.cap="Time Series Cross Validation"}
 knitr::include_graphics(

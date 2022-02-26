@@ -30,30 +30,35 @@ knitr::opts_chunk$set(
 
 ```{r}
 devtools::load_all()
-uk_cqr_qsa <- readr::read_rds(
-  here::here("data_results", "uk_cqr_qsa_uniform.rds")
-)
-
-models <- "epiforecasts-EpiExpert"
-df_combined <- uk_cqr_qsa |> dplyr::filter(model == models)
 ```
 
-# Same weight for all quantiles
+# UK Data
 
 ```{r}
-add_ensemble(df_combined, verbose = TRUE, per_quantile_weights = FALSE) |>
+df_combined <- readr::read_rds(here::here("data_results", "uk_cqr3.rds"))
+df_subset <- df_combined |> dplyr::filter(model == unique(df_combined$model)[1])
+
+df_ensemble <- add_ensemble(df_subset, verbose = TRUE)
+```
+
+# Interval Scores on Training Set
+
+```{r}
+# TODO: Ensemble should perform best on training set
+df_ensemble |>
+  extract_training_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = "method") |>
+  dplyr::select(method:overprediction)
+```
+
+# Interval Scores on Validation Set
+
+```{r}
+# TODO: Add option in add_ensemble() to evaluate on training or validation set
+df_ensemble |>
   extract_validation_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method")) |>
-  dplyr::select(method:interval_score)
-```
-
-# Separate weights for each quantiles
-
-```{r}
-add_ensemble(df_combined, verbose = TRUE, per_quantile_weights = TRUE) |>
-  extract_validation_set() |>
-  scoringutils::score() |>
-  scoringutils::summarise_scores(by = c("method")) |>
-  dplyr::select(method:interval_score)
+  dplyr::select(method:overprediction)
 ```

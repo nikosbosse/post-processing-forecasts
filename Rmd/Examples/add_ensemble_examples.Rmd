@@ -38,7 +38,7 @@ devtools::load_all()
 df_combined <- readr::read_rds(here::here("data_results", "uk_cqr3.rds"))
 df_subset <- df_combined |> dplyr::filter(model == unique(df_combined$model)[1])
 
-df_ensemble <- add_ensemble(df_subset, verbose = TRUE)
+df_ensemble <- add_ensemble(df_subset, verbose = TRUE, max_iter = 1e5)
 ```
 
 # Interval Scores on Training Set
@@ -46,11 +46,13 @@ df_ensemble <- add_ensemble(df_subset, verbose = TRUE)
 ```{r}
 # TODO: Ensemble should perform best on training set
 df_ensemble |>
-  extract_training_set() |>
+  # extract_training_set() |>
   scoringutils::score() |>
-  scoringutils::summarise_scores(by = c("method", "quantile")) |>
+  scoringutils::summarise_scores(by = c("method")) |>
+  # scoringutils::summarise_scores(by = c("method", "horizon", "target_type", "quantile")) |>
   dplyr::select(method:dispersion) |>
-  dplyr::arrange(quantile) |>
+  # dplyr::arrange(quantile, horizon, target_type) |>
+  dplyr::mutate(interval_score = round(interval_score, 3)) |>
   print(n = Inf)
 ```
 
@@ -73,12 +75,33 @@ l <- "GB"
 m <- unique(df_combined$model)[1]
 t <- "Cases"
 h <- 1
-# q <- 0.05
+q <- 0.05
 
 methods <- unique(df_combined$method)
 methods <- methods[methods != "original"]
 
+df_subset <- get_pairs_subset(df_combined, l, m, t, h, q)
 
+df_subset |>
+  dplyr::filter(method == "cqr") |>
+  scoringutils::score() |>
+  dplyr::pull(interval_score) |>
+  sum()
+
+true_values <- get_true_values(df_subset, methods)
+quantiles_low_matrix <- get_quantiles_low_matrix(df_subset, q, methods)
+quantiles_high_matrix <- get_quantiles_high_matrix(df_subset, q, methods)
+
+compute_wis(
+  1,
+  true_values,
+  quantiles_low_matrix[, 1],
+  quantiles_high_matrix[, 1]
+)
+```
+
+
+```{r}
 # for (l in unique(df_combined$location)) {
 #   for (m in unique(df_combined$model)) {
 #     for (t in unique(df_combined$target_type)) {
@@ -92,7 +115,7 @@ for (h in unique(df_combined$horizon)) {
 
     weights <- compute_weights(
       q, true_values, quantiles_low_matrix, quantiles_high_matrix,
-      max_iter = 1e4, print_level = 0
+      max_iter = 1e5, print_level = 0
     )
 
     quantiles_low_ensemble <- as.numeric(quantiles_low_matrix %*% weights)

@@ -7,7 +7,12 @@ get_pairs_subset <- function(df_combined, l, m, t, h, q) {
     )
 }
 
-score_pairs_subset <- function(df_subset) {
+score_pairs_subset <- function(df_subset, train_val_split) {
+  if (train_val_split) {
+    # compute weights on training set only, apply weights for all observations
+    df_subset <- extract_training_set(df_subset)
+  }
+
   df_subset |>
     scoringutils::score() |>
     dplyr::select(method:horizon, quantile, interval_score)
@@ -106,10 +111,10 @@ assign_quantiles_high <- function(ensemble_df, quantiles_high_ensemble, l, m, t,
   assign_quantiles(ensemble_df, quantiles_high_ensemble, l, m, t, h, 1 - q)
 }
 
-update_subset_ensemble <- function(df_combined, ensemble_df, methods,
-                                   l, m, t, h, q, max_iter, print_level) {
+update_subset_ensemble <- function(df_combined, ensemble_df, methods, l, m, t, h, q,
+                                   train_val_split, max_iter, print_level) {
   df_subset <- get_pairs_subset(df_combined, l, m, t, h, q)
-  score_subset <- score_pairs_subset(df_subset)
+  score_subset <- score_pairs_subset(df_subset, train_val_split)
   wide_score_subset <- pivot_score_subset(score_subset)
 
   score_matrix <- get_score_matrix(wide_score_subset, methods, q)
@@ -127,7 +132,7 @@ update_subset_ensemble <- function(df_combined, ensemble_df, methods,
   return(ensemble_df)
 }
 
-add_ensemble <- function(df_combined, cv_init_training = NULL, verbose = FALSE,
+add_ensemble <- function(df_combined, train_val_split = TRUE, verbose = FALSE,
                          max_iter = 1e5, print_level = 0) {
 
   # overwrite subset of prediction column in each iteration
@@ -155,7 +160,7 @@ add_ensemble <- function(df_combined, cv_init_training = NULL, verbose = FALSE,
           for (q in quantiles) {
             ensemble_df <- update_subset_ensemble(
               df_combined, ensemble_df, methods, l, m, t, h, q,
-              max_iter, print_level
+              train_val_split, max_iter, print_level
             )
           }
         }

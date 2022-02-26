@@ -29,13 +29,6 @@ get_score_matrix <- function(wide_score_subset, methods, q) {
     as.matrix()
 }
 
-get_score_matrix_high <- function(wide_score_subset, methods, q) {
-  wide_score_subset |>
-    dplyr::filter(quantile == 1 - q) |>
-    dplyr::select(dplyr::all_of(methods)) |>
-    as.matrix()
-}
-
 eval_score_matrix <- function(w, score_matrix) {
   sum(as.numeric(score_matrix %*% w))
 }

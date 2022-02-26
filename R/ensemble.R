@@ -23,10 +23,16 @@ compute_wis <- function(quantile, true_values, quantiles_low, quantiles_high) {
 # true_values is a vector
 # quantiles_low_matrix, quantiles_high_matrix are matrices
 # returns a scalar
-compute_wis_matrix <- function(w, quantile, true_values, quantiles_low_matrix, quantiles_high_matrix) {
+compute_wis_matrix <- function(w, quantile, true_values,
+                               quantiles_low_matrix, quantiles_high_matrix) {
+  # convex combination of lower quantile predictions
   quantiles_low <- as.numeric(quantiles_low_matrix %*% w)
+
+  # convex combination of upper quantile predictions
   quantiles_high <- as.numeric(quantiles_high_matrix %*% w)
 
+  # find weights w that minimize interval score of updated quantile predictions
+  # note that the SAME weights w are used for updating lower and upper quantile predictions
   compute_wis(quantile, true_values, quantiles_low, quantiles_high)
 }
 
@@ -56,10 +62,12 @@ get_quantiles_high_matrix <- function(df_subset, q, methods) {
     as.matrix()
 }
 
-compute_weights <- function(quantile, true_values, quantiles_low_matrix, quantiles_high_matrix,
-                            max_iter, print_level) {
+compute_weights <- function(quantile, true_values, quantiles_low_matrix,
+                            quantiles_high_matrix, max_iter, print_level) {
   eval_f <- function(w) {
-    compute_wis_matrix(w, quantile, true_values, quantiles_low_matrix, quantiles_high_matrix)
+    compute_wis_matrix(
+      w, quantile, true_values, quantiles_low_matrix, quantiles_high_matrix
+    )
   }
 
   eval_g_eq <- function(w) {
@@ -88,9 +96,10 @@ compute_weights <- function(quantile, true_values, quantiles_low_matrix, quantil
   res$solution
 }
 
-assign_quantiles <- function(ensemble_df, quantiles_ensemble, m, t, h, q) {
+assign_quantiles <- function(ensemble_df, quantiles_ensemble, l, m, t, h, q) {
   ensemble_df[
-    ensemble_df$model == m &
+    ensemble_df$location == l &
+      ensemble_df$model == m &
       ensemble_df$target_type == t &
       ensemble_df$horizon == h &
       ensemble_df$quantile == q,
@@ -100,23 +109,25 @@ assign_quantiles <- function(ensemble_df, quantiles_ensemble, m, t, h, q) {
   ensemble_df
 }
 
-assign_quantiles_low <- function(ensemble_df, quantiles_low_ensemble, m, t, h, q) {
-  assign_quantiles(ensemble_df, quantiles_low_ensemble, m, t, h, q)
+assign_quantiles_low <- function(ensemble_df, quantiles_low_ensemble, l, m, t, h, q) {
+  assign_quantiles(ensemble_df, quantiles_low_ensemble, l, m, t, h, q)
 }
 
-assign_quantiles_high <- function(ensemble_df, quantiles_high_ensemble, m, t, h, q) {
-  assign_quantiles(ensemble_df, quantiles_high_ensemble, m, t, h, 1 - q)
+assign_quantiles_high <- function(ensemble_df, quantiles_high_ensemble, l, m, t, h, q) {
+  assign_quantiles(ensemble_df, quantiles_high_ensemble, l, m, t, h, 1 - q)
 }
 
-get_pairs_subset <- function(df_combined, m, t, h, q) {
+get_pairs_subset <- function(df_combined, l, m, t, h, q) {
   df_combined |>
-    dplyr::filter(target_type == t, horizon == h, model == m, quantile %in% c(q, 1 - q))
+    dplyr::filter(
+      location == l, model == m, target_type == t, horizon == h, quantile %in% c(q, 1 - q)
+    )
 }
 
 
 update_subset_ensemble <- function(df_combined, ensemble_df, methods,
-                                   m, t, h, q, max_iter, print_level) {
-  df_subset <- get_pairs_subset(df_combined, m, t, h, q)
+                                   l, m, t, h, q, max_iter, print_level) {
+  df_subset <- get_pairs_subset(df_combined, l, m, t, h, q)
 
   true_values <- get_true_values(df_subset, methods)
   quantiles_low_matrix <- get_quantiles_low_matrix(df_subset, q, methods)
@@ -130,8 +141,8 @@ update_subset_ensemble <- function(df_combined, ensemble_df, methods,
   quantiles_low_ensemble <- as.numeric(quantiles_low_matrix %*% weights)
   quantiles_high_ensemble <- as.numeric(quantiles_high_matrix %*% weights)
 
-  ensemble_df <- assign_quantiles_low(ensemble_df, quantiles_low_ensemble, m, t, h, q)
-  ensemble_df <- assign_quantiles_high(ensemble_df, quantiles_high_ensemble, m, t, h, q)
+  ensemble_df <- assign_quantiles_low(ensemble_df, quantiles_low_ensemble, l, m, t, h, q)
+  ensemble_df <- assign_quantiles_high(ensemble_df, quantiles_high_ensemble, l, m, t, h, q)
 
   return(ensemble_df)
 }
@@ -151,17 +162,22 @@ add_ensemble <- function(df_combined, cv_init_training = NULL, verbose = FALSE,
   quantiles <- unique(df_combined$quantile)
   quantiles <- quantiles[quantiles < 0.5]
 
-  for (m in unique(df_combined$model)) {
-    for (t in unique(df_combined$target_type)) {
-      for (h in unique(df_combined$horizon)) {
-        if (verbose) {
-          cat("model = ", m, " | target_type = ", t, " | horizon = ", h, "\n", sep = "")
-        }
-        for (q in quantiles) {
-          ensemble_df <- update_subset_ensemble(
-            df_combined, ensemble_df, methods, m, t, h, q,
-            max_iter, print_level
-          )
+  for (l in unique(df_combined$location)) {
+    for (m in unique(df_combined$model)) {
+      for (t in unique(df_combined$target_type)) {
+        for (h in unique(df_combined$horizon)) {
+          if (verbose) {
+            cat(
+              "location = ", l, " | model = ", m, " | target_type = ", t, " | horizon = ", h, "\n",
+              sep = ""
+            )
+          }
+          for (q in quantiles) {
+            ensemble_df <- update_subset_ensemble(
+              df_combined, ensemble_df, methods, l, m, t, h, q,
+              max_iter, print_level
+            )
+          }
         }
       }
     }

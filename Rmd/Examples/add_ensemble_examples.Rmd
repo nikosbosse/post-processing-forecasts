@@ -36,17 +36,21 @@ devtools::load_all()
 
 ```{r}
 df_combined <- readr::read_rds(here::here("data_results", "uk_cqr3.rds"))
-df_subset <- df_combined |> dplyr::filter(model == unique(df_combined$model)[1])
+# df_subset <- df_combined |> dplyr::filter(model == unique(df_combined$model)[1])
 
-df_ensemble <- add_ensemble(df_subset, verbose = TRUE, max_iter = 1e5)
+df_ensemble <- add_ensemble(df_combined, train_val_split = TRUE, verbose = TRUE, max_iter = 1e5)
+readr::write_rds(df_ensemble, here::here("data_results", "uk_cqr3_ensemble.rds"))
+```
+
+```{r}
+df_ensemble <- readr::read_rds(here::here("data_results", "uk_cqr3_ensemble.rds"))
 ```
 
 # Interval Scores on Training Set
 
 ```{r}
-# TODO: Ensemble should perform best on training set
 df_ensemble |>
-  # extract_training_set() |>
+  extract_training_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method")) |>
   # scoringutils::summarise_scores(by = c("method", "horizon", "target_type", "quantile")) |>
@@ -59,12 +63,13 @@ df_ensemble |>
 # Interval Scores on Validation Set
 
 ```{r}
-# TODO: Add option in add_ensemble() to evaluate on training or validation set
 df_ensemble |>
   extract_validation_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method")) |>
-  dplyr::select(method:overprediction)
+  dplyr::select(method:dispersion) |>
+  dplyr::mutate(interval_score = round(interval_score, 3)) |>
+  print(n = Inf)
 ```
 
 # Debugging

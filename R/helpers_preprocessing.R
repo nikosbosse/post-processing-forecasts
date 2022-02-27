@@ -189,7 +189,8 @@ validate_cv_init <- function(df, cv_init_training) {
 
 validate_methods <- function(methods) {
   implemented_methods <- c(
-    "cqr", "qsa_uniform", "qsa_flexibel", "qsa_flexibel_symmetric"
+    "cqr", "cqr_asymmetric", "cqr_multiplicative",
+    "qsa_uniform", "qsa_flexibel", "qsa_flexibel_symmetric"
   )
 
   if (!all(methods %in% implemented_methods)) {
@@ -286,8 +287,7 @@ preprocess_df <- function(df, models = NULL, locations = NULL, target_types = NU
 
   # TODO: show joel
   # arranging dataframe by target_type to make sure it is sorted correctly for further processing
-  df <- df |>
-    dplyr::arrange(.data$target_end_date)
+  df <- df |> dplyr::arrange(.data$target_end_date)
 
   return(list(
     df = df, models = models, locations = locations,
@@ -328,8 +328,8 @@ filter_combination <- function(df, model, location, target_type, horizon, quanti
     dplyr::pull(.data$prediction)
 
   return(list(
-    true_values = true_values, quantiles_low = quantiles_low,
-    quantiles_high = quantiles_high
+    df_subset = quantiles_low_df, true_values = true_values,
+    quantiles_low = quantiles_low, quantiles_high = quantiles_high
   ))
 }
 

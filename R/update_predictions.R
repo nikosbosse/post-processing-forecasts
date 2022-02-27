@@ -1,12 +1,49 @@
+fix_quantile_crossing <- function(df_updated, model, location, target_type, horizon) {
+  target_end_dates <- unique(df_updated$target_end_date)
+
+  for (date in target_end_dates) {
+    # first sort by quantiles, then replace prediction column for each target_end_date with
+    # sorted predictions
+    df_updated <- df_updated |> dplyr::arrange(.data$target_end_date, .data$quantile)
+
+    df_updated[
+      df_updated$model == model &
+        df_updated$location == location &
+        df_updated$target_type == target_type &
+        df_updated$horizon == horizon &
+        df_updated$target_end_date == date,
+      "prediction"
+    ] <- df_updated[
+      df_updated$model == model &
+        df_updated$location == location &
+        df_updated$target_type == target_type &
+        df_updated$horizon == horizon &
+        df_updated$target_end_date == date,
+      "prediction",
+      # prevents collapsing to vector, such that arrange() still works
+      drop = FALSE
+    ] |>
+      dplyr::arrange(.data$prediction)
+  }
+
+  return(df_updated)
+}
+
+
 update_predictions <- function(df, methods = c(
-                                 "cqr", "qsa_uniform",
-                                 "qsa_flexibel", "qsa_flexibel_symmetric"
+                                 "cqr", "cqr_asymmetric", "cqr_multiplicative",
+                                 "qsa_uniform", "qsa_flexibel", "qsa_flexibel_symmetric"
                                ), models = NULL, locations = NULL,
                                target_types = NULL, horizons = NULL,
                                quantiles = NULL, cv_init_training = NULL,
+<<<<<<< HEAD
                                penalty_weight = NULL, optim_method = NULL, 
                                lower_bound_optim = 0, upper_bound_optim = 5, steps_optim=0.1,
                                return_list = TRUE,
+=======
+                               penalty_weight = NULL, return_list = TRUE,
+                               regularize_scores = FALSE, constrain_margins = FALSE,
+>>>>>>> master
                                verbose = FALSE) {
   # stops function for invalid input values
   validate_inputs(df, methods, models, locations, target_types, horizons, quantiles)
@@ -35,27 +72,29 @@ update_predictions <- function(df, methods = c(
       for (location in locations) {
         if (verbose) {
           cat(
-            "method = ", method, " | model = ", model, " | location = ",
-            location, "\n",
+            "method = ", method, " | model = ", model, " | location = ", location, "\n",
             sep = ""
           )
         }
         for (target_type in target_types) {
           for (horizon in horizons) {
-
-            # distinction of which method we use at this step in the nested loop
-            # as cqr loops over qunatiles but qsa uses all quantiles in one run
-            if (method == "cqr") {
+            # qsa methods use all quantiles in one run
+            if (stringr::str_detect(method, "qsa")) {
+              df_updated <- update_subset_qsa(
+                df_updated, method, model, location, target_type, horizon,
+                cv_init_training, penalty_weight
+              )
+            } else {
+              # cqr methods use pair of quantiles => only needs lower quantiles
               quantiles <- quantiles[quantiles < 0.5]
-
               for (quantile in quantiles) {
-                # only one method => does not require 'method' argument
                 df_updated <- update_subset_cqr(
-                  df_updated, model, location, target_type, horizon,
+                  df_updated, method, model, location, target_type, horizon,
                   quantile, cv_init_training
                 )
               }
             }
+<<<<<<< HEAD
 
             if (stringr::str_detect(method, "qsa")) {
               df_updated <- update_subset_qsa(
@@ -63,6 +102,11 @@ update_predictions <- function(df, methods = c(
                 cv_init_training, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim, steps_optim
               ) # no quantile is passed
             }
+=======
+            df_updated <- fix_quantile_crossing(
+              df_updated, model, location, target_type, horizon
+            )
+>>>>>>> master
           }
         }
       }

@@ -75,10 +75,9 @@ It combines measures for interval *sharpness* as well as *overprediction* and *u
 More specifically, for a given quantile level $\alpha$, true observed value $y$ as well as lower bound $l$ and upper bound $u$ of the corresponding $(1 - \alpha) \cdot 100$% prediction interval, the Weighted Interval Score is computed as 
 <!--  --> 
 $$
-\begin{aligned}
-Score_\alpha(y) 
-= (u-l) + \frac{2}{\alpha} \cdot (l-y) \cdot \mathbf{1} (y \leq l) + \frac{2}{\alpha} \cdot (y-u) \cdot \mathbf{1}(y \geq u).
-\end{aligned}
+\begin{align}
+Score_\alpha(y) = (u-l) + \frac{2}{\alpha} \cdot (l-y) \cdot \mathbf{1} (y \leq l) + \frac{2}{\alpha} \cdot (y-u) \cdot \mathbf{1}(y \geq u).
+\end{align}
 $$ 
 <!--  --> 
 The score of an entire model can then be obtained from a weighted sum over all (included) quantile levels $\alpha$.

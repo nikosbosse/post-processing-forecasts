@@ -36,28 +36,26 @@ devtools::load_all()
 
 ```{r}
 df_combined <- readr::read_rds(here::here("data_results", "uk_cqr3.rds"))
-# df_subset <- df_combined |> dplyr::filter(model == unique(df_combined$model)[1])
+df_subset <- df_combined |> dplyr::filter(model == unique(df_combined$model)[1])
 
-df_ensemble <- add_ensemble(df_combined, train_val_split = TRUE, verbose = TRUE, max_iter = 1e5)
-readr::write_rds(df_ensemble, here::here("data_results", "uk_cqr3_ensemble.rds"))
-```
-
-```{r}
-df_ensemble <- readr::read_rds(here::here("data_results", "uk_cqr3_ensemble.rds"))
+df_ensemble <- add_ensemble(df_subset, train_val_split = FALSE, verbose = TRUE, max_iter = 1e5)
 ```
 
 # Interval Scores on Training Set
 
 ```{r}
+df_ensemble <- readr::read_rds(here::here("data_results", "uk_cqr3_ensemble.rds"))
+
 df_ensemble |>
-  extract_training_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method")) |>
-  # scoringutils::summarise_scores(by = c("method", "horizon", "target_type", "quantile")) |>
-  dplyr::select(method:dispersion) |>
-  # dplyr::arrange(quantile, horizon, target_type) |>
-  dplyr::mutate(interval_score = round(interval_score, 3)) |>
-  print(n = Inf)
+  # scoringutils::summarise_scores(
+  #   by = c("method", "model", "horizon", "target_type", "quantile")) |>
+  dplyr::select(method:interval_score)
+# dplyr::arrange(model, horizon, target_type, quantile) |>
+# dplyr::mutate(interval_score = round(interval_score, 3)) |>
+# tidyr::pivot_wider(names_from = method, values_from = interval_score) |>
+# dplyr::filter(ensemble > cqr_asymmetric)
 ```
 
 # Interval Scores on Validation Set
@@ -82,27 +80,55 @@ t <- "Cases"
 h <- 1
 q <- 0.05
 
+ensemble_df <- df_combined |> dplyr::filter(.data$method == "original")
+ensemble_df["method"] <- "ensemble"
+
 methods <- unique(df_combined$method)
 methods <- methods[methods != "original"]
 
 df_subset <- get_pairs_subset(df_combined, l, m, t, h, q)
+score_subset <- score_pairs_subset(df_subset, train_val_split = FALSE)
+wide_score_subset <- pivot_score_subset(score_subset)
 
-df_subset |>
-  dplyr::filter(method == "cqr") |>
-  scoringutils::score() |>
-  dplyr::pull(interval_score) |>
-  sum()
+score_matrix <- get_score_matrix(wide_score_subset, methods, q)
+weights <- compute_weights(score_matrix, max_iter = 1e5, print_level = 3)
 
-true_values <- get_true_values(df_subset, methods)
 quantiles_low_matrix <- get_quantiles_low_matrix(df_subset, q, methods)
 quantiles_high_matrix <- get_quantiles_high_matrix(df_subset, q, methods)
 
-compute_wis(
-  1,
-  true_values,
-  quantiles_low_matrix[, 1],
-  quantiles_high_matrix[, 1]
-)
+quantiles_low_ensemble <- as.numeric(quantiles_low_matrix %*% weights)
+quantiles_high_ensemble <- as.numeric(quantiles_high_matrix %*% weights)
+
+ensemble_df <- assign_quantiles_low(ensemble_df, quantiles_low_ensemble, l, m, t, h, q)
+ensemble_df <- assign_quantiles_high(ensemble_df, quantiles_high_ensemble, l, m, t, h, q)
+
+ensemble_df |>
+  dplyr::filter(
+    method == "ensemble", location == l, model == m, target_type == t,
+    horizon == h, quantile == q
+  ) |>
+  dplyr::pull(prediction)
+
+ensemble_df |>
+  dplyr::filter(
+    method == "ensemble", location == l, model == m, target_type == t,
+    horizon == h, quantile == 1 - q
+  ) |>
+  dplyr::pull(prediction)
+
+df_ensemble |>
+  dplyr::filter(
+    method == "ensemble", location == l, model == m, target_type == t,
+    horizon == h, quantile == q
+  ) |>
+  dplyr::pull(prediction)
+
+df_ensemble |>
+  dplyr::filter(
+    method == "ensemble", location == l, model == m, target_type == t,
+    horizon == h, quantile == 1 - q
+  ) |>
+  dplyr::pull(prediction)
 ```
 
 
@@ -158,4 +184,29 @@ for (h in unique(df_combined$horizon)) {
 #     }
 #   }
 # }
+```
+
+
+# Analysis
+
+```{r}
+df_ensemble <- readr::read_rds(here::here("data_results", "uk_cqr3_ensemble.rds"))
+```
+
+```{r}
+l <- "GB"
+m <- unique(df_combined$model)[1]
+t <- "Cases"
+h <- 1
+q <- 0.1
+
+df_weights <- attr(df_ensemble, "weights")
+df_weights |>
+  dplyr::filter(model == m, location == l, target_type == t, quantile == q, horizon == h) |>
+  purrr::pluck("weights", 1)
+
+plot_intervals(
+  df_ensemble,
+  model = m, location = l, target_type = t, quantile = q, horizon = h
+)
 ```

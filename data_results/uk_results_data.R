@@ -3,7 +3,8 @@
 # including incomplete models as well requires individual treatment of models
 
 CQR <- FALSE
-CQR3 <- TRUE
+CQR3 <- FALSE
+CQR3_ENSEMBLE <- TRUE
 QSA_UNIFORM <- FALSE
 CQR_QSA_UNIFORM <- FALSE
 
@@ -35,11 +36,21 @@ if (CQR3) {
   df_updated <- update_predictions(
     df = uk_data, methods = c("cqr", "cqr_asymmetric", "cqr_multiplicative"),
     models = complete_models, cv_init_training = cv_init_training, verbose = TRUE
-  ) 
+  )
 
   df_combined <- df_updated |> collect_predictions()
 
   readr::write_rds(df_combined, file = here::here("data_results", "uk_cqr3.rds"))
+}
+
+if (CQR3_ENSEMBLE) {
+  df_combined <- readr::read_rds(here::here("data_results", "uk_cqr3.rds"))
+  df_ensemble <- add_ensemble(
+    df_combined,
+    train_val_split = TRUE, verbose = TRUE, max_iter = 1e5
+  )
+
+  readr::write_rds(df_ensemble, here::here("data_results", "uk_cqr3_ensemble.rds"))
 }
 
 if (QSA_UNIFORM) {
@@ -69,14 +80,3 @@ if (CQR_QSA_UNIFORM) {
     file = here::here("data_results", "uk_cqr_qsa_uniform.rds")
   )
 }
-
-# if (CQR_QSA_UNIFORM_ENSEMBLE) {
-#   df_combined <- readr::read_rds(here::here("data_results", "uk_cqr_qsa_uniform.rds"))
-#   df_extended <- df_combined |>
-#     add_ensemble(per_quantile_weights = TRUE, verbose = TRUE)
-#
-#   readr::write_rds(
-#     df_extended,
-#     file = here::here("data_results", "uk_cqr_qsa_uniform_ensemble.rds")
-#   )
-# }

@@ -39,6 +39,7 @@ df_combined <- readr::read_rds(here::here("data_results", "uk_cqr3.rds"))
 df_subset <- df_combined |> dplyr::filter(model == unique(df_combined$model)[1])
 
 df_ensemble <- add_ensemble(df_subset, train_val_split = FALSE, verbose = TRUE, max_iter = 1e5)
+attr(df_ensemble, which = "weights")
 ```
 
 # Interval Scores on Training Set

@@ -84,6 +84,14 @@ store_weights <- function(weights_df, weights, l, m, t, h, q) {
   weights_df
 }
 
+store_weights_low <- function(weights_df, weights, l, m, t, h, q) {
+  store_weights(weights_df, weights, l, m, t, h, q)
+}
+
+store_weights_high <- function(weights_df, weights, l, m, t, h, q) {
+  store_weights(weights_df, weights, l, m, t, h, 1 - q)
+}
+
 get_quantiles_low_matrix <- function(df_subset, q, methods) {
   df_subset |>
     dplyr::filter(.data$quantile == q) |>
@@ -133,7 +141,9 @@ update_subset_ensemble <- function(df_combined, ensemble_df, weights_df, methods
 
   score_matrix <- get_score_matrix(wide_score_subset, methods, q)
   weights <- compute_weights(score_matrix, max_iter, print_level)
-  weights_df <- store_weights(weights_df, weights, l, m, t, h, q)
+
+  weights_df <- store_weights_low(weights_df, weights, l, m, t, h, q)
+  weights_df <- store_weights_high(weights_df, weights, l, m, t, h, q)
 
   quantiles_low_matrix <- get_quantiles_low_matrix(df_subset, q, methods)
   quantiles_high_matrix <- get_quantiles_high_matrix(df_subset, q, methods)

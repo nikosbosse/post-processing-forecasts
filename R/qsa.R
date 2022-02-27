@@ -144,6 +144,9 @@ optimize_spread_factor <- function(method, subset, penalty_weight, optim_method,
   # We can get a hessian if we want but it takes additional compute time
   # starts with spread factor of 1 e.g. no spread necessary
   if (is.null(optim_method)) {optim_method <- "BFGS"}
+  if (optim_method == "BFGS") {
+    lower_bound_optim <- -Inf
+    upper_bound_optim <- Inf}
   
   if (method == "qsa_uniform") {
     
@@ -154,8 +157,9 @@ optimize_spread_factor <- function(method, subset, penalty_weight, optim_method,
     } else {
       if (is.null(par)) {par <- c(1)}
       optim_results <- optim(
-        par = par, fn = wrapper, subset = subset, method_pp = method, penalty_weight = penalty_weight,
-        gr = NULL, method = optim_method
+        par = par, fn = wrapper, subset = subset, method_pp = method, 
+        penalty_weight = penalty_weight, gr = NULL, method = optim_method, 
+        lower = lower_bound_optim, upper = upper_bound_optim
         ) # , hessian=T)
       optimal_spread_factor <- optim_results$par
     }
@@ -167,7 +171,8 @@ optimize_spread_factor <- function(method, subset, penalty_weight, optim_method,
     
     optim_results <- optim(
       par = par, fn = wrapper, subset = subset, method_pp = method,
-      penalty_weight = penalty_weight, gr = NULL, method = optim_method
+      penalty_weight = penalty_weight, gr = NULL, method = optim_method,
+      lower = lower_bound_optim, upper = upper_bound_optim
     ) # , hessian=T)
     optimal_spread_factor <- optim_results$par
     
@@ -180,7 +185,8 @@ optimize_spread_factor <- function(method, subset, penalty_weight, optim_method,
     
     optim_results <- optim(
       par = par, fn = wrapper, subset = subset, method_pp = method,
-      penalty_weight = penalty_weight, gr = NULL, method = optim_method
+      penalty_weight = penalty_weight, gr = NULL, method = optim_method,
+      lower = lower_bound_optim, upper = upper_bound_optim
     ) # , hessian=T)
     optimal_spread_factor <- optim_results$par
   }

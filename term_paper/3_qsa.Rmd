@@ -11,4 +11,36 @@ urlcolor: blue
 linkcolor: blue
 ---
 
-# Quantile Spread Averaging {#qsa}
+# Quantile Spread Adjustment {#qsa}
+
+The general idea behind the Quantile Spread Adjustment (QSA), is to adjust the spreads of each forecasted quantile by some factor. Quantile spreads are defined as the distance between the respective quantile and some basis. As basis three different points in the forecasting spectrum come into question: the median, the next inner neighbor and the symmetric interval quantile. The quantile spread for the different basis are illustrated in \Cref{fig:qs-basis}.
+
+```{r, qs-basis, echo=FALSE, out.width="80%", fig.cap="Quantile Spreads for different Basis"}
+knitr::include_graphics(
+  here::here("term_paper", "images", "qs_all.png"),
+  auto_pdf = TRUE
+)
+```
+
+We choose the median based definition of the quantile spreads for two main reasons. First, in contrast to the neighborhood based definition, the median basis has the advantage that different quantile spreads are independent of one another. This property makes finding the optimal quantile spread adjustments for a large set of quantiles much simpler. However it comes at the cost that theoretically adjustments can lead to quantile crossing, which would not be the case for neighborhood based adjustments. Our second reason to use the median basis is that it doesn't restrict adjustments to be symmetric for quantile pairs, as would is the case for the interval based approach.  
+
+## Theory
+
+Using the median based definition, the next step is to determine how to optimally adjust the quantile spreads. As target function, QSA uses the Weighted Interval Score (reference). Equation (reference) shows how the QSA weights $\mathbf{w}$ influence the WIS. 
+$$
+\begin{aligned}
+\mathbf{w}^*
+&= \operatorname*{arg\,min}_{\mathbf{w} \in \mathbb{R}^p} WIS_\alpha(\mathbf{y}) \\
+&= \operatorname*{arg\,min}_{\mathbf{w} \in \mathbb{R}^p} \sum_{i=1}^p \frac{\alpha}{2} \sum_{j=1}^n (u_{i,j}^*-l_{i,j}^*) + \frac{2}{\alpha} \cdot (l_{i,j}^*-y_j) \cdot \mathbf{1} (y_j \leq l_{i,j}^*) + \frac{2}{\alpha} \cdot (y_j-u_{i,j}^*) \cdot \mathbf{1}(y_j \geq u_{i,j}^*) \\
+\text{s.t.} \qquad l_{i,j}^* &= l_{i,j} + (l_{i,j}-m) \cdot (w_i^l-1) \quad \text{and} \quad 
+u_{i,j}^* = u_{i,j} + (u_{i,j}-m) \cdot (w_i^u-1)
+\end{aligned}
+$$
+For a given prediction interval level of $\alpha$, by varying the QSA factor $w_i^l$ for the lower and $w_i^u$ for the upper bound, QSA moves the quantiles from there original values $l_{i,j}$ and $u_{i,j}$ to there adjusted values $l_{i,j}^*$ and $u_{i,j}^*$. QSA factor values larger than 1 lead to an increase in the prediction interval, thus $w_i^l > 1$ reduces the value of $l_{i,j}^*$ and $w_i^u > 1$ increases the value of$u_{i,j}^*$. These changes have two effects, on the one side an increase in $w_i^l$ and $w_i^u$ reduces the sharpness and increases the WIS, on the other side the increased interval may capture more observation which reduces the under- and overprediction penalities in the WIS. Thus depending on the positions of the observed values and predicted quantiles, QSA will either increase or decrease the interval size in order to minimize the WIS.
+
+Next step is to describe the different flavors....
+
+
+
+
+

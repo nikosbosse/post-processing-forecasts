@@ -172,15 +172,15 @@ test_that("original and updated predictions are identical for qsa_flexibel_symme
 })
 
 #qsa_flexibel
-qs = c(0.2, 0.5, 0.9)
+qs = c(0.2, 0.5, 0.8)
 true_values_new = c(rep(50,4), 60, rep(90,5))
 
-df_combined <- test(qs=qs, true_values_new=true_values_new, methods = "qsa_flexibel with optim method BFGS")
+df_combined <- test(qs=qs, true_values_new=true_values_new, methods = "qsa_flexibel")
 
 updated_prediction_sorted <- df_combined[31:60,][order(df_combined[31:60,]$forecast_date),]$prediction 
 optimum <- rep(c(50, 50, 90),10)
 
-test_that("original and updated predictions are identical for qsa_flexibel", {
+test_that("original and updated predictions are identical for qsa_flexibel with optim method BFGS", {
   expect_equal(TRUE, any(abs(optimum - updated_prediction_sorted) < 1))
 })
 

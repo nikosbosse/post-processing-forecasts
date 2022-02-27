@@ -68,9 +68,9 @@ Although the data collection continues in regular frequency up to this day, our 
 
 ### Weighted Interval Score
 
-In order to quantify if the post-processed prediction intervals improve the original forecasts we chose the *Weighted Interval Score* (WIS) as our evaluation metric.
-The WIS combines measures for interval *sharpness* as well as *overprediction* and *underprediction*.
-It can thus be understood as a trade-off between prediction *accuracy* and *precision*.
+In order to quantify if the post-processed prediction intervals improve the original forecasts we chose the *Weighted Interval Score* (WIS) [@bracher2021] as our evaluation metric.
+The WIS is a so-called *Proper Scoring Rule* [@gneiting2007]: It incentivizes the forecaster to state their true best belief and cannot be manipulated to its own benefit.
+It combines measures for interval *sharpness* as well as *overprediction* and *underprediction* and can thus be understood as a trade-off between prediction *accuracy* and *precision*.
 
 More specifically, for a given quantile level $\alpha$, true observed value $y$ as well as lower bound $l$ and upper bound $u$ of the corresponding $(1 - \alpha) \cdot 100$% prediction interval, the Weighted Interval Score is computed as 
 <!--  --> 
@@ -98,7 +98,7 @@ As a consequence, no part of our data set must be dedicated to fitting the quant
 Instead of a hard cut-off between the splits we used *Time Series Cross Validation* to leverage a higher fraction of the data set for training.
 In contrast to classical cross validation for independent and identically distributed data, time series cross validation iterates through the data set along the time dimension one step at a time.
 
-The process is nicely illustrated in \Cref{fig:ch1-cv}^[Image Source: https://otexts.com/fpp3/tscv.html. @hyndman2021.].
+The process is nicely illustrated in \Cref{fig:ch1-cv}^[Image Source: https://otexts.com/fpp3/tscv.html [@hyndman2021].].
 
 ```{r, ch1-cv, echo=FALSE, out.width="80%", fig.cap="Time Series Cross Validation"}
 knitr::include_graphics(
@@ -136,7 +136,7 @@ The `postforecasts` functions that are meant to be visible to the end-user can b
     The function returns a list of $k+1$ equally shaped data frames for $k$ selected post-processing methods, the first element being the original, possibly filtered, data frame.
 
     All list elements can be analyzed separately or collectively by stacking them into one large data frame with the `collect_predictions()` function.
-    The combined data frame is designed to work well with analysis functions that are provided by the [scoringutils package](https://epiforecasts.io/scoringutils/) (@R-scoringutils).
+    The combined data frame is designed to work well with analysis functions that are provided by the [scoringutils package](https://epiforecasts.io/scoringutils/) [@R-scoringutils].
     Finally, an ensemble model of all selected methods can be appended which will be explained in \Cref{comparison} .
 
 3.  Evaluation

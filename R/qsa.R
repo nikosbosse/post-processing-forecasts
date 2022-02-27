@@ -137,21 +137,22 @@ line_search_optimizer <- function(factor_vec,subset){
   return(optimal_spread_factor)
 }
 
-optimize_spread_factor <- function(method, subset, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim, steps_optim,par=NULL){
+optimize_spread_factor <- function(method, subset, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim, steps_optim, par=NULL){
   # TODO: Decide if it is makes sense to write a gradient function that gives back the gradient dependent on the subset at that time point
   
   # optim minimizes the wrapper function
   # We can get a hessian if we want but it takes additional compute time
   # starts with spread factor of 1 e.g. no spread necessary
+  if (is.null(optim_method)) {optim_method <- "BFGS"}
+  
   if (method == "qsa_uniform") {
-    if (is.null(par)) {par <- c(1)}
-    if (is.null(optim_method)) {optim_method <- "BFGS"}
     
     if (optim_method == "line_search"){
       factor_vec <- seq(lower_bound_optim, upper_bound_optim, steps_optim)
       optimal_spread_factor <- line_search_optimizer(factor_vec,subset)
   
     } else {
+      if (is.null(par)) {par <- c(1)}
       optim_results <- optim(
         par = par, fn = wrapper, subset = subset, method_pp = method, penalty_weight = penalty_weight,
         gr = NULL, method = optim_method

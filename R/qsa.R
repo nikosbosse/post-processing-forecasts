@@ -137,7 +137,7 @@ line_search_optimizer <- function(factor_vec,subset){
   return(optimal_spread_factor)
 }
 
-optimize_spread_factor <- function(method,subset,penalty_weight,optim_method,lower_bound_optim,upper_bound_optim, steps_optim,par=NULL){
+optimize_spread_factor <- function(method, subset, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim, steps_optim,par=NULL){
   # TODO: Decide if it is makes sense to write a gradient function that gives back the gradient dependent on the subset at that time point
   
   # optim minimizes the wrapper function
@@ -154,7 +154,7 @@ optimize_spread_factor <- function(method,subset,penalty_weight,optim_method,low
     } else {
       optim_results <- optim(
         par = par, fn = wrapper, subset = subset, method_pp = method, penalty_weight = penalty_weight,
-        gr = NULL, method = optim_method, lower = lower_bound_optim, upper = upper_bound_optim, optim_method = "BFGS"
+        gr = NULL, method = optim_method
         ) # , hessian=T)
       optimal_spread_factor <- optim_results$par
     }
@@ -166,7 +166,7 @@ optimize_spread_factor <- function(method,subset,penalty_weight,optim_method,low
     
     optim_results <- optim(
       par = par, fn = wrapper, subset = subset, method_pp = method,
-      penalty_weight = penalty_weight, gr = NULL, method = optim_method, lower = lower_bound_optim, upper = upper_bound_optim
+      penalty_weight = penalty_weight, gr = NULL, method = optim_method
     ) # , hessian=T)
     optimal_spread_factor <- optim_results$par
     
@@ -179,7 +179,7 @@ optimize_spread_factor <- function(method,subset,penalty_weight,optim_method,low
     
     optim_results <- optim(
       par = par, fn = wrapper, subset = subset, method_pp = method,
-      penalty_weight = penalty_weight, gr = NULL, method = optim_method,  lower = lower_bound_optim, upper = upper_bound_optim
+      penalty_weight = penalty_weight, gr = NULL, method = optim_method
     ) # , hessian=T)
     optimal_spread_factor <- optim_results$par
   }

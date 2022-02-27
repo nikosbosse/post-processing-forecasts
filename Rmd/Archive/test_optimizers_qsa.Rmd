@@ -63,9 +63,9 @@ test <- function(qs = c(0.25, 0.5, 0.75),
                  cv_init_training = NULL,
                  quantile_plot = 0.25,
                  optim_method = "BFGS",
-                 lower_bound_optim = -Inf, 
-                 upper_bound_optim = Inf,
-                 optim_multiple_bounds_brent = FALSE){
+                 lower_bound_optim = 0, 
+                 upper_bound_optim = 5 #,optim_multiple_bounds_brent = FALSE
+                 ){
   
   # Get a subset of original data as template 
   # We only make it have the length of the true values (max remains 25)
@@ -104,7 +104,7 @@ test <- function(qs = c(0.25, 0.5, 0.75),
                                    optim_method = optim_method, 
                                    lower_bound_optim = lower_bound_optim, 
                                    upper_bound_optim = upper_bound_optim,
-                                   optim_multiple_bounds_brent = optim_multiple_bounds_brent,
+                                   #optim_multiple_bounds_brent = optim_multiple_bounds_brent,
                                    return_list = TRUE)
   
   # Combine DataFrames so that we can plot results

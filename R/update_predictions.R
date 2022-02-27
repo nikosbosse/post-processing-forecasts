@@ -3,7 +3,7 @@ update_predictions <- function(df, methods = c(
                                  "qsa_flexibel", "qsa_flexibel_symmetric"
                                ), models = NULL, locations = NULL,
                                target_types = NULL, horizons = NULL,
-                               quantiles = NULL, cv_init_trxaining = NULL,
+                               quantiles = NULL, cv_init_training = NULL,
                                penalty_weight = NULL, optim_method = NULL, 
                                lower_bound_optim = 0, upper_bound_optim = 5, steps_optim=0.1,
                                return_list = TRUE,

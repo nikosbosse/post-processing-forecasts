@@ -32,7 +32,7 @@ fix_quantile_crossing <- function(df_updated, model, location, target_type, hori
 
 update_predictions <- function(df, methods = c(
                                  "cqr", "cqr_asymmetric", "cqr_multiplicative",
-                                 "qsa_uniform", "qsa_flexibel", "qsa_flexibel_symmetric"
+                                 "qsa_uniform", "qsa_flexible", "qsa_flexible_symmetric"
                                ), models = NULL, locations = NULL,
                                target_types = NULL, horizons = NULL,
                                quantiles = NULL, cv_init_training = NULL,

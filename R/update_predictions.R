@@ -36,14 +36,12 @@ update_predictions <- function(df, methods = c(
                                ), models = NULL, locations = NULL,
                                target_types = NULL, horizons = NULL,
                                quantiles = NULL, cv_init_training = NULL,
-<<<<<<< HEAD
+                               #QSA method arguments
                                penalty_weight = NULL, optim_method = NULL, 
                                lower_bound_optim = 0, upper_bound_optim = 5, steps_optim=0.1,
-                               return_list = TRUE,
-=======
-                               penalty_weight = NULL, return_list = TRUE,
+                               #CQR method arguments
                                regularize_scores = FALSE, constrain_margins = FALSE,
->>>>>>> master
+                               return_list = TRUE,
                                verbose = FALSE) {
   # stops function for invalid input values
   validate_inputs(df, methods, models, locations, target_types, horizons, quantiles)
@@ -82,7 +80,7 @@ update_predictions <- function(df, methods = c(
             if (stringr::str_detect(method, "qsa")) {
               df_updated <- update_subset_qsa(
                 df_updated, method, model, location, target_type, horizon,
-                cv_init_training, penalty_weight
+                cv_init_training, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim, steps_optim
               )
             } else {
               # cqr methods use pair of quantiles => only needs lower quantiles
@@ -94,19 +92,9 @@ update_predictions <- function(df, methods = c(
                 )
               }
             }
-<<<<<<< HEAD
-
-            if (stringr::str_detect(method, "qsa")) {
-              df_updated <- update_subset_qsa(
-                df_updated, method, model, location, target_type, horizon,
-                cv_init_training, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim, steps_optim
-              ) # no quantile is passed
-            }
-=======
             df_updated <- fix_quantile_crossing(
               df_updated, model, location, target_type, horizon
             )
->>>>>>> master
           }
         }
       }

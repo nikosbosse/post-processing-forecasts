@@ -199,6 +199,32 @@ validate_methods <- function(methods) {
   }
 }
 
+validate_optim_methods <- function(methods,optim_method) {
+  implemented_methods <- c(
+    "cqr", "qsa_uniform", "qsa_flexibel", "qsa_flexibel_symmetric"
+  )
+  recommended_optim_methods <- c(
+    "BFGS", "line_search")
+  
+  if (!all(optim_method %in% recommended_optim_methods)) {
+    warning(stringr::str_glue(
+      "{optim_method} is not a recommended optimization method. We recommend BFGS for qsa_flexibel and qsa_symmetric and BFGS or line_search for qsa_uniform."
+    ))
+  }
+  
+  if (optim_method == "line_search" && any(methods %in% c("qsa_flexibel", "qsa_flexibel_symmetric"))) {
+    stop(stringr::str_glue(
+      "Line Search is not implemented for qsa_flexibel and qsa_symmetric as it is increasingly slow for larger parameter spaces. We recommend using BFGS for qsa_flexibel and qsa_symmetric."
+    ))
+  }
+  
+  if (any(optim_method %in% recommended_optim_methods) && any(methods %in% c("cqr"))) {
+    warning(stringr::str_glue(
+      "CQR method does not require optimization process. Thus the optim method set {optim_method} will have no effect of the cqr post processing."
+    ))
+  }
+}
+
 
 validate_input <- function(df, input, string) {
   if (!all(input %in% unique(df[[string]]))) {

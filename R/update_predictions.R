@@ -3,9 +3,9 @@ update_predictions <- function(df, methods = c(
                                  "qsa_flexibel", "qsa_flexibel_symmetric"
                                ), models = NULL, locations = NULL,
                                target_types = NULL, horizons = NULL,
-                               quantiles = NULL, cv_init_training = NULL,
-                               penalty_weight = NULL, optim_method = "BFGS", 
-                               lower_bound_optim = -Inf, upper_bound_optim = Inf,
+                               quantiles = NULL, cv_init_trxaining = NULL,
+                               penalty_weight = NULL, optim_method = NULL, 
+                               lower_bound_optim = 0, upper_bound_optim = 5, steps_optim=0.1,
                                return_list = TRUE,
                                verbose = FALSE) {
   # stops function for invalid input values
@@ -60,7 +60,7 @@ update_predictions <- function(df, methods = c(
             if (stringr::str_detect(method, "qsa")) {
               df_updated <- update_subset_qsa(
                 df_updated, method, model, location, target_type, horizon,
-                cv_init_training, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim
+                cv_init_training, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim, steps_optim
               ) # no quantile is passed
             }
           }

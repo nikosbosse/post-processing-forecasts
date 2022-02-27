@@ -57,7 +57,7 @@ compute_weights <- function(score_matrix, max_iter, print_level) {
 
   num_weights <- ncol(score_matrix)
   # initialize with random values out of [0, 1]
-  x0 <- runif(num_weights)
+  x0 <- stats::runif(num_weights)
 
   res <- nloptr::nloptr(
     x0 = x0,
@@ -96,7 +96,7 @@ get_quantiles_low_matrix <- function(df_subset, q, methods) {
 
 get_quantiles_high_matrix <- function(df_subset, q, methods) {
   df_subset |>
-    dplyr::filter(quantile == 1 - q) |>
+    dplyr::filter(.data$quantile == 1 - q) |>
     tidyr::pivot_wider(
       names_from = .data$method, values_from = .data$prediction
     ) |>

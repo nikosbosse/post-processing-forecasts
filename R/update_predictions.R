@@ -6,7 +6,6 @@ update_predictions <- function(df, methods = c(
                                quantiles = NULL, cv_init_training = NULL,
                                penalty_weight = NULL, optim_method = "BFGS", 
                                lower_bound_optim = -Inf, upper_bound_optim = Inf,
-                               optim_multiple_bounds_brent = FALSE,
                                return_list = TRUE,
                                verbose = FALSE) {
   # stops function for invalid input values
@@ -61,7 +60,7 @@ update_predictions <- function(df, methods = c(
             if (stringr::str_detect(method, "qsa")) {
               df_updated <- update_subset_qsa(
                 df_updated, method, model, location, target_type, horizon,
-                cv_init_training, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim, optim_multiple_bounds_brent
+                cv_init_training, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim
               ) # no quantile is passed
             }
           }

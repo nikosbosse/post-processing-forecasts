@@ -137,47 +137,25 @@ line_search_optimizer <- function(factor_vec,subset){
   return(optimal_spread_factor)
 }
 
-optimize_spread_factor <- function(method,subset,penalty_weight,optim_method,lower_bound_optim,upper_bound_optim,optim_multiple_bounds_brent,par=NULL){
+optimize_spread_factor <- function(method,subset,penalty_weight,optim_method,lower_bound_optim,upper_bound_optim,par=NULL){
   # TODO: Decide if it is makes sense to write a gradient function that gives back the gradient dependent on the subset at that time point
   
   # optim minimizes the wrapper function
   # We can get a hessian if we want but it takes additional compute time
   # starts with spread factor of 1 e.g. no spread necessary
   if (method == "qsa_uniform") {
-    if (is.null(par)) {par <- c(1)}
     
     if (optim_method == "line_search"){
       factor_vec <- seq(-10,10,0.1)
       optimal_spread_factor <- line_search_optimizer(factor_vec,subset)
-      
+  
     } else {
-      if (optim_multiple_bounds_brent == TRUE){
-        optim_method <- "Brent"
-        
-        symmetric_bounds <- c(10,9,8,7,6,5)
-        wis_value_best <- Inf
-        for (bound in symmetric_bounds){
-          
-          optim_results <- optim(
-            par = par, fn = wrapper, subset = subset, method_pp = method, penalty_weight = penalty_weight,
-            gr = NULL, method = optim_method, lower = -bound, upper = +bound
-          ) 
-          wis_value_current <- optim_results$value
-          optimal_spread_factor_current <- optim_results$par
-          
-          if (wis_value_current < wis_value_best){
-            wis_value_best <- wis_value_current
-            optimal_spread_factor_best <- optimal_spread_factor_current
-          }
-        }
-        optimal_spread_factor <- optimal_spread_factor_best
-        } else {
-        optim_results <- optim(
-          par = par, fn = wrapper, subset = subset, method_pp = method, penalty_weight = penalty_weight,
-          gr = NULL, method = optim_method, lower = lower_bound_optim, upper = upper_bound_optim #optim_method = "BFGS"
+      if (is.null(par)) {par <- c(1)}
+      optim_results <- optim(
+        par = par, fn = wrapper, subset = subset, method_pp = method, penalty_weight = penalty_weight,
+        gr = NULL, method = optim_method, lower = lower_bound_optim, upper = upper_bound_optim, optim_method = "BFGS"
         ) # , hessian=T)
-        optimal_spread_factor <- optim_results$par
-      }
+      optimal_spread_factor <- optim_results$par
     }
   } else if (method == "qsa_flexibel") {
     # getting number of spreads as: number of quantiles without the mean
@@ -208,7 +186,7 @@ optimize_spread_factor <- function(method,subset,penalty_weight,optim_method,low
 }
 
 
-update_subset_qsa <- function(df, method, model, location, target_type, horizon, cv_init_training, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim, optim_multiple_bounds_brent) {
+update_subset_qsa <- function(df, method, model, location, target_type, horizon, cv_init_training, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim) {
   # must be placed on filtered data frame (i.e. lowest level, not in
   # update_predictions()) such that fractional inputs can be correctly converted
   cv_init_training <- validate_cv_init(df, cv_init_training)

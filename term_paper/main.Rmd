@@ -27,7 +27,7 @@ knitr::opts_chunk$set(
 # creates bibliography file for R packages
 knitr::write_bib(
   c(
-    "dplyr", "ggplot2", "forcats", "lubridate", "rlang", "scales", "scoringutils",
+    "dplyr", "ggplot2", "forcats", "lubridate", "nloptr", "rlang", "scales", "scoringutils",
     "stats", "stringr", "tidyr", "tidyselect", "here", "kableExtra", "knitr", "readr",
     "rmarkdown", "testthat"
   ),
@@ -36,6 +36,7 @@ knitr::write_bib(
 ```
 
 ```{r child=here::here("term_paper", "0_introduction.Rmd")}
+
 ```
 
 \newpage

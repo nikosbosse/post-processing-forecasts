@@ -13,7 +13,7 @@ linkcolor: blue
 
 # Quantile Spread Adjustment {#qsa}
 
-The general idea behind the Quantile Spread Adjustment (QSA), is to adjust the spreads of each forecasted quantile by some factor. Quantile spreads are defined as the distance between the respective quantile and some basis. As basis three different points in the forecasting spectrum come into question: the median, the next inner neighbor and the symmetric interval quantile. The quantile spread for the different basis are illustrated in \Cref{fig:qs-basis}.
+The general idea behind the Quantile Spread Adjustment (QSA), is to adjust the spreads of each forecasted quantile by some factor. Quantile spreads are defined as the distance between the respective quantile and some basis. As basis three different points in the forecasting spectrum come into question: the median, the next inner neighbor and the symmetric interval quantile. The quantile spread for the different basis are illustrated in \ref{fig:qs-basis}.
 
 ```{r, qs-basis, echo=FALSE, out.width="80%", fig.cap="Quantile Spreads for different Basis"}
 knitr::include_graphics(

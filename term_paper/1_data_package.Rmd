@@ -29,7 +29,7 @@ devtools::load_all()
 
 Data Analysis is inherently build upon two foundational components: High Quality Data that allows to gain insight into the underlying data generating process and a structured and reproducible way to extract information out of the collected data.
 
-Thus, \Cref{data} introduces the two datasets we worked with whereas \Cref{package} provides an overview about the `postforecasts` package, a unified framework to apply and analyze various post-processing methods.
+Thus, \Cref{data} introduces the two data sets we worked with whereas \Cref{package} provides an overview about the `postforecasts` package, a unified framework to apply and analyze various post-processing methods.
 
 
 
@@ -136,7 +136,8 @@ The `postforecasts` functions that are meant to be visible to the end-user can b
 
     All list elements can be analyzed separately or collectively by stacking them into one large data frame with the `collect_predictions()` function.
     The combined data frame is designed to work well with analysis functions that are provided by the [scoringutils package](https://epiforecasts.io/scoringutils/) [@R-scoringutils].
-    Finally, an ensemble model of all selected methods can be appended which will be explained in \Cref{comparison} .
+    If multiple post-processing methods are applied, an ensemble model of all selected methods can be added via the `add_ensemble()` function, which lets the user access both the weighted ensemble predictions and a data frame with the corresponding weights.
+    The ensemble approach will be further explained in \Cref{comparison} .
 
 3.  Evaluation
 
@@ -215,6 +216,7 @@ The `update_predictions()` and `collect_predictions()` combination immediately g
 The only syntax change is a vector input of strings for the `methods` argument instead of a single string.
 Hence, if not desired, the user does not have to worry about which input and output features each method requires in its raw form nor how exactly each method is implemented.
 This design allows for maximum syntactic consistency through masking internal functionality.
+Moreover, the `update_predictions()` function automatically takes care of *quantile crossing* [@bassett1982] by reordering the output predictions in increasing quantile order.
 
 In the output above CQR increased the *dispersion* of the predictions for Cases significantly.
 These wider intervals for specific covariate combinations are visualized in \Cref{fig:ch1-intervals-germany}.

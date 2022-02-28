@@ -1,6 +1,9 @@
 ---
 output:
   bookdown::pdf_document2:
+    includes:
+      in_header: preamble.tex
+    toc: FALSE
     highlight: tango
     number_sections: TRUE
     df_print: tibble
@@ -9,6 +12,76 @@ bibliography: [paper.bib, packages.bib]
 biblio-style: apalike
 urlcolor: blue
 linkcolor: blue
+links-as-notes: true
 ---
 
 # Conformalized Quantile Regression {#cqr}
+
+This chapter introduces *Conformalized Quantile Regression (CQR)* as the first of two main post-processing procedures that we implemented in the `postforecasts` package.
+
+\Cref{cqr-traditional} explains the original Conformalized Quantile Regression algorithm as proposed in @romano2019.
+There, we highlight potential limitations of the traditional implementation that could potentially be fixed by more flexible modifications, which are discussed in \Cref{cqr-asymmetric} and \Cref{cqr-multiplicative}.
+
+## Traditional CQR {#cqr-traditional}
+
+All derivations in this sections are taken from the original paper [@romano2019].
+The authors motivate Conformalized Quantile Regression by stating two criteria that an ideal procedure for generating prediction intervals should satisfy:
+
+- It should provide valid coverage in finite samples without making strong distributional assumptions
+
+- The resulting intervals should be as short as possible at each point in the input space
+
+According to the authors, CQR performs well on both criteria while being *distribution-free* and adaptive to *heteroscedasticity*.
+
+### Statistical Validity
+
+The algorithm that CQR is build upon is statistically supported by the following Theorem:
+
+::: {.theorem #cqr}
+If $(X_i, Y_i), i = 1, \ldots, n+1$ are exchangeable, then the $(1 - \alpha) \cdot 100$% prediction interval $C(X_{n+1})$ constructed by the CQR algorithm satisfies
+<!--  -->
+$$
+\begin{aligned}
+P \left(Y_{n+1} \in C(X_{n+1}) \right) \geq 1 - \alpha.
+\end{aligned}
+$$
+<!--  -->
+Moreover, if the conformity scores $E_i$ are almost surely distinct, then the prediction interval is nearly perfectly calibrated:
+<!--  -->
+$$
+\begin{aligned}
+P \left( Y_{n+1} \in C(X_{n+1}) \right) \leq 1 - \alpha + \frac{ 1}{ \left| I_2 \right| + 1}, 
+\end{aligned}
+$$
+<!--  -->
+where $I_2$ denotes the calibration set.
+:::
+
+Thus, the first statement of \Cref{thm:cqr} provides a coverage *guarantee* in the sense that the adjusted prediction interval is *lower-bounded* by the desired coverage level.
+The second statement adds an *upper-bound* to the coverage probability which gets tighter with increasing sample size and asymptotically converges to the desired coverage level $1 - \alpha$ such that lower bound and upper bound are asymptotically identical.
+
+
+### Algorithm
+
+The CQR algorithm is best described as a multiple step procedure.
+
+
+
+
+
+
+
+
+
+
+
+
+## Asymmetric CQR {#cqr-asymmetric}
+
+
+
+
+## Multiplicative CQR {#cqr-multiplicative}
+
+
+text

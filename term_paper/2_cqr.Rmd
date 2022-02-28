@@ -63,12 +63,47 @@ The second statement adds an *upper-bound* to the coverage probability which get
 
 ### Algorithm
 
-The CQR algorithm is best described as a multiple step procedure.
+The CQR algorithm is best described as a multi-step procedure.
 
+**Step 1:** \
+Split the data into a training and validation (here called *calibration*) set, indexed by $I_1$ and $I_2$, respectively.
 
+**Step 2:** \
+For a given quantile $\alpha$ and a given quantile regression algorithm $\mathcal{A}$, calculate lower and upper interval bounds on the training set:
+<!--  -->
+$$
+\begin{aligned}
+\left\{ \hat{ q}_{\alpha, low}, \; \hat{ q}_{\alpha, high} \right\} \leftarrow \mathcal{A} \left( \left\{ (X_i, Y_i): i \in I_1 \right\} \right). 
+\end{aligned}
+$$
+<!--  -->
 
+**Step 3:** \
+Compute *conformity scores* on the calibration set:
+<!--  -->
+$$
+\begin{aligned}
+E_i := \operatorname*{max} \left\{ \hat{ q}_{\alpha, low}(X_i) - Y_i, \; Y_i - \hat{ q}_{\alpha, high}(X_i) \right\} \quad \forall \; i \in I_2
+\end{aligned}
+$$
+<!--  -->
+For each $i$, the corresponding score $E_i$ is *positive* if $Y_i$ is *outside* the interval $\left[ \hat{ q}_{\alpha, low}(X_i), \; \hat{ q}_{\alpha, high}(X_i) \right]$ and *negative* if $Y_i$ is *inside* the interval.
 
+**Step 4:** \
+Compute the *margin* $Q_{1 - \alpha}(E, I_2)$ given by the $(1 - \alpha)(1 + \frac{ 1}{ 1 + \left| I_2 \right| })$-th empirical quantile of the scores $E_i$ in the calibration set.
+For small sample sizes and small quantiles $\alpha$ the quantile above can be greater than $1$ in which case it is simply set to $1$ such that the maximum value of the score vector is selected.
 
+**Step 5:** \
+On the basis of the original prediction interval bounds $\hat{ q}_{\alpha, low}(X_i)$ and $\hat{ q}_{\alpha, high}(X_i)$, the new *post-processed* prediction interval for $Y_i$ is given by
+<!--  -->
+$$
+\begin{aligned}
+C(X_{n+1}) = \left[ \hat{ q}_{\alpha,  low}(X_i) - Q_{1 - \alpha}(E, I_2), \; \hat{ q}_{\alpha,  high}(X_i) + Q_{1 - \alpha}(E, I_2) \right].
+\end{aligned}
+$$
+<!--  -->
+Note that the *same* margin $Q_{1 - \alpha}(E, I_2)$ is subtracted from the original lower quantile prediction and added to the original upper quantile prediction.
+This limitation is adressed in \Cref{cqr-asymmetric}.
 
 
 
@@ -78,10 +113,53 @@ The CQR algorithm is best described as a multiple step procedure.
 
 ## Asymmetric CQR {#cqr-asymmetric}
 
+As noted in \Cref{cqr-traditional} this section suggests a first extension to the original algorithm.
+Instead of limiting ourselves to choosing the *same* margin $Q_{1 - \alpha}(E, I_2)$ for adjusting the original lower and upper quantile predictions, we allow for individual and, thus, generally different margins $Q_{1 - \alpha, low}(E, I_2)$ and $Q_{1 - \alpha, high}(E, I_2)$ such that the post-processed prediction interval is given by 
+<!--  -->
+$$
+\begin{aligned}
+C(X_{n+1}) = \left[ \hat{ q}_{\alpha, low}(X_i) - Q_{1 - \alpha, low}(E, I_2), \; \hat{ q}_{\alpha, high}(X_i) + Q_{1 - \alpha, high}(E, I_2) \right].
+\end{aligned}
+$$
+<!--  -->
 
+This asymmetric version additionally requires a change in the computation of the conformity scores. 
+Instead of considering the elementwise maximum of the differences between observed values $Y_i$ and original bounds, we simply compute two separate score vectors:
+<!--  -->
+$$
+\begin{aligned}
+E_{i, low} &:= \hat{ q}_{\alpha, low}(X_i) - Y_i \quad \forall \; i \in I_2 \\
+E_{i, high} &:= Y_i - \hat{ q}_{\alpha, high}(X_i) \quad \forall \; i \in I_2 
+\end{aligned}
+$$
+<!--  -->
 
 
 ## Multiplicative CQR {#cqr-multiplicative}
 
+On top of the asymmetric CQR version introduced in \Cref{cqr-asymmetric}, we can extend the CQR algorithm further.
+So far, the adjustments to the original prediction interval were always chosen in *additive* form.
+It may be useful to leverage the *magnitude* of the original bounds more explicitly by using *relative* or *multiplicative* adjustments.
 
-text
+Hence, we again compute separate margins $Q_{1 - \alpha, low}(E, I_2)$ and $Q_{1 - \alpha, high}(E, I_2)$ which are now *multiplied* with the existing forecasts.
+The post-processed prediction interval is then given by
+<!--  -->
+$$
+\begin{aligned}
+C(X_{n+1}) = \left[ \hat{ q}_{\alpha, low}(X_i) \cdot Q_{1 - \alpha, low}(E, I_2), \; \hat{ q}_{\alpha, high}(X_i) \cdot Q_{1 - \alpha, high}(E, I_2) \right].
+\end{aligned}
+$$
+<!--  -->
+
+Just like the asymmetric version, the computation of the score vectors is changed accordingly to respect the new multiplicative relationship:
+<!--  -->
+$$
+\begin{aligned}
+E_{i, low} &:= \frac{ Y_i}{ \hat{ q}_{\alpha, low}(X_i)} \quad \forall \; i \in I_2 \\
+E_{i, high} &:= \frac{ Y_i}{ \hat{ q}_{\alpha, high}(X_i)} \quad \forall \; i \in I_2,
+\end{aligned}
+$$
+<!--  -->
+where we have to exclude original predictions with the value $0$.
+Since in our application of Covid-19 Cases and Deaths all values are non-negative, we threshold the scores at zero such that $E_{i, low}$ equals $0$ whenever $\hat{ q}_{\alpha, low}(X_i) \leq 0$.
+

@@ -8,7 +8,6 @@ output:
     number_sections: TRUE
     df_print: tibble
     latex_engine: pdflatex
-    extra_dependencies: ["bbm"]
 bibliography: [paper.bib, packages.bib]
 biblio-style: apalike
 urlcolor: blue

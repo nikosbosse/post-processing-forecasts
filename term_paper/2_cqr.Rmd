@@ -118,11 +118,10 @@ Instead of limiting ourselves to choosing the *same* margin $Q_{1 - \alpha}(E, I
 <!--  -->
 $$
 \begin{aligned}
-C(X_{n+1}) = \left[ \hat{ q}_{\alpha, low}(X_i) - Q_{1 - \alpha, low}(E, I_2), \; \hat{ q}_{\alpha, high}(X_i) + Q_{1 - \alpha, high}(E, I_2) \right].
+C(X_{n+1}) = \left[ \hat{ q}_{\alpha, low}(X_i) - Q_{1 - \alpha, low}(E_{low}, I_2), \; \hat{ q}_{\alpha, high}(X_i) + Q_{1 - \alpha, high}(E_{high}, I_2) \right].
 \end{aligned}
 $$
 <!--  -->
-
 This asymmetric version additionally requires a change in the computation of the conformity scores. 
 Instead of considering the elementwise maximum of the differences between observed values $Y_i$ and original bounds, we simply compute two separate score vectors:
 <!--  -->
@@ -146,7 +145,7 @@ The post-processed prediction interval is then given by
 <!--  -->
 $$
 \begin{aligned}
-C(X_{n+1}) = \left[ \hat{ q}_{\alpha, low}(X_i) \cdot Q_{1 - \alpha, low}(E, I_2), \; \hat{ q}_{\alpha, high}(X_i) \cdot Q_{1 - \alpha, high}(E, I_2) \right].
+C(X_{n+1}) = \left[ \hat{ q}_{\alpha, low}(X_i) \cdot Q_{1 - \alpha, low}(E_{low}, I_2), \; \hat{ q}_{\alpha, high}(X_i) \cdot Q_{1 - \alpha, high}(E_{high}, I_2) \right].
 \end{aligned}
 $$
 <!--  -->
@@ -163,3 +162,47 @@ $$
 where we have to exclude original predictions with the value $0$.
 Since in our application of Covid-19 Cases and Deaths all values are non-negative, we threshold the scores at zero such that $E_{i, low}$ equals $0$ whenever $\hat{ q}_{\alpha, low}(X_i) \leq 0$.
 
+
+### Regularization
+
+While the idea of multiplicative correction terms is appealing, it turns out that the approach above is flawed in two ways:
+
+1.  Recall that the (lower) margin $Q_{1 - \alpha, low}(E, I_2)$ basically *picks* a value of the score vector $E_{low}$ at a given quantile level.
+    The score vectors are computed for each combination of *location*, *model*, *target type*, *horizon* and *quantile*, i.e. the number of values in the score vector is identical to the number of distinct time points in the training set.
+    For short time series such as our small UK data set, the margin selects the *largest* value in the score vector for small levels of $\alpha$ such as $0.01$ or $0.05$, where each such value represents a *ratio* of observed $Y_i$ and original prediction $\hat{ q}_{\alpha, low}(X_i)$.
+
+    As one might guess, these factors frequently get very large for small initial quantile predictions $\hat{ q}_{\alpha, low}(X_i)$ such that the selected margin for post-processing is unreasonably large.
+    In fact, the margin can remain huge if there exists a *single* outlier in the score vector.
+    In particular, this naive multiplicative version frequently adjusts the lower quantile prediction to a higher value than its upper quantile counterpart.
+
+    We counteract this extreme sensitivity to outliers by *reducing the spread* inside of the score vector to make it more well behaved. 
+    Since we deal with multiplicative factors it makes no sense to standardize them to zero mean and unit variance.
+    Instead, we regularize the score vector by pulling all values closer to $1$, while keeping all values nonnegative and respecting their *directions*, i.e. values smaller than $1$ that reduce the interval width keep doing so but to a lesser extent than before and, analogously, prior values greater than one remain to be greater than $1$. 
+
+    This goal is achieved by a *root transformation*.
+    Since a greater spread of the score vector should lead to larger regularization we settled on the corrections
+    <!--  -->
+    $$
+    \begin{aligned}
+    E_{i, low}^{reg} = E_{i, low}^{ \left( \frac{ 1}{ \sigma_{E_{low}}} \right)}, \quad 
+    E_{i, high}^{reg} = E_{i, high}^{ \left( \frac{ 1}{ \sigma_{E_{high}}} \right)},
+    \end{aligned}
+    $$
+    <!--  -->
+    where $\sigma_{E}$ denotes the standard deviation of the corresponding score vector.
+
+2.  Chances are high that at least *one* of the original true values $Y_i$ is larger than its corresponding lower quantile prediction $\hat{ q}_{\alpha, low}(X_i)$ such that the maximum of the (regularized) score vector is still larger than $1$.
+    Thus, the lower bound for small quantiles $\alpha$ is almost *always* pushed upwards. 
+    The same logic applies to the upper bound in which case the entire interval is shifted to the top.
+    This behaviour is usually not desired.
+
+    To prevent interval shifts, we add the additional constraint that the lower and upper margin must multiply to $1$, i.e.
+    <!--  -->
+    $$
+    \begin{aligned}
+    Q_{1 - \alpha, low} \cdot Q_{1 - \alpha, high} \stackrel{ !}{ =} 1.
+    \end{aligned}
+    $$
+    <!--  -->
+    Hence, when the lower bound is adjusted upwards $(Q_{1 - \alpha, low} > 1)$, the upper bound *must* decrease $(Q_{1 - \alpha, high} < 1)$ and the interval becomes smaller.
+    Similarly, when the upper bound is adjusted upwards $(Q_{1 - \alpha, high} > 1)$, the lower bound must decrease $(Q_{1 - \alpha, low} < 1)$ leading to larger intervals overall after post-processing.

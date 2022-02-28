@@ -11,7 +11,7 @@ output:
     latex_engine: pdflatex
 bibliography: [paper.bib, packages.bib]
 biblio-style: apalike
-urlcolor: blue
+urlcolor: black
 linkcolor: blue
 links-as-notes: true
 ---

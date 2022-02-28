@@ -1,14 +1,18 @@
 ---
 output:
   bookdown::pdf_document2:
+    includes:
+      in_header: preamble.tex
+    toc: FALSE
     highlight: tango
     number_sections: TRUE
     df_print: tibble
     latex_engine: pdflatex
 bibliography: [paper.bib, packages.bib]
 biblio-style: apalike
-urlcolor: blue
+urlcolor: black
 linkcolor: blue
+links-as-notes: true
 ---
 
 # Conclusion {#conclusion}

@@ -64,6 +64,7 @@ In contrast to the compact UK data described above, the European Forecast Hub da
 Further, the forecasters are knowledgeable research groups that submit their weekly predictions based on statistical models.
 Although the data collection continues in regular frequency up to this day, our data set is limited to a $32$-week span from March $2021$ until October $2021$.
 
+<!-- TODO: Describe most important columns of the data set such as horizon and target_type since we refer to these columns frequently -->
 
 
 ### Weighted Interval Score
@@ -75,9 +76,9 @@ It combines measures for interval *sharpness* as well as *overprediction* and *u
 More specifically, for a given quantile level $\alpha$, true observed value $y$ as well as lower bound $l$ and upper bound $u$ of the corresponding $(1 - \alpha) \cdot 100$% prediction interval, the Weighted Interval Score is computed as 
 <!--  --> 
 $$
-\begin{align}
-Score_\alpha(y) = (u-l) + \frac{2}{\alpha} \cdot (l-y) \cdot \mathbf{1} (y \leq l) + \frac{2}{\alpha} \cdot (y-u) \cdot \mathbf{1}(y \geq u).
-\end{align}
+\begin{aligned}
+Score_\alpha(y) = (u-l) + \frac{2}{\alpha} \cdot (l-y) \cdot \mathbbm{1} (y \leq l) + \frac{2}{\alpha} \cdot (y-u) \cdot \mathbbm{1}(y \geq u).
+\end{aligned}
 $$ 
 <!--  --> 
 The score of an entire model can then be obtained from a weighted sum over all (included) quantile levels $\alpha$.

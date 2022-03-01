@@ -190,7 +190,7 @@ validate_cv_init <- function(df, cv_init_training) {
 validate_methods <- function(methods) {
   implemented_methods <- c(
     "cqr", "cqr_asymmetric", "cqr_multiplicative",
-    "qsa_uniform", "qsa_flexibel", "qsa_flexibel_symmetric"
+    "qsa_uniform", "qsa_flexible", "qsa_flexible_symmetric"
   )
 
   if (!all(methods %in% implemented_methods)) {
@@ -202,20 +202,20 @@ validate_methods <- function(methods) {
 
 validate_optim_methods <- function(methods,optim_method) {
   implemented_methods <- c(
-    "cqr", "qsa_uniform", "qsa_flexibel", "qsa_flexibel_symmetric"
+    "cqr", "qsa_uniform", "qsa_flexible", "qsa_flexible_symmetric"
   )
   recommended_optim_methods <- c(
     "BFGS", "line_search")
   
   if (!all(optim_method %in% recommended_optim_methods)) {
     warning(stringr::str_glue(
-      "{optim_method} is not a recommended optimization method. We recommend BFGS for qsa_flexibel and qsa_symmetric and BFGS or line_search for qsa_uniform."
+      "{optim_method} is not a recommended optimization method. We recommend BFGS for qsa_flexible and qsa_symmetric and BFGS or line_search for qsa_uniform."
     ))
   }
   
-  if (optim_method == "line_search" && any(methods %in% c("qsa_flexibel", "qsa_flexibel_symmetric"))) {
+  if (optim_method == "line_search" && any(methods %in% c("qsa_flexible", "qsa_flexible_symmetric"))) {
     stop(stringr::str_glue(
-      "Line Search is not implemented for qsa_flexibel and qsa_symmetric as it is increasingly slow for larger parameter spaces. We recommend using BFGS for qsa_flexibel and qsa_symmetric."
+      "Line Search is not implemented for qsa_flexible and qsa_symmetric as it is increasingly slow for larger parameter spaces. We recommend using BFGS for qsa_flexible and qsa_symmetric."
     ))
   }
   

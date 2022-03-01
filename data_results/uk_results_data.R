@@ -3,15 +3,11 @@
 # including incomplete models as well requires individual treatment of models
 
 CQR <- FALSE
-<<<<<<< HEAD
-QSA_UNIFORM <- TRUE
+CQR3 <- FALSE
+CQR3_ENSEMBLE <- FALSE
+QSA_UNIFORM <- FALSE
 QSA_FLEXIBEL <- FALSE
 QSA_FLEXIBEL_SYMMETRIC <- FALSE
-=======
-CQR3 <- FALSE
-CQR3_ENSEMBLE <- TRUE
-QSA_UNIFORM <- FALSE
->>>>>>> master
 CQR_QSA_UNIFORM <- FALSE
 
 

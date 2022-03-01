@@ -11,7 +11,7 @@ output:
     latex_engine: pdflatex
 bibliography: [paper.bib, packages.bib]
 biblio-style: apalike
-urlcolor: blue
+urlcolor: black
 linkcolor: blue
 links-as-notes: true
 ---
@@ -27,7 +27,7 @@ knitr::opts_chunk$set(
 # creates bibliography file for R packages
 knitr::write_bib(
   c(
-    "dplyr", "ggplot2", "forcats", "lubridate", "rlang", "scales", "scoringutils",
+    "dplyr", "ggplot2", "forcats", "lubridate", "nloptr", "rlang", "scales", "scoringutils",
     "stats", "stringr", "tidyr", "tidyselect", "here", "kableExtra", "knitr", "readr",
     "rmarkdown", "testthat"
   ),

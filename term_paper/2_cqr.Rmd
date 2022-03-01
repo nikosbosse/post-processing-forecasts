@@ -1,14 +1,208 @@
 ---
 output:
   bookdown::pdf_document2:
+    includes:
+      in_header: preamble.tex
+    toc: FALSE
     highlight: tango
     number_sections: TRUE
     df_print: tibble
     latex_engine: pdflatex
 bibliography: [paper.bib, packages.bib]
 biblio-style: apalike
-urlcolor: blue
+urlcolor: black
 linkcolor: blue
+links-as-notes: true
 ---
 
 # Conformalized Quantile Regression {#cqr}
+
+This chapter introduces *Conformalized Quantile Regression (CQR)* as the first of two main post-processing procedures that we implemented in the `postforecasts` package.
+
+\Cref{cqr-traditional} explains the original Conformalized Quantile Regression algorithm as proposed in @romano2019.
+There, we highlight potential limitations of the traditional implementation that could potentially be fixed by more flexible modifications, which are discussed in \Cref{cqr-asymmetric} and \Cref{cqr-multiplicative}.
+
+## Traditional CQR {#cqr-traditional}
+
+All derivations in this sections are taken from the original paper [@romano2019].
+The authors motivate Conformalized Quantile Regression by stating two criteria that an ideal procedure for generating prediction intervals should satisfy:
+
+- It should provide valid coverage in finite samples without making strong distributional assumptions
+
+- The resulting intervals should be as short as possible at each point in the input space
+
+According to the authors, CQR performs well on both criteria while being *distribution-free* and adaptive to *heteroscedasticity*.
+
+### Statistical Validity
+
+The algorithm that CQR is build upon is statistically supported by the following Theorem:
+
+::: {.theorem #cqr}
+If $(X_i, Y_i), i = 1, \ldots, n+1$ are exchangeable, then the $(1 - \alpha) \cdot 100$% prediction interval $C(X_{n+1})$ constructed by the CQR algorithm satisfies
+<!--  -->
+$$
+\begin{aligned}
+P \left(Y_{n+1} \in C(X_{n+1}) \right) \geq 1 - \alpha.
+\end{aligned}
+$$
+<!--  -->
+Moreover, if the conformity scores $E_i$ are almost surely distinct, then the prediction interval is nearly perfectly calibrated:
+<!--  -->
+$$
+\begin{aligned}
+P \left( Y_{n+1} \in C(X_{n+1}) \right) \leq 1 - \alpha + \frac{ 1}{ \left| I_2 \right| + 1}, 
+\end{aligned}
+$$
+<!--  -->
+where $I_2$ denotes the calibration set.
+:::
+
+Thus, the first statement of \Cref{thm:cqr} provides a coverage *guarantee* in the sense that the adjusted prediction interval is *lower-bounded* by the desired coverage level.
+The second statement adds an *upper-bound* to the coverage probability which gets tighter with increasing sample size and asymptotically converges to the desired coverage level $1 - \alpha$ such that lower bound and upper bound are asymptotically identical.
+
+
+### Algorithm
+
+The CQR algorithm is best described as a multi-step procedure.
+
+**Step 1:** \
+Split the data into a training and validation (here called *calibration*) set, indexed by $I_1$ and $I_2$, respectively.
+
+**Step 2:** \
+For a given quantile $\alpha$ and a given quantile regression algorithm $\mathcal{A}$, calculate lower and upper interval bounds on the training set:
+<!--  -->
+$$
+\begin{aligned}
+\left\{ \hat{ q}_{\alpha, low}, \; \hat{ q}_{\alpha, high} \right\} \leftarrow \mathcal{A} \left( \left\{ (X_i, Y_i): i \in I_1 \right\} \right). 
+\end{aligned}
+$$
+<!--  -->
+
+**Step 3:** \
+Compute *conformity scores* on the calibration set:
+<!--  -->
+$$
+\begin{aligned}
+E_i := \operatorname*{max} \left\{ \hat{ q}_{\alpha, low}(X_i) - Y_i, \; Y_i - \hat{ q}_{\alpha, high}(X_i) \right\} \quad \forall \; i \in I_2
+\end{aligned}
+$$
+<!--  -->
+For each $i$, the corresponding score $E_i$ is *positive* if $Y_i$ is *outside* the interval $\left[ \hat{ q}_{\alpha, low}(X_i), \; \hat{ q}_{\alpha, high}(X_i) \right]$ and *negative* if $Y_i$ is *inside* the interval.
+
+**Step 4:** \
+Compute the *margin* $Q_{1 - \alpha}(E, I_2)$ given by the $(1 - \alpha)(1 + \frac{ 1}{ 1 + \left| I_2 \right| })$-th empirical quantile of the scores $E_i$ in the calibration set.
+For small sample sizes and small quantiles $\alpha$ the quantile above can be greater than $1$ in which case it is simply set to $1$ such that the maximum value of the score vector is selected.
+
+**Step 5:** \
+On the basis of the original prediction interval bounds $\hat{ q}_{\alpha, low}(X_i)$ and $\hat{ q}_{\alpha, high}(X_i)$, the new *post-processed* prediction interval for $Y_i$ is given by
+<!--  -->
+$$
+\begin{aligned}
+C(X_{n+1}) = \left[ \hat{ q}_{\alpha,  low}(X_i) - Q_{1 - \alpha}(E, I_2), \; \hat{ q}_{\alpha,  high}(X_i) + Q_{1 - \alpha}(E, I_2) \right].
+\end{aligned}
+$$
+<!--  -->
+Note that the *same* margin $Q_{1 - \alpha}(E, I_2)$ is subtracted from the original lower quantile prediction and added to the original upper quantile prediction.
+This limitation is adressed in \Cref{cqr-asymmetric}.
+
+
+
+
+
+
+
+## Asymmetric CQR {#cqr-asymmetric}
+
+As noted in \Cref{cqr-traditional} this section suggests a first extension to the original algorithm.
+Instead of limiting ourselves to choosing the *same* margin $Q_{1 - \alpha}(E, I_2)$ for adjusting the original lower and upper quantile predictions, we allow for individual and, thus, generally different margins $Q_{1 - \alpha, low}(E, I_2)$ and $Q_{1 - \alpha, high}(E, I_2)$ such that the post-processed prediction interval is given by 
+<!--  -->
+$$
+\begin{aligned}
+C(X_{n+1}) = \left[ \hat{ q}_{\alpha, low}(X_i) - Q_{1 - \alpha, low}(E_{low}, I_2), \; \hat{ q}_{\alpha, high}(X_i) + Q_{1 - \alpha, high}(E_{high}, I_2) \right].
+\end{aligned}
+$$
+<!--  -->
+This asymmetric version additionally requires a change in the computation of the conformity scores. 
+Instead of considering the elementwise maximum of the differences between observed values $Y_i$ and original bounds, we simply compute two separate score vectors:
+<!--  -->
+$$
+\begin{aligned}
+E_{i, low} &:= \hat{ q}_{\alpha, low}(X_i) - Y_i \quad \forall \; i \in I_2 \\
+E_{i, high} &:= Y_i - \hat{ q}_{\alpha, high}(X_i) \quad \forall \; i \in I_2 
+\end{aligned}
+$$
+<!--  -->
+
+
+## Multiplicative CQR {#cqr-multiplicative}
+
+On top of the asymmetric CQR version introduced in \Cref{cqr-asymmetric}, we can extend the CQR algorithm further.
+So far, the adjustments to the original prediction interval were always chosen in *additive* form.
+It may be useful to leverage the *magnitude* of the original bounds more explicitly by using *relative* or *multiplicative* adjustments.
+
+Hence, we again compute separate margins $Q_{1 - \alpha, low}(E, I_2)$ and $Q_{1 - \alpha, high}(E, I_2)$ which are now *multiplied* with the existing forecasts.
+The post-processed prediction interval is then given by
+<!--  -->
+$$
+\begin{aligned}
+C(X_{n+1}) = \left[ \hat{ q}_{\alpha, low}(X_i) \cdot Q_{1 - \alpha, low}(E_{low}, I_2), \; \hat{ q}_{\alpha, high}(X_i) \cdot Q_{1 - \alpha, high}(E_{high}, I_2) \right].
+\end{aligned}
+$$
+<!--  -->
+
+Just like the asymmetric version, the computation of the score vectors is changed accordingly to respect the new multiplicative relationship:
+<!--  -->
+$$
+\begin{aligned}
+E_{i, low} &:= \frac{ Y_i}{ \hat{ q}_{\alpha, low}(X_i)} \quad \forall \; i \in I_2 \\
+E_{i, high} &:= \frac{ Y_i}{ \hat{ q}_{\alpha, high}(X_i)} \quad \forall \; i \in I_2,
+\end{aligned}
+$$
+<!--  -->
+where we have to exclude original predictions with the value $0$.
+Since in our application of Covid-19 Cases and Deaths all values are non-negative, we threshold the scores at zero such that $E_{i, low}$ equals $0$ whenever $\hat{ q}_{\alpha, low}(X_i) \leq 0$.
+
+
+### Regularization
+
+While the idea of multiplicative correction terms is appealing, it turns out that the approach above is flawed in two ways:
+
+1.  Recall that the (lower) margin $Q_{1 - \alpha, low}(E, I_2)$ basically *picks* a value of the score vector $E_{low}$ at a given quantile level.
+    The score vectors are computed for each combination of *location*, *model*, *target type*, *horizon* and *quantile*, i.e. the number of values in the score vector is identical to the number of distinct time points in the training set.
+    For short time series such as our small UK data set, the margin selects the *largest* value in the score vector for small levels of $\alpha$ such as $0.01$ or $0.05$, where each such value represents a *ratio* of observed $Y_i$ and original prediction $\hat{ q}_{\alpha, low}(X_i)$.
+
+    As one might guess, these factors frequently get very large for small initial quantile predictions $\hat{ q}_{\alpha, low}(X_i)$ such that the selected margin for post-processing is unreasonably large.
+    In fact, the margin can remain huge if there exists a *single* outlier in the score vector.
+    In particular, this naive multiplicative version frequently adjusts the lower quantile prediction to a higher value than its upper quantile counterpart.
+
+    We counteract this extreme sensitivity to outliers by *reducing the spread* inside of the score vector to make it more well behaved. 
+    Since we deal with multiplicative factors it makes no sense to standardize them to zero mean and unit variance.
+    Instead, we regularize the score vector by pulling all values closer to $1$, while keeping all values nonnegative and respecting their *directions*, i.e. values smaller than $1$ that reduce the interval width keep doing so but to a lesser extent than before and, analogously, prior values greater than one remain to be greater than $1$. 
+
+    This goal is achieved by a *root transformation*.
+    Since a greater spread of the score vector should lead to larger regularization we settled on the corrections
+    <!--  -->
+    $$
+    \begin{aligned}
+    E_{i, low}^{reg} = E_{i, low}^{ \left( \frac{ 1}{ \sigma_{E_{low}}} \right)}, \quad 
+    E_{i, high}^{reg} = E_{i, high}^{ \left( \frac{ 1}{ \sigma_{E_{high}}} \right)},
+    \end{aligned}
+    $$
+    <!--  -->
+    where $\sigma_{E}$ denotes the standard deviation of the corresponding score vector.
+
+2.  Chances are high that at least *one* of the original true values $Y_i$ is larger than its corresponding lower quantile prediction $\hat{ q}_{\alpha, low}(X_i)$ such that the maximum of the (regularized) score vector is still larger than $1$.
+    Thus, the lower bound for small quantiles $\alpha$ is almost *always* pushed upwards. 
+    The same logic applies to the upper bound in which case the entire interval is shifted to the top.
+    This behaviour is usually not desired.
+
+    To prevent interval shifts, we add the additional constraint that the lower and upper margin must multiply to $1$, i.e.
+    <!--  -->
+    $$
+    \begin{aligned}
+    Q_{1 - \alpha, low} \cdot Q_{1 - \alpha, high} \stackrel{ !}{ =} 1.
+    \end{aligned}
+    $$
+    <!--  -->
+    Hence, when the lower bound is adjusted upwards $(Q_{1 - \alpha, low} > 1)$, the upper bound *must* decrease $(Q_{1 - \alpha, high} < 1)$ and the interval becomes smaller.
+    Similarly, when the upper bound is adjusted upwards $(Q_{1 - \alpha, high} > 1)$, the lower bound must decrease $(Q_{1 - \alpha, low} < 1)$ leading to larger intervals overall after post-processing.

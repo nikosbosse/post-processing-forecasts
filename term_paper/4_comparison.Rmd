@@ -1,14 +1,70 @@
 ---
 output:
   bookdown::pdf_document2:
+    includes:
+      in_header: preamble.tex
+    toc: FALSE
     highlight: tango
     number_sections: TRUE
     df_print: tibble
     latex_engine: pdflatex
 bibliography: [paper.bib, packages.bib]
 biblio-style: apalike
-urlcolor: blue
+urlcolor: black
 linkcolor: blue
+links-as-notes: true
 ---
 
 # Method Comparison {#comparison}
+
+This chapter aims to compare the effectiveness of all Post-Processing methods that were introduced in the previous chapters.
+In particular, we investigate if some methods consistently outperform other procedures across a wide range of scenarios, i.e. different data sets and different covariate combinations.
+
+Further, it will be interesting to observe the *types* of adjustments to the original forecasts:
+Some methods might improve the Weighted Interval Score by *extending* the interval width and thus increasing coverage whereas others might yield a similar final score by *shrinking* the prediction intervals leading to a higher precision.
+One can imagine even more variants: Moving the interval bounds farther apart or closer together can happen in a *symmetric* or *asymmetric* way and the interval's midpoint might stay *fixed* or get *shifted* throughout the post-processing process.
+
+Before jumping into the analysis, we propose one additional model that in contrast to those we have covered so far, does not add any new information to the equation.
+Instead, it *combines* the predictions from existing post-processing methods to build an *ensemble* prediction.
+The idea is that leveraging information from multiple independent algorithms can stabilize estimation since the ensemble learns to focus on a model with a strong performance for one particular covariate set while the same model might perform badly for an opposing covariate set and, thus, make little contributions to the ensemble in that case.
+
+Next, we explain the mathematical reasoning behind the ensemble model in more detail.
+
+## Ensemble Model
+
+There exist various options how to combine multiple building blocks into one ensemble.
+We chose an approach that can be efficiently computed by well-understood algorithms on the one hand and is highly interpretable on the other hand.
+Each quantile prediction of our ensemble model is a *convex combination* of the individual models, i.e. a linear combination where all weights are contained in the unit interval and sum up to one.
+Hence, the resulting value lives on the same scale as the original predictions and each weight can be interpreted as the *fractional contribution* of each building block model. 
+
+Consider one particular covariate combination of **model**, **location**, **horizon**, **target type** and **quantile**.
+Let $n$ specify the number of observations in the training set within this combination, $\mathbf{y} \in \mathbb{R}^n$ the vector of true values and $\hat{\mathbf{y}}_1, \ldots, \hat{\mathbf{y}}_k \in \mathbb{R}^n$ vectors of adjusted predictions from $k$ different post-processing procedures.
+
+Then, for each such combination, the ensemble model computes weights $\mathbf{w}^* \in [0, 1]^k$ by solving the following nonlinear constrained optimization problem:
+<!--  -->
+$$
+\begin{aligned}
+\mathbf{w}^*
+= \operatorname*{arg\,min}_{ \mathbf{w} \in [0, 1]^k} WIS_\alpha(\mathbf{y})
+&= \operatorname*{arg\,min}_{ \mathbf{w} \in [0, 1]^k} (\mathbf{u}-\mathbf{l}) + \frac{2}{\alpha} \cdot (\mathbf{l}-\mathbf{y}) \cdot \mathbbm{1} (\mathbf{y} \leq \mathbf{l}) + \frac{2}{\alpha} \cdot (\mathbf{y}-\mathbf{u}) \cdot \mathbbm{1}(\mathbf{y} \geq \mathbf{u}), \\
+\text{with} \qquad \mathbf{l} &= \sum_{j=1}^{k} w_j \mathbf{l}_j, \;\; \mathbf{u} = \sum_{j=1}^{k} w_j \mathbf{u}_j \\
+\text{s.t.} \qquad \sum_{j=1}^{k} w_j &= 1,
+\end{aligned}
+$$
+<!--  -->
+where all operations for vector inputs $\mathbf{l}$, $\mathbf{u}$ and $\mathbf{y}$ are understood elementwise and the *same* weights $w_j$, $j = 1, \ldots, k$ are chosen for lower and upper quantiles.  
+
+Hence, we choose the (nonlinear) Weighted Interval Score as our objective function that we minimize subject to linear constraints.
+The optimization step is implemented with the [nloptr](https://cran.r-project.org/web/packages/nloptr/index.html) package [@R-nloptr], which describes itself as *an R interface to NLopt, a free/open-source library for nonlinear optimization*.
+
+Note that, technically, the weight vector has to be denoted by $\mathbf{w}_{m, l, h, t, q}^*$ since the computed weights are generally different for each combination.
+We omit the subscripts at this point to keep the notation clean.
+
+The Weighted Interval Score always considers *pairs* of quantiles $\alpha$ and $1 - \alpha$ that constitute a $(1 - 2 \cdot \alpha)$ prediction interval.
+The best results are achieved when a separate weight vector for each quantile pair is computed.
+Since our data sets contains $11$ quantile pairs, $2$ target types, $4$ horizons and we consider $6$ different forecasters, the ensemble model requires solving $11 \cdot 2 \cdot 4 \cdot 6 = 528$ nonlinear optimization problems for each location, which amounts to $18 \cdot 528 = 9504$ optimzation problems for the European Hub Data Set.
+
+Due to this high computational cost the *maximum number of iterations* within each optimization was an important hyperparameter that balanced the trade-off between computational feasibilty and sufficient convergence.
+Here, we ultimately settled with $10.000$ maximum steps which could ensure convergence with respect to a *tolerance level* of $10^{-8}$ in the vast majority of cases.
+
+Finally, it is worth noting that the weight vector of the ensemble model $\mathbf{w}^*$ is learned on a *training set* such that a fair comparison with all individual post-processing methods on a *validation set* is possible.

@@ -46,6 +46,7 @@ parallel_update_predictions <- function(df, methods = c(
                                #QSA method arguments
                                penalty_weight = NULL, optim_method = NULL, 
                                lower_bound_optim = 0, upper_bound_optim = 5, steps_optim=0.1,
+                               parallel=FALSE,
                                #CQR method arguments
                                regularize_scores = FALSE, constrain_margins = FALSE,
                                return_list = TRUE,
@@ -76,60 +77,93 @@ parallel_update_predictions <- function(df, methods = c(
 
     df_updated <- df_preprocessed
     if (stringr::str_detect(method, "qsa")) {
-      model_vec <- c()
-      location_vec <- c()
-      target_type_vec <- c()
-      horizon_vec <- c()
-      method_vec <- c()
-      cv_init_training_vec <- c()
-      #penalty_weight_vec <- c()
-      optim_method_vec <- c()
-      lower_bound_optim_vec <- c()
-      upper_bound_optim_vec <- c()
-      steps_optim_vec <- c()
-      for (m in models) {
-        for (l in locations) {
-          for (t in target_types) {
-            for (h in horizons) {
-              #subset <- dplyr::filter(df_preprocessed, .data$model == m & .data$location == l & .data$target_type == t & .data$horizon == h)
-              #subset_vec <- c(subset_vec,subset)
-              model_vec <- c(model_vec,m)
-              location_vec <- c(location_vec,l)
-              target_type_vec <- c(target_type_vec,t)
-              horizon_vec <- c(horizon_vec,h)
-              
-              method_vec <- c(method_vec, method)
-              cv_init_training_vec <- c(cv_init_training_vec,cv_init_training)
-              #penalty_weight_vec <- c(penalty_weight_vec,penalty_weight)
-              optim_method_vec <- c(optim_method_vec,optim_method)
-              lower_bound_optim_vec <- c(lower_bound_optim,lower_bound_optim)
-              upper_bound_optim_vec <- c(upper_bound_optim_vec,upper_bound_optim)
-              steps_optim_vec <- c(steps_optim_vec,steps_optim)
-  
-            }}}} 
-      
-      df_updated <- foreach(m=model_vec,
-                            l=location_vec,
-                            t=target_type_vec,
-                            h=horizon_vec,
-                            #subset=subset_vec, 
-                            method=method_vec, 
-                            cv_init_training=cv_init_training_vec, 
-                            #penalty_weight=penalty_weight_vec, 
-                            optim_method=optim_method_vec, 
-                            lower_bound_optim=lower_bound_optim_vec, 
-                            upper_bound_optim=upper_bound_optim_vec, 
-                            steps_optim=steps_optim_vec,
-                            .combine='rbind') %dopar% {
-        subset <- dplyr::filter(df_preprocessed, .data$model == m & .data$location == l & .data$target_type == t & .data$horizon == h)
-        penalty_weight <- NULL
-        updated_subset <- parallel_update_subset_qsa(subset, method, cv_init_training, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim, steps_optim)
-        updated_subset <- fix_quantile_crossing(updated_subset, model, location, target_type, horizon)
-        return(updated_subset)}
-      
+      if (parallel == TRUE) {
+        #model_vec <- c()
+        #location_vec <- c()
+        #target_type_vec <- c()
+        #horizon_vec <- c()
+        #method_vec <- c()
+        
+        time_series_ids <- setNames(data.frame(matrix(ncol = 4, nrow = 0)), c("model", "location", "target_type", "horizon"))
+        
+        #cv_init_training_vec <- c()
+        #penalty_weight_vec <- c()
+        #optim_method_vec <- c()
+        #lower_bound_optim_vec <- c()
+        #upper_bound_optim_vec <- c()
+        #steps_optim_vec <- c()
+        for (m in models) {
+          for (l in locations) {
+            for (t in target_types) {
+              for (h in horizons) {
+                #subset <- dplyr::filter(df_preprocessed, .data$model == m & .data$location == l & .data$target_type == t & .data$horizon == h)
+                #subset_vec <- c(subset_vec,subset)
+                
+                #model_vec <- c(model_vec,m)
+                #location_vec <- c(location_vec,l)
+                #target_type_vec <- c(target_type_vec,t)
+                #horizon_vec <- c(horizon_vec,h)
+                
+                time_series_ids[nrow(time_series_ids)+1,] <- c(m,l,t,h)
+                
+                #method_vec <- c(method_vec, method)
+                #cv_init_training_vec <- c(cv_init_training_vec,cv_init_training)
+                #penalty_weight_vec <- c(penalty_weight_vec,penalty_weight)
+                #optim_method_vec <- c(optim_method_vec,optim_method)
+                #lower_bound_optim_vec <- c(lower_bound_optim,lower_bound_optim)
+                #upper_bound_optim_vec <- c(upper_bound_optim_vec,upper_bound_optim)
+                #steps_optim_vec <- c(steps_optim_vec,steps_optim)
+                #TODO: use a dataframe instead of multiple vectors here
+                
+              }}}} 
+        
+        df_updated <- foreach(m=time_series_ids["model"][[1]], #model_vec,
+                              l=time_series_ids["location"][[1]], #location_vec,
+                              t=time_series_ids["target_type"][[1]], #target_type_vec,
+                              h=time_series_ids["horizon"][[1]], #horizon_vec,
+                              #subset=subset_vec, 
+                              #method=method_vec, 
+                              #cv_init_training=cv_init_training_vec, 
+                              #penalty_weight=penalty_weight_vec, 
+                              #optim_method=optim_method_vec, 
+                              #lower_bound_optim=lower_bound_optim_vec, 
+                              #upper_bound_optim=upper_bound_optim_vec, 
+                              #steps_optim=steps_optim_vec,
+                              .combine='rbind') %dopar% {
+                                subset <- dplyr::filter(df_preprocessed, .data$model == m & .data$location == l & .data$target_type == t & .data$horizon == h)
+                                #penalty_weight <- NULL
+                                updated_subset <- parallel_update_subset_qsa(subset, method, cv_init_training, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim, steps_optim)
+                                updated_subset <- fix_quantile_crossing(updated_subset, m, l, t, h)
+                                return(updated_subset)}
+      } else {
+        #QSA run in sequence
+        for (m in models) {
+          for (l in locations) {
+            if (verbose) {
+              cat(
+                "method = ", method, " | model = ", model, " | location = ", location, "\n",
+                sep = ""
+              )
+            }
+            for (t in target_types) {
+              for (h in horizons) {
+                df_updated <- update_subset_qsa(
+                  df_updated, method, model, location, target_type, horizon,
+                  cv_init_training, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim, steps_optim
+                )
+              }}}}
+        df_updated <- fix_quantile_crossing(df_updated, model, location, target_type, horizon)
+        
+      }
     } else {
       for (m in models) {
         for (l in locations) {
+          if (verbose) {
+            cat(
+              "method = ", method, " | model = ", model, " | location = ", location, "\n",
+              sep = ""
+            )
+          }
           for (t in target_types) {
             for (h in horizons) {
               # cqr methods use pair of quantiles => only needs lower quantiles
@@ -138,10 +172,8 @@ parallel_update_predictions <- function(df, methods = c(
                 df_updated <- update_subset_cqr(
                   df_updated, method, model, location, target_type, horizon,
                   quantile, cv_init_training)
-              
-              df_updated <- fix_quantile_crossing(df_updated, model, location, target_type, horizon)
-              
               }}}}}
+      df_updated <- fix_quantile_crossing(df_updated, model, location, target_type, horizon)
     }
 
   # updated data frames are named after corresponding method

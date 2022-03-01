@@ -91,7 +91,7 @@ verbose = FALSE) {
                 time_series_ids[nrow(time_series_ids)+1,] <- c(m,l,t,h)
               }}}} 
         #Run QSA updates in parallel
-        df_updated <- foreach(m=time_series_ids["model"][[1]],
+        df_updated <- foreach::foreach(m=time_series_ids["model"][[1]],
                               l=time_series_ids["location"][[1]],
                               t=time_series_ids["target_type"][[1]],
                               h=time_series_ids["horizon"][[1]],

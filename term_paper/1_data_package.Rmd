@@ -45,7 +45,7 @@ The final paragraphs continue with a description of our evaluation procedure fro
 As part of an ongoing research project by the *epiforecasts* group at the London School of Hygiene & Tropical Medicine the [UK Covid-19 Crowd Forecasting Challenge](https://www.crowdforecastr.org/2021/05/11/uk-challenge/) consisted of submitting weekly predictions of Covid-19 Cases and Deaths in the United Kingdom in $2021$.
 The challenge was not restricted to experienced researchers in the field but rather intended to collect quantile predictions for the upcoming four weeks by non-expert individuals.
 
-One of the main motivations was to gather evidence for or against the hypotheses that humans are highly capable of submitting precise *point forecasts*.#
+One of the main motivations was to gather evidence for or against the hypotheses that humans are highly capable of submitting precise *point forecasts*.
 Yet, at the same time, they tend to be too confident in their beliefs such that prediction *intervals* are chosen too narrow.
 In fact, this tendency represents one motivation for post-processing: Extract valuable information from point forecasts and adjust the corresponding prediction intervals with a systematic correction procedure.
 
@@ -54,7 +54,6 @@ Therefore all participants could determine an uncertainty parameter around their
 Note that this procedure leads to *symmetric* forecast intervals.
 
 The results of the $12$-week challenge are [publicly available](https://epiforecasts.io/uk-challenge/).
-
 
 
 ### European Covid-19 Forecast Hub

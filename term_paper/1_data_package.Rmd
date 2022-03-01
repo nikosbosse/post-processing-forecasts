@@ -36,23 +36,24 @@ Thus, \Cref{data} introduces the two data sets we worked with whereas \Cref{pack
 ## Data & Methodology {#data}
 
 This section first introduces the two data sources that all of our analysis is based on.
-Afterwards, the final paragraphs explain our evaluation procedure from a theoretical view point.
+The final paragraphs continue with a description of our evaluation procedure from a theoretical point of view.
 
 
 
 ### UK Covid-19 Crowd Forecasting Challenge
 
-As part of an ongoing research project by the *epiforecasts* group at the London School of Hygiene & Tropical Medicine the [UK Covid-19 Crowd Forecasting Challenge](https://www.crowdforecastr.org/2021/05/11/uk-challenge/) consisted of submitting weekly predictions of Covid-19 Cases and Deaths in the United Kingdom.
-The challenge was not restricted to experienced researchers in the field but rather intended to collect quantile predictions for the upcomning four weeky by non-expert individuals.
+As part of an ongoing research project by the *epiforecasts* group at the London School of Hygiene & Tropical Medicine the [UK Covid-19 Crowd Forecasting Challenge](https://www.crowdforecastr.org/2021/05/11/uk-challenge/) consisted of submitting weekly predictions of Covid-19 Cases and Deaths in the United Kingdom in $2021$.
+The challenge was not restricted to experienced researchers in the field but rather intended to collect quantile predictions for the upcoming four weeks by non-expert individuals.
 
-One of the main motivations was to gather evidence for or against the hypotheses that humans are highly capable of submitting precise *point forecasts*, yet, at the same time, they tend to be too confident in their beliefs such that prediction *intervals* are chosen too narrow.
+One of the main motivations was to gather evidence for or against the hypotheses that humans are highly capable of submitting precise *point forecasts*.#
+Yet, at the same time, they tend to be too confident in their beliefs such that prediction *intervals* are chosen too narrow.
 In fact, this tendency represents one motivation for post-processing: Extract valuable information from point forecasts and adjust the corresponding prediction intervals with a systematic correction procedure.
 
-In case of individuals that are unfamiliar with statistical methodology specifying forecasts for $23$ quantiles ranging from 0.01 to 0.99 separately might lead to inconsistencies.
+In case of individuals that are unfamiliar with statistical methodology,d specifying forecasts for very specific quantiles of the predictive distribution might lead to inconsistencies.
 Therefore all participants could determine an uncertainty parameter around their median prediction via an interactive web application such that all quantile predictions could be concluded in an automatic fashion.
 Note that this procedure leads to *symmetric* forecast intervals.
 
-The results of the 12-week challenge are [publicly available](https://epiforecasts.io/uk-challenge/).
+The results of the $12$-week challenge are [publicly available](https://epiforecasts.io/uk-challenge/).
 
 
 
@@ -64,7 +65,31 @@ In contrast to the compact UK data described above, the European Forecast Hub da
 Further, the forecasters are knowledgeable research groups that submit their weekly predictions based on statistical models.
 Although the data collection continues in regular frequency up to this day, our data set is limited to a $32$-week span from March $2021$ until October $2021$.
 
-<!-- TODO: Describe most important columns of the data set such as horizon and target_type since we refer to these columns frequently -->
+The overall structure of the two data sets introduced above is very similar.
+Since we will refer to some particularly important columns by name frequently throughout the next chapters, they are briefly described here:
+
+- `location`: The country for which the forecasts were submitted.
+Equals `GB` for the UK data; our analysis for the European Forecast Hub data selects $18$ different European countries.
+
+- `model`: The forecaster (group).
+Mostly (non-expert) individuals for the UK data and international research groups for the European Forecast Hub.
+
+- `target_type`: Either Covid-19 Cases or Covid-19 Deaths.
+
+- `horizon`: The time horizon how far in advance the predictions were submitted.
+Ranges from $1$ week-ahead to $4$ weeks-ahead.
+
+- `forecast_date`: The exact date when the forecasts were submitted. 
+
+- `target_end_date`: The exact date for which the forecasts were submitted.
+
+- `quantile`: One of $23$ different quantile values ranging from $0.01$ to $0.99$.
+
+- `prediction`: The predicted value for one specific combination of the variables above.
+
+- `true_value`: The actual, observed number of Covid-19 Cases or Deaths. 
+This value is repeated $23$ times, once for each quantile value. 
+
 
 
 ### Weighted Interval Score

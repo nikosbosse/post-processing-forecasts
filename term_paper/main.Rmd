@@ -36,7 +36,6 @@ knitr::write_bib(
 ```
 
 ```{r child=here::here("term_paper", "0_introduction.Rmd")}
-
 ```
 
 \newpage

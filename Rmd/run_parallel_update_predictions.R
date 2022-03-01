@@ -57,17 +57,27 @@ toc()
 nrow(df_updated_sequence$qsa_uniform) == nrow(df_updated_sequence$original)
 
 #As expected the time spent is about halfed by 2 cores (will converge towards half for more models, here only 2)
-272.797  / 465.232 # = 0.5863677
+#272.797  / 465.232 # = 0.5863677
 
 # Combine DataFrames so that we can plot results
 df_combined_parallel <- df_updated_parallel |> collect_predictions()
 df_combined_sequence <- df_updated_sequence |> collect_predictions()
 
 # Plot results for a specific quantile
-plot_intervals(df_combined_parallel, model = m, location = l, target_type = t, quantile = 0.2, horizon = 1)
-plot_intervals(df_combined_sequence, model = m, location = l, target_type = t, quantile = 0.2, horizon = 1)
+#plot_intervals(df_combined_parallel, model = m, location = l, target_type = t, quantile = 0.2, horizon = 1)
+#plot_intervals(df_combined_sequence, model = m, location = l, target_type = t, quantile = 0.2, horizon = 1)
 
 # plots are identical except the parallel version misses the cv arguement
-#TODO: add cv arguement to the dataframe in parallel computation
 
+any(df_updated_sequence$qsa_uniform[
+  order( df_updated_sequence$qsa_uniform[,"model"], 
+         df_updated_sequence$qsa_uniform[,"target_type"], 
+         df_updated_sequence$qsa_uniform[,"horizon"], 
+         df_updated_sequence$qsa_uniform[,"horizon"] ),
+] == df_updated_parallel$qsa_uniform[
+  order( df_updated_parallel$qsa_uniform[,"model"], 
+         df_updated_parallel$qsa_uniform[,"target_type"], 
+         df_updated_parallel$qsa_uniform[,"horizon"], 
+         df_updated_parallel$qsa_uniform[,"horizon"] ),
+])
 

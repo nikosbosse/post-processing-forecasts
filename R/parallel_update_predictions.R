@@ -70,65 +70,28 @@ parallel_update_predictions <- function(df, methods = c(
   # store updated dataframes for all methods in list
   updated_list <- list()
   
-  #TODO: set standard values to 0 not Null because R cant create a vector only containing the value Null multiple times, see penalty_weight
-  #TODO: discuss if parallel processing cqr is sensible
-
+  #TODO: add cv length as arguement
   for (method in c(methods)) {
 
     df_updated <- df_preprocessed
     if (stringr::str_detect(method, "qsa")) {
+      
       if (parallel == TRUE) {
-        #model_vec <- c()
-        #location_vec <- c()
-        #target_type_vec <- c()
-        #horizon_vec <- c()
-        #method_vec <- c()
+        #QSA run in parallel
         
+        #Define all combinations of variables over which we id the time series to which we apply qsa
         time_series_ids <- setNames(data.frame(matrix(ncol = 4, nrow = 0)), c("model", "location", "target_type", "horizon"))
-        
-        #cv_init_training_vec <- c()
-        #penalty_weight_vec <- c()
-        #optim_method_vec <- c()
-        #lower_bound_optim_vec <- c()
-        #upper_bound_optim_vec <- c()
-        #steps_optim_vec <- c()
         for (m in models) {
           for (l in locations) {
             for (t in target_types) {
               for (h in horizons) {
-                #subset <- dplyr::filter(df_preprocessed, .data$model == m & .data$location == l & .data$target_type == t & .data$horizon == h)
-                #subset_vec <- c(subset_vec,subset)
-                
-                #model_vec <- c(model_vec,m)
-                #location_vec <- c(location_vec,l)
-                #target_type_vec <- c(target_type_vec,t)
-                #horizon_vec <- c(horizon_vec,h)
-                
                 time_series_ids[nrow(time_series_ids)+1,] <- c(m,l,t,h)
-                
-                #method_vec <- c(method_vec, method)
-                #cv_init_training_vec <- c(cv_init_training_vec,cv_init_training)
-                #penalty_weight_vec <- c(penalty_weight_vec,penalty_weight)
-                #optim_method_vec <- c(optim_method_vec,optim_method)
-                #lower_bound_optim_vec <- c(lower_bound_optim,lower_bound_optim)
-                #upper_bound_optim_vec <- c(upper_bound_optim_vec,upper_bound_optim)
-                #steps_optim_vec <- c(steps_optim_vec,steps_optim)
-                #TODO: use a dataframe instead of multiple vectors here
-                
               }}}} 
-        
-        df_updated <- foreach(m=time_series_ids["model"][[1]], #model_vec,
-                              l=time_series_ids["location"][[1]], #location_vec,
-                              t=time_series_ids["target_type"][[1]], #target_type_vec,
-                              h=time_series_ids["horizon"][[1]], #horizon_vec,
-                              #subset=subset_vec, 
-                              #method=method_vec, 
-                              #cv_init_training=cv_init_training_vec, 
-                              #penalty_weight=penalty_weight_vec, 
-                              #optim_method=optim_method_vec, 
-                              #lower_bound_optim=lower_bound_optim_vec, 
-                              #upper_bound_optim=upper_bound_optim_vec, 
-                              #steps_optim=steps_optim_vec,
+        #Run QSA updates in parallel
+        df_updated <- foreach(m=time_series_ids["model"][[1]],
+                              l=time_series_ids["location"][[1]],
+                              t=time_series_ids["target_type"][[1]],
+                              h=time_series_ids["horizon"][[1]],
                               .combine='rbind') %dopar% {
                                 subset <- dplyr::filter(df_preprocessed, .data$model == m & .data$location == l & .data$target_type == t & .data$horizon == h)
                                 #penalty_weight <- NULL

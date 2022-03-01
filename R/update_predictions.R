@@ -140,10 +140,10 @@ verbose = FALSE) {
               quantiles <- quantiles[quantiles < 0.5]
               for (quantile in quantiles) {
                 df_updated <- update_subset_cqr(
-                  df_updated, method, model, location, target_type, horizon,
+                  df_updated, method, m, l, t, h,
                   quantile, cv_init_training)
               }}}}}
-      df_updated <- fix_quantile_crossing(df_updated, model, location, target_type, horizon)
+      df_updated <- fix_quantile_crossing(df_updated, m, l, t, h)
     }
     
     # updated data frames are named after corresponding method

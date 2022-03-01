@@ -80,7 +80,7 @@ parallel_update_predictions <- function(df, methods = c(
         if (verbose) {
           cat(
             "Parallel computation of QSA does not support verbose prints."
-          )
+          ) } 
         
         #Define all combinations of variables over which we id the time series to which we apply qsa
         time_series_ids <- setNames(data.frame(matrix(ncol = 4, nrow = 0)), c("model", "location", "target_type", "horizon"))
@@ -111,18 +111,18 @@ parallel_update_predictions <- function(df, methods = c(
           for (l in locations) {
             if (verbose) {
               cat(
-                "method = ", method, " | model = ", model, " | location = ", location, "\n",
+                "method = ", method, " | model = ", m, " | location = ", l, "\n",
                 sep = ""
               )
             }
             for (t in target_types) {
               for (h in horizons) {
                 df_updated <- sequence_update_subset_qsa(
-                  df_updated, method, model, location, target_type, horizon,
+                  df_updated, method, m, l, t, h,
                   cv_init_training, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim, steps_optim
                 )
               }}}}
-        df_updated <- fix_quantile_crossing(df_updated, model, location, target_type, horizon)
+        df_updated <- fix_quantile_crossing(df_updated, m, l, t, h)
         
       }
     } else {

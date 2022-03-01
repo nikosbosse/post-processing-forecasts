@@ -27,14 +27,15 @@ length(unique(df_subset$target_end_date))
 
 # Run QSA parallel
 tic()
-df_updated_parallel <- parallel_update_predictions(df_subset,
+df_updated_parallel <- update_predictions(df_subset,
                                                    methods="qsa_uniform",
                                                    #cv_init_training = 11,
                                                    optim_method = "L-BFGS-B", 
                                                    lower_bound_optim = 0, 
                                                    upper_bound_optim = 5,
                                                    return_list = TRUE,
-                                                   parallel=TRUE)
+                                                   parallel=TRUE,
+                                          verbose=TRUE)
 toc()
 #272.797 sec elapsed
 nrow(df_updated_parallel$qsa_uniform) == nrow(df_updated_parallel$original)
@@ -42,7 +43,7 @@ nrow(df_updated_parallel$qsa_uniform) == nrow(df_updated_parallel$original)
 
 # Run QSA in sequence
 tic()
-df_updated_sequence <- parallel_update_predictions(df_subset,
+df_updated_sequence <- update_predictions(df_subset,
                                           methods="qsa_uniform",
                                            #cv_init_training = 5,
                                            optim_method = "L-BFGS-B", 

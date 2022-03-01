@@ -37,7 +37,7 @@ wrapper_parallel_update_subset_qsa <- function(model, location, target_type, hor
   return(subset_updated)
 }
 
-parallel_update_predictions <- function(df, methods = c(
+update_predictions <- function(df, methods = c(
   "cqr", "cqr_asymmetric", "cqr_multiplicative",
   "qsa_uniform", "qsa_flexibel", "qsa_flexibel_symmetric"
 ), models = NULL, locations = NULL,

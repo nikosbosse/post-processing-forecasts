@@ -38,12 +38,12 @@ qsa <- function(subset, spread_factor_vec, method) {
       
       quantile_updated <- quantile + absolute_quantile_adjustments
       
-    } else if (method == "qsa_flexibel") {
+    } else if (method == "qsa_flexible") {
       # getting the index of the quantile to then get the corresponding spread factor
       index_of_quantile <- which(quantiles_list_no_median == q)
       absolute_quantile_adjustments <- quantile_spread * spread_factor_vec[index_of_quantile] - quantile_spread
       quantile_updated <- quantile + absolute_quantile_adjustments
-    } else if (method == "qsa_flexibel_symmetric") {
+    } else if (method == "qsa_flexible_symmetric") {
       # getting the index of the quantile to then get the corresponding spread factor
       # As we have symmetry we define a vector that holds the indexes to get the right spread factor:
       # example: 22 quantiles without median, e.g. 11 pairs, so indexes_of_spread_factor <- (11,10,...,2,1,1,2,...,10,11)
@@ -159,7 +159,7 @@ optimize_spread_factor <- function(method, subset, penalty_weight, optim_method,
       ) # , hessian=T)
       optimal_spread_factor <- optim_results$par
     }
-  } else if (method == "qsa_flexibel") {
+  } else if (method == "qsa_flexible") {
     # getting number of spreads as: number of quantiles without the mean
     num_spreads <- length(na.omit(unique(subset$quantile))) - 1 #-1 due to mean
     
@@ -171,7 +171,7 @@ optimize_spread_factor <- function(method, subset, penalty_weight, optim_method,
     ) # , hessian=T)
     optimal_spread_factor <- optim_results$par
     
-  } else if (method == "qsa_flexibel_symmetric") {
+  } else if (method == "qsa_flexible_symmetric") {
     # getting number of spreads as: number of quantiles without the mean
     num_spreads <- length(na.omit(unique(subset$quantile))) - 1 #-1 due to mean
     num_of_params <- num_spreads / 2

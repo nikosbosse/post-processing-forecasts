@@ -70,7 +70,6 @@ parallel_update_predictions <- function(df, methods = c(
   # store updated dataframes for all methods in list
   updated_list <- list()
   
-  #TODO: add cv length as arguement
   for (method in c(methods)) {
 
     df_updated <- df_preprocessed
@@ -98,6 +97,10 @@ parallel_update_predictions <- function(df, methods = c(
                                 updated_subset <- parallel_update_subset_qsa(subset, method, cv_init_training, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim, steps_optim)
                                 updated_subset <- fix_quantile_crossing(updated_subset, m, l, t, h)
                                 return(updated_subset)}
+        #As we rbind together the individual subsets we need to add the cv_init_training value as attribute afterwards
+        # set training length as attribute for plotting vertical line
+        attr(df_updated, "cv_init_training") <- cv_init_training
+        
       } else {
         #QSA run in sequence
         for (m in models) {

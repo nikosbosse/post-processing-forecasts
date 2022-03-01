@@ -117,7 +117,7 @@ parallel_update_predictions <- function(df, methods = c(
             }
             for (t in target_types) {
               for (h in horizons) {
-                df_updated <- update_subset_qsa(
+                df_updated <- sequence_update_subset_qsa(
                   df_updated, method, model, location, target_type, horizon,
                   cv_init_training, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim, steps_optim
                 )

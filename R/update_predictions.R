@@ -130,7 +130,7 @@ verbose = FALSE) {
         for (l in locations) {
           if (verbose) {
             cat(
-              "method = ", method, " | model = ", model, " | location = ", location, "\n",
+              "method = ", method, " | model = ", m, " | location = ", l, "\n",
               sep = ""
             )
           }

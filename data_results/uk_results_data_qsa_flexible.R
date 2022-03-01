@@ -1,12 +1,12 @@
-QSA_FLEXIBLE <- FALSE
-
-devtools::load_all()
+QSA_FLEXIBLE <- TRUE
 library(foreach)
 library(doParallel)
-registerDoParallel(cores=2)
-#https://stackoverflow.com/questions/30688307/parallelization-doesnt-work-with-the-foreach-package
-#my mac has 2 cores, see this by running the following line in your terminal: system_profiler SPHardwareDataType
-#https://techwiser.com/how-many-cores-does-my-cpu-have/
+devtools::load_all()
+
+registerDoParallel(cores = 2)
+# https://stackoverflow.com/questions/30688307/parallelization-doesnt-work-with-the-foreach-package
+# my mac has 2 cores, see this by running the following line in your terminal: system_profiler SPHardwareDataType
+# https://techwiser.com/how-many-cores-does-my-cpu-have/
 
 cv_init_training <- 0.5
 
@@ -23,11 +23,11 @@ complete_models <- uk_data |>
 if (QSA_FLEXIBLE) {
   df_updated <- update_predictions(
     df = uk_data, methods = "qsa_flexible", models = complete_models,
-    cv_init_training = cv_init_training, verbose = TRUE, parallel = TRUE
+    cv_init_training = cv_init_training, parallel = TRUE
   )
-  
+
   df_combined <- df_updated |> collect_predictions()
-  
+
   readr::write_rds(
     df_combined,
     file = here::here("data_results", "uk_qsa_flexible.rds")

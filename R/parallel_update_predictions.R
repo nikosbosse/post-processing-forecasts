@@ -77,6 +77,10 @@ parallel_update_predictions <- function(df, methods = c(
       
       if (parallel == TRUE) {
         #QSA run in parallel
+        if (verbose) {
+          cat(
+            "Parallel computation of QSA does not support verbose prints."
+          )
         
         #Define all combinations of variables over which we id the time series to which we apply qsa
         time_series_ids <- setNames(data.frame(matrix(ncol = 4, nrow = 0)), c("model", "location", "target_type", "horizon"))

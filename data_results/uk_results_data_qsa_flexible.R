@@ -1,9 +1,9 @@
 QSA_FLEXIBLE <- TRUE
+devtools::load_all()
 library(foreach)
 library(doParallel)
-devtools::load_all()
 
-registerDoParallel(cores = 2)
+registerDoParallel(cores = 8)
 # https://stackoverflow.com/questions/30688307/parallelization-doesnt-work-with-the-foreach-package
 # my mac has 2 cores, see this by running the following line in your terminal: system_profiler SPHardwareDataType
 # https://techwiser.com/how-many-cores-does-my-cpu-have/

@@ -27,10 +27,17 @@ target_types <- preprocessed_list$target_types
 horizons <- preprocessed_list$horizons
 quantiles <- preprocessed_list$quantiles
 
+#get all complete models
+complete_models <- df |>
+  dplyr::count(model) |>
+  dplyr::filter(n == max(n)) |>
+  dplyr::pull(model)
+
+
 time_series_ids <- setNames(data.frame(
   matrix(ncol = 4, nrow = 0)
 ), c("model", "location", "target_type", "horizon"))
-for (m in models) {
+for (m in complete_models) { #models
   for (l in locations) {
     for (t in target_types) {
       for (h in horizons) {
@@ -52,6 +59,13 @@ for (i in seq(1,nrow(time_series_ids))){
   if (nrow(subset) == 0){ #!nrow(subset) == 83 
     cat(" | quantile observations = ", nrow(subset), " | model = ", m, " | location = ", l, " | target_type = ", t, " | horizon = ", h, "\n",
       sep = ""
+    )
+  }
+    
+  if (!ncol(subset) == 10){ #!nrow(subset) == 83 
+    print("col num issue")
+    cat(" | quantile observations = ", nrow(subset), " | model = ", m, " | location = ", l, " | target_type = ", t, " | horizon = ", h, "\n",
+         sep = ""
     )
   }
 }
@@ -111,6 +125,21 @@ for (i in seq(1,nrow(time_series_ids))){
 }
 
 
+# Testing a rbind and saving function
+
+df_subset1 <- dplyr::filter(df, model %in% m & location %in% l &
+                             target_type %in% t & horizon %in% h)
+df_subset2 <- dplyr::filter(df, model %in% m & location %in% l &
+                             target_type %in% t & horizon %in% h)
+df_subset3 <- dplyr::filter(df, model %in% m & location %in% l &
+                             target_type %in% t & horizon %in% h)
+
+rbind_and_saving <- function(...){
+  df_combined_1 <- rbind(...)
+  readr::write_rds(df_combined_1, file = here::here("data_results", "parallel_qsa_cache.rds"))
+}
+
+rbind_and_saving(df_subset1,df_subset2,df_subset3)
 
 
 

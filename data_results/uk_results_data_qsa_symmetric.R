@@ -1,4 +1,4 @@
-QSA_FLEXIBLE_SYMMETRIC <- FALSE
+QSA_FLEXIBLE_SYMMETRIC <- TRUE
 
 devtools::load_all()
 library(foreach)
@@ -8,7 +8,9 @@ registerDoParallel(cores=2)
 #my mac has 2 cores, see this by running the following line in your terminal: system_profiler SPHardwareDataType
 #https://techwiser.com/how-many-cores-does-my-cpu-have/
 
-cv_init_training <- 0.5
+Sys.sleep(10)
+
+cv_init_training <- NULL
 
 uk_data <- readr::read_csv(
   here::here("data_modified", "uk_data_incidences.csv")

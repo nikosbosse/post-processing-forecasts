@@ -32,6 +32,6 @@ if (QSA_FLEXIBLE_SYMMETRIC) {
   
   readr::write_rds(
     df_combined,
-    file = here::here("data_results", "uk_qsa_flexible_symmetric.rds")
+    file = here::here("data_results", "uk_qsa_flexible_symmetric_parallel.rds")
   )
 }

@@ -85,11 +85,6 @@ update_predictions <- function(df, methods = c(
     if (stringr::str_detect(method, "qsa")) {
       if (parallel) {
         # QSA run in parallel
-        if (verbose) {
-          cat(
-            "Parallel computation of QSA does not support verbose prints.\n"
-          )
-        }
 
         # Define all combinations of variables over which we id the time series to which we apply qsa
         time_series_ids <- setNames(data.frame(
@@ -117,7 +112,7 @@ update_predictions <- function(df, methods = c(
           t = time_series_ids["target_type"][[1]],
           h = time_series_ids["horizon"][[1]],
           .combine = "rbind_and_saving",
-          .verbose = TRUE,
+          .verbose = verbose,
           .multicombine = TRUE,
           .maxcombine = 10
         ) %dopar% {

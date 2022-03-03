@@ -91,7 +91,7 @@ This value is repeated $23$ times, once for each quantile value.
 
 
 
-### Weighted Interval Score
+### Weighted Interval Score {#wis}
 
 In order to quantify if the post-processed prediction intervals improve the original forecasts we chose the *Weighted Interval Score* (WIS) [@bracher2021] as our evaluation metric.
 The WIS is a so-called *Proper Scoring Rule* [@gneiting2007]: It incentivizes the forecaster to state their true best belief and cannot be manipulated in favour of own interests.
@@ -159,7 +159,7 @@ The algorithm typically starts with a minimum number of observations as the init
 
 ## The `postforecasts` Package {#package}
 
-One core aspect of our project was the development of a fully functional R package that unites a collection of different post-processing algorithms into a well-designed and user friendly interface.
+One core aspect of our project was the development of a fully functional package in the statistical programming language `R` [@R-base] that unites a collection of different post-processing algorithms into a well-designed and user friendly interface.
 This section can be understood as a compact guide how to use our package effectively and explains some of the thought process that went into the implementation.
 It is worth noting that the `postforecasts` package adheres to all formal requirements for an R package such that `RCMDCHECK` does not produce any warnings or errors.
 The source code is publicly available on [GitHub](https://github.com/nikosbosse/post-processing-forecasts).

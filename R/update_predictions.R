@@ -92,7 +92,12 @@ update_predictions <- function(df, methods = c(
           for (l in locations) {
             for (t in target_types) {
               for (h in horizons) {
-                time_series_ids[nrow(time_series_ids) + 1, ] <- c(m, l, t, h)
+                # Only adding combinations where we have observations
+                subset <- dplyr::filter(df_preprocessed, .data$model == m & .data$location == l & .data$target_type == t & .data$horizon == h)
+                if(nrow(subset) > 0){
+                  time_series_ids[nrow(time_series_ids) + 1, ] <- c(m, l, t, h)
+                }
+                
               }
             }
           }

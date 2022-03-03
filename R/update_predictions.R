@@ -40,6 +40,13 @@ wrapper_parallel_update_subset_qsa <- function(model, location, target_type, hor
   return(subset_updated)
 }
 
+rbind_and_saving <- function(...) {
+  df_combined <- rbind(...)
+  readr::write_rds(df_combined, file = here::here("data_results", "parallel_qsa_cache.rds"))
+
+  return(df_combined)
+}
+
 update_predictions <- function(df, methods = c(
                                  "cqr", "cqr_asymmetric", "cqr_multiplicative",
                                  "qsa_uniform", "qsa_flexible", "qsa_flexible_symmetric"
@@ -76,11 +83,11 @@ update_predictions <- function(df, methods = c(
   for (method in c(methods)) {
     df_updated <- df_preprocessed
     if (stringr::str_detect(method, "qsa")) {
-      if (parallel == TRUE) {
+      if (parallel) {
         # QSA run in parallel
         if (verbose) {
           cat(
-            "Parallel computation of QSA does not support verbose prints."
+            "Parallel computation of QSA does not support verbose prints.\n"
           )
         }
 
@@ -92,7 +99,13 @@ update_predictions <- function(df, methods = c(
           for (l in locations) {
             for (t in target_types) {
               for (h in horizons) {
-                time_series_ids[nrow(time_series_ids) + 1, ] <- c(m, l, t, h)
+                # Only adding combinations where we have observations
+                subset <- dplyr::filter(
+                  df_preprocessed, .data$model == m & .data$location == l & .data$target_type == t & .data$horizon == h
+                )
+                if (nrow(subset) > 0) {
+                  time_series_ids[nrow(time_series_ids) + 1, ] <- c(m, l, t, h)
+                }
               }
             }
           }
@@ -103,7 +116,10 @@ update_predictions <- function(df, methods = c(
           l = time_series_ids["location"][[1]],
           t = time_series_ids["target_type"][[1]],
           h = time_series_ids["horizon"][[1]],
-          .combine = "rbind"
+          .combine = "rbind_and_saving",
+          .verbose = TRUE,
+          .multicombine = TRUE,
+          .maxcombine = 10
         ) %dopar% {
           subset <- dplyr::filter(
             df_preprocessed, .data$model == m & .data$location == l & .data$target_type == t & .data$horizon == h

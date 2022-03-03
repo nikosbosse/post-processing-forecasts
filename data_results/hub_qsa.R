@@ -3,9 +3,9 @@
 # including incomplete models as well requires individual treatment of models
 
 
-QSA_UNIFORM <- FALSE
-QSA_FLEXIBlE_SYMMETRIC <- FALSE
-QSA_FLEXIBLE <- FALSE
+QSA_UNIFORM <- TRUE
+QSA_FLEXIBlE_SYMMETRIC <- TRUE
+QSA_FLEXIBLE <- TRUE
 
 
 #devtools::load_all()
@@ -21,6 +21,7 @@ registerDoParallel(cores=12)
 #my mac has 2 cores, see this by running the following line in your terminal: system_profiler SPHardwareDataType
 #https://techwiser.com/how-many-cores-does-my-cpu-have/
 
+Sys.sleep(10)
 
 cv_init_training <- 0.5
 

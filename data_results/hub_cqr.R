@@ -3,7 +3,7 @@
 # including incomplete models as well requires individual treatment of models
 
 CQR <- FALSE
-CQR3 <- TRUE
+CQR2 <- TRUE
 CQR_QSA_UNIFORM_ENSEMBLE_SUBSET <- FALSE
 
 devtools::load_all()
@@ -64,9 +64,10 @@ if (CQR) {
   readr::write_rds(df_combined_2, file = here::here("data_results", "hub_cqr_2.rds"))
 }
 
-if (CQR3) {
+if (CQR2) {
   df_updated <- update_predictions(
-    df = hub_data, methods = c("cqr", "cqr_asymmetric", "cqr_multiplicative"), models = models, locations = locations,
+    df = hub_data, methods = c("cqr", "cqr_asymmetric"), 
+    models = models, locations = locations,
     cv_init_training = cv_init_training, verbose = TRUE
   )
 

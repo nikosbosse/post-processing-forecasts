@@ -62,8 +62,7 @@ update_predictions <- function(df, methods = c(
                                parallel = FALSE,
                                # CQR method arguments
                                regularize_scores = FALSE, constrain_margins = FALSE,
-                               return_list = TRUE,
-                               verbose = FALSE) {
+                               return_list = TRUE, verbose = FALSE) {
   # stops function for invalid input values
   validate_inputs(df, methods, models, locations, target_types, horizons, quantiles)
   df <- validate_dates(df)

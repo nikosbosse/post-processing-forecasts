@@ -15,7 +15,12 @@ linkcolor: blue
 links-as-notes: true
 ---
 
-```{r}
+```{r, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center",
+  out.width = "100%", dpi = 300, fig.asp = 0.618, collapse = TRUE
+)
+
 devtools::load_all(".")
 library(dplyr)
 
@@ -26,15 +31,20 @@ uk_cqr_asymmetric <- uk_cqr3 |> filter(method %in% c("original", "cqr_asymmetric
 uk_cqr_multiplicative <- uk_cqr3 |> filter(method %in% c("original", "cqr_multiplicative"))
 ```
 
-```{r}
-display_table <- function(df, caption) {
-  df |>
+```{r, include=FALSE}
+display_table <- function(df, caption, bold_header = TRUE, striped = TRUE) {
+  tab <- df |>
     kableExtra::kbl(
       digits = 2, align = "c", booktabs = TRUE, caption = caption
     ) |>
-    kableExtra::kable_styling(
-      position = "center", full_width = FALSE, latex_options = "striped"
-    )
+    kableExtra::row_spec(row = 0, bold = bold_header) |>
+    kableExtra::kable_styling(position = "center", full_width = FALSE)
+
+  if (striped) {
+    tab <- tab |> kableExtra::kable_styling(latex_options = "striped")
+  }
+
+  return(tab)
 }
 ```
 
@@ -236,32 +246,45 @@ While the idea of multiplicative correction terms is appealing, it turns out tha
 
 ### Results {-}
 
-As noted in the previous section *naive* multiplicative Conformalized Quantile Regression without any regularization is useless for post-processing quantile predictions.
+As noted in the previous section, *naive* multiplicative Conformalized Quantile Regression without any regularization is useless for post-processing quantile predictions.
 Typically, one can observe strong overfitting on the training set such that the training performance indicates promising effects, yet the scores on the validation set are *much* worse than the original forecasts.
 Further, the adjusted intervals are shifted upwards and usually too large.
 
 Before numerically evaluating the performance of *regularized* CQR, it is instructive to look at a visual comparison of the original and post-processed forecasts of all three CQR modifications for one specific feature combination, which is shown in \Cref{fig:ch2-uk-cqr3-intervals}. 
 
-```{r, ch2-uk-cqr3-intervals, fig.cap="Comparison of CQR variations on the UK data set", out.width="80%"}
-plot_intervals(uk_cqr3, model = "epiforecasts-EpiExpert_direct", target_type = "Cases", quantile = 0.2, horizon = 2)
+```{r, ch2-uk-cqr3-intervals, echo=FALSE, fig.cap="Comparison of CQR variations on the UK data set", out.width="80%"}
+plot_intervals(
+  df = uk_cqr3, model = "epiforecasts-EpiExpert_direct", target_type = "Cases",
+  quantile = 0.2, horizon = 2
+)
 ```
 
 The effect of scaling the score vectors in step $1$ of the regularization procedure and constraining lower and upper margins in the second step can be detected immediately:
 Similar to vanilla CQR, the corrected intervals are now centered around the same midpoint as the original forecasts.
-In strong contrast to the additive CQR versions, however, the issue of interval explosion has not only been diminished by downscaling the scores, but rather *reverted* such that the interval widths now actually *decreased* at most time points and generally appear too narrow.
+In strong contrast to the additive CQR versions, however, the issue of interval explosion has not only been diminished by downscaling the scores, but rather *reversed* such that the interval widths now actually *decreased* at most time points and generally appear too narrow.
 
-TODO: Theorem does not apply => no guarantee of improvement on training set, explain numerical results briefly
-
-```{r}
+```{r, ch2-cqr-mult-training, echo=FALSE}
 uk_cqr_multiplicative |>
   extract_training_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method")) |>
   select(method:overprediction) |>
-  display_table(caption = "Performance of Multiplicative CQR on the Training Set")
+  display_table(
+    caption = "Performance of Multiplicative CQR on the Training Set",
+    striped = FALSE
+  )
 ```
 
-```{r}
+Moreover, we no longer have any theoretical guarantees of improved forecasts on the training set since \Cref{thm:cqr} only applies to the original additive and symmetric version of CQR.
+This fact is confirmed empirically by \Cref{tab:ch2-cqr-mult-training} which shows the Weighted Interval Score aggregated over all categories of `model`, `target_type`, `horizon` and `quantile`.
+Indeed, the multiplicative adjustments result in a slightly worse Weighted Interval Score.
+
+Recall that this behaviour is different from the unregularized version, which performed better than the original forecasts across almost all feature combinations.
+On the flipside, the performance on the validation set improved dramatically compared to the naive implementation, even though it does *not* lead to a score improvement in absolute terms as is shown in \Cref{tab:ch2-cqr-mult-validation} separated by the forecasting `model.`
+Interestingly, multiplicative CQR indicates the strongest *relative* performance for the `EuroCOVIDhub-baseline` model where the additive CQR algorithms struggle the most.
+Overall the score differences across models appear to be smoothed out which also results from the regularization component that is unique to the multiplicative modification.
+
+```{r, ch2-cqr-mult-validation, echo=FALSE}
 uk_cqr_multiplicative |>
   extract_validation_set() |>
   scoringutils::score() |>
@@ -271,9 +294,11 @@ uk_cqr_multiplicative |>
   display_table(caption = "Performance of Multiplicative CQR for each Model on the Validation Set")
 ```
 
-The behaviour of \Cref{fig:ch2-uk-cqr3-intervals} can be observed across many other feature combinations: 
-Starting from huge intervals in the naive implementation, the effect of scaling the score vectors tends to be too extreme.
-As a consequence, we experimented with adding an additional hyperparameter $\lambda$ to dampen the regularization.
+TODO: Add mixed effect on intervals size, some are increased others are decreased
+
+The trend of \Cref{fig:ch2-uk-cqr3-intervals} can be observed in a similar fashion across many different feature combinations: 
+Starting from huge intervals in the naive implementation, the effect of downscaling the score vectors tends to be too extreme.
+As a consequence, we experimented with adding an additional *hyperparameter* $\lambda$ to dampen the regularization.
 However, we could not find any values of $\lambda$ within the trade-off between lower scaling effects and too large intervals and stronger regularization at the cost of too narrow intervals that consistently outperformed even the original forecasts.
 
 Hence, we must conclude that the original CQR algorithm as described in [@romano2019] can *not* be modified towards multiplicative margins in any straightforward way. 

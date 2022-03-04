@@ -236,19 +236,19 @@ While the idea of multiplicative correction terms is appealing, it turns out tha
 
 ### Results {-}
 
-As noted in the previous section naive multiplicative Conformalized Quantile Regression without any regularization is useless for improving quantile predictions.
-Typically, one can observe strong overfitting on the Training Set such that the training performance indicated promising effects, yet the scores on the validation set were *much* worse than the original forecasts.
-Further, the adjusted intervals were shifted upwards and too large in most of the cases.
+As noted in the previous section *naive* multiplicative Conformalized Quantile Regression without any regularization is useless for post-processing quantile predictions.
+Typically, one can observe strong overfitting on the training set such that the training performance indicates promising effects, yet the scores on the validation set are *much* worse than the original forecasts.
+Further, the adjusted intervals are shifted upwards and usually too large.
 
-Before numerically evaluating the performance of regularized CQR, it is instructive to look at a visual comparison of the original and post-processed forecasts of all three CQR modifications for one specific feature combination, which is shown in \Cref{fig:ch2-uk-cqr3-intervals}. 
+Before numerically evaluating the performance of *regularized* CQR, it is instructive to look at a visual comparison of the original and post-processed forecasts of all three CQR modifications for one specific feature combination, which is shown in \Cref{fig:ch2-uk-cqr3-intervals}. 
 
 ```{r, ch2-uk-cqr3-intervals, fig.cap="Comparison of CQR variations on the UK data set", out.width="80%"}
 plot_intervals(uk_cqr3, model = "epiforecasts-EpiExpert_direct", target_type = "Cases", quantile = 0.2, horizon = 2)
 ```
 
-The regularizing effect of the multiplicative version can be detected immediately.
-Similar to vanilla CQR, the corrected intervals are centered around the same midpoint as the original forecasts due to step $2$ of the regularization procedure of the previous section.
-Because of step $1$ of the regularization and in strong contrast to the additive CQR versions, the interval *widths* are now *decreased* at most time points and appear (too) narrow in some cases.
+The effect of scaling the score vectors in step $1$ of the regularization procedure and constraining lower and upper margins in the second step can be detected immediately:
+Similar to vanilla CQR, the corrected intervals are now centered around the same midpoint as the original forecasts.
+In strong contrast to the additive CQR versions, however, the issue of interval explosion has not only been diminished by downscaling the scores, but rather *reverted* such that the interval widths now actually *decreased* at most time points and generally appear too narrow.
 
 TODO: Theorem does not apply => no guarantee of improvement on training set, explain numerical results briefly
 
@@ -276,5 +276,5 @@ Starting from huge intervals in the naive implementation, the effect of scaling 
 As a consequence, we experimented with adding an additional hyperparameter $\lambda$ to dampen the regularization.
 However, we could not find any values of $\lambda$ within the trade-off between lower scaling effects and too large intervals and stronger regularization at the cost of too narrow intervals that consistently outperformed even the original forecasts.
 
-Hence, we must conclude that the original CQR algorithm as described in [@romano2019] can *not* be transformed to multiplicative margins in any straightforward way. 
+Hence, we must conclude that the original CQR algorithm as described in [@romano2019] can *not* be modified towards multiplicative margins in any straightforward way. 
 For this reason, we do not extend the analysis of multiplicative CQR to the European Forecast Hub data set and do not include it in the detailed method comparison in \Cref{comparison}. 

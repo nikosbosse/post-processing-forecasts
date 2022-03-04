@@ -314,7 +314,7 @@ body_update_subset_qsa <- function(subset, method, cv_init_training, penalty_wei
 parallel_update_subset_qsa <- function(subset, method, cv_init_training, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim, steps_optim) {
   # must be placed on filtered data frame (i.e. lowest level, not in
   # update_predictions()) such that fractional inputs can be correctly converted
-  cv_init_training <- validate_cv_init(df, cv_init_training)
+  cv_init_training <- validate_cv_init(subset, cv_init_training)
   
   subset_updated <- body_update_subset_qsa(subset, method, cv_init_training, penalty_weight, optim_method, lower_bound_optim, upper_bound_optim, steps_optim)
   

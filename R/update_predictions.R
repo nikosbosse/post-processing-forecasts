@@ -47,6 +47,9 @@ rbind_and_saving <- function(...) {
   return(df_combined)
 }
 
+#' Update Original Forecasts with multiple Post Processing Methods
+#' @export
+
 update_predictions <- function(df, methods = c(
                                  "cqr", "cqr_asymmetric", "cqr_multiplicative",
                                  "qsa_uniform", "qsa_flexible", "qsa_flexible_symmetric"
@@ -194,7 +197,8 @@ update_predictions <- function(df, methods = c(
   return(updated_list[[1]])
 }
 
-
+#' Collect Updated Dataframes for each Post Processing Method
+#' @export
 
 collect_predictions <- function(...) {
   df_combined <- dplyr::bind_rows(..., .id = "method")

@@ -74,10 +74,13 @@ if (CQR2) {
   df_combined <- df_updated |> collect_predictions()
 
   # split in 2 data frames to keep file sizes below github limit of 100MB
-  num_rows <- as.integer(nrow(df_combined) / 2)
+  num_rows <- as.integer(nrow(df_combined) / 3)
 
   df_combined_1 <- df_combined |>
     dplyr::slice(1:num_rows)
+
+  df_combined_2 <- df_combined |>
+    dplyr::slice((num_rows + 1):2 * num_rows)
 
   df_combined_2 <- df_combined |>
     dplyr::slice((num_rows + 1):nrow(df_combined))

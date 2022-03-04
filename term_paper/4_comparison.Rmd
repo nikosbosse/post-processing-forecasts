@@ -71,7 +71,7 @@ Finally, it is worth noting that the weight vector of the ensemble model $\mathb
 
 
 
-## Which method works best?
+## Comparison of CQR, QSA & Ensemble
 
 Now that we have introduced *Conformalized Quantile Regression* in \Cref{cqr}, *Quantile Spread Averaging* in \Cref{qsa} and the *Ensemble* Model in \Cref{ensemble}, the obvious question is which of the methods performs best.
 Thus, this section is dedicated to a detailed comparison across various covariate combinations as well as both the UK Forecasting Challenge data and the European Forecast Hub data.

@@ -41,7 +41,8 @@ plot_quantiles <- function(df, model = NULL, location = NULL,
 plot_intervals <- function(df, model = NULL, location = NULL,
                            target_type = c("Cases", "Deaths"),
                            quantile = 0.05, horizon = 1,
-                           highlight_cv = TRUE, base_size = 9) {
+                           highlight_cv = TRUE, highlight_time_point = NULL,
+                           base_size = 9) {
   target <- rlang::arg_match(arg = target_type, values = c("Cases", "Deaths"))
   h <- paste_horizon(horizon)
 
@@ -71,6 +72,10 @@ plot_intervals <- function(df, model = NULL, location = NULL,
 
   if (highlight_cv) {
     p <- plot_training_end(p, df, type = "segment")
+  }
+
+  if (!is.null(highlight_time_point)) {
+    p <- plot_vertical_line(p, df, highlight_time_point)
   }
 
   return(p)

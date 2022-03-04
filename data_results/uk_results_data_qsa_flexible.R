@@ -1,4 +1,5 @@
 QSA_FLEXIBLE <- TRUE
+
 devtools::load_all()
 library(foreach)
 library(doParallel)
@@ -7,6 +8,8 @@ registerDoParallel(cores = 8)
 # https://stackoverflow.com/questions/30688307/parallelization-doesnt-work-with-the-foreach-package
 # my mac has 2 cores, see this by running the following line in your terminal: system_profiler SPHardwareDataType
 # https://techwiser.com/how-many-cores-does-my-cpu-have/
+
+Sys.sleep(3)
 
 cv_init_training <- 0.5
 
@@ -23,7 +26,7 @@ complete_models <- uk_data |>
 if (QSA_FLEXIBLE) {
   df_updated <- update_predictions(
     df = uk_data, methods = "qsa_flexible", models = complete_models,
-    cv_init_training = cv_init_training, parallel = TRUE
+    cv_init_training = cv_init_training, verbose = TRUE, parallel = FALSE
   )
 
   df_combined <- df_updated |> collect_predictions()

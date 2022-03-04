@@ -135,14 +135,15 @@ update_predictions <- function(df, methods = c(
         # QSA run in sequence
         for (m in models) {
           for (l in locations) {
-            if (verbose) {
-              cat(
-                "method = ", method, " | model = ", m, " | location = ", l, "\n",
-                sep = ""
-              )
-            }
             for (t in target_types) {
               for (h in horizons) {
+                if (verbose) {
+                  cat(
+                    "method = ", method, " | model = ", m, " | location = ", l,
+                    " | target_type = ", t, " | horizon = ", h, "\n",
+                    sep = ""
+                  )
+                }
                 df_updated <- sequence_update_subset_qsa(
                   df_updated, method, m, l, t, h,
                   cv_init_training, penalty_weight, optim_method,

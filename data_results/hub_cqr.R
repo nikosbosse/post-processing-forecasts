@@ -66,7 +66,7 @@ if (CQR) {
 
 if (CQR2) {
   df_updated <- update_predictions(
-    df = hub_data, methods = c("cqr", "cqr_asymmetric"), 
+    df = hub_data, methods = c("cqr", "cqr_asymmetric"),
     models = models, locations = locations,
     cv_init_training = cv_init_training, verbose = TRUE
   )
@@ -82,8 +82,8 @@ if (CQR2) {
   df_combined_2 <- df_combined |>
     dplyr::slice((num_rows + 1):nrow(df_combined))
 
-  readr::write_rds(df_combined_1, file = here::here("data_results", "hub_cqr_1.rds"))
-  readr::write_rds(df_combined_2, file = here::here("data_results", "hub_cqr_2.rds"))
+  readr::write_rds(df_combined_1, file = here::here("data_results", "hub_cqr2_1.rds"))
+  readr::write_rds(df_combined_2, file = here::here("data_results", "hub_cqr2_2.rds"))
 }
 
 if (CQR_QSA_UNIFORM_ENSEMBLE_SUBSET) {

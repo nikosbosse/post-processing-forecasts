@@ -27,7 +27,7 @@ knitr::opts_chunk$set(
 # creates bibliography file for R packages
 knitr::write_bib(
   c(
-    "dplyr", "doParallel", "forcats", "foreach", "ggplot2", "lubridate", "nloptr",
+    "base", "dplyr", "doParallel", "forcats", "foreach", "ggplot2", "lubridate", "nloptr",
     "rlang", "scales", "scoringutils", "stats", "stringr", "tidyr", "tidyselect", "here",
     "kableExtra", "knitr", "readr", "rmarkdown", "testthat"
   ),

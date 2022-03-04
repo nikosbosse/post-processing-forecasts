@@ -60,6 +60,17 @@ plot_training_end <- function(p, df, type = c("segment", "vline")) {
   return(p)
 }
 
+plot_vertical_line <- function(p, df, time_point) {
+  time_point_date <- lubridate::ymd(unique(df$target_end_date)[time_point])
+  p <- p + ggplot2::geom_segment(ggplot2::aes(
+    x = time_point_date, xend = time_point_date,
+    y = min(.data$lower), yend = max(.data$upper)
+  ),
+  linetype = "dashed", color = "red"
+  )
+  return(p)
+}
+
 
 ### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
 ### Helpers for plot_eval()                                                 ####

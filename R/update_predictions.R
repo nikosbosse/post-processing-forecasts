@@ -47,6 +47,9 @@ rbind_and_saving <- function(...) {
   return(df_combined)
 }
 
+#' Update Original Forecasts with multiple Post Processing Methods
+#' @export
+
 update_predictions <- function(df, methods = c(
                                  "cqr", "cqr_asymmetric", "cqr_multiplicative",
                                  "qsa_uniform", "qsa_flexible", "qsa_flexible_symmetric"
@@ -59,8 +62,7 @@ update_predictions <- function(df, methods = c(
                                parallel = FALSE,
                                # CQR method arguments
                                regularize_scores = FALSE, constrain_margins = FALSE,
-                               return_list = TRUE,
-                               verbose = FALSE) {
+                               return_list = TRUE, verbose = FALSE) {
   # stops function for invalid input values
   validate_inputs(df, methods, models, locations, target_types, horizons, quantiles)
   df <- validate_dates(df)
@@ -85,11 +87,6 @@ update_predictions <- function(df, methods = c(
     if (stringr::str_detect(method, "qsa")) {
       if (parallel) {
         # QSA run in parallel
-        if (verbose) {
-          cat(
-            "Parallel computation of QSA does not support verbose prints.\n"
-          )
-        }
 
         # Define all combinations of variables over which we id the time series to which we apply qsa
         time_series_ids <- setNames(data.frame(
@@ -117,7 +114,7 @@ update_predictions <- function(df, methods = c(
           t = time_series_ids["target_type"][[1]],
           h = time_series_ids["horizon"][[1]],
           .combine = "rbind_and_saving",
-          .verbose = TRUE,
+          .verbose = verbose,
           .multicombine = TRUE,
           .maxcombine = 10
         ) %dopar% {
@@ -140,14 +137,15 @@ update_predictions <- function(df, methods = c(
         # QSA run in sequence
         for (m in models) {
           for (l in locations) {
-            if (verbose) {
-              cat(
-                "method = ", method, " | model = ", m, " | location = ", l, "\n",
-                sep = ""
-              )
-            }
             for (t in target_types) {
               for (h in horizons) {
+                if (verbose) {
+                  cat(
+                    "method = ", method, " | model = ", m, " | location = ", l,
+                    " | target_type = ", t, " | horizon = ", h, "\n",
+                    sep = ""
+                  )
+                }
                 df_updated <- sequence_update_subset_qsa(
                   df_updated, method, m, l, t, h,
                   cv_init_training, penalty_weight, optim_method,
@@ -198,7 +196,8 @@ update_predictions <- function(df, methods = c(
   return(updated_list[[1]])
 }
 
-
+#' Collect Updated Dataframes for each Post Processing Method
+#' @export
 
 collect_predictions <- function(...) {
   df_combined <- dplyr::bind_rows(..., .id = "method")

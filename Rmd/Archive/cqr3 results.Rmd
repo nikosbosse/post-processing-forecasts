@@ -1,0 +1,251 @@
+---
+title: "CQR, CQR Asymmetric & CQR Multiplicative Results"
+author: "Joel Beck"
+output:
+  bookdown::html_document2:
+    theme: flatly
+    highlight: pygments  
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 2
+    number_sections: FALSE
+    df_print: tibble
+  bookdown::pdf_document2:
+    highlight: tango
+    toc: FALSE
+    number_sections: FALSE
+    df_print: tibble
+    latex_engine: pdflatex
+    keep_tex: FALSE
+urlcolor: blue
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r knitr-opts, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center",
+  out.width = "100%", dpi = 300, fig.asp = 0.618, collapse = TRUE
+)
+```
+
+```{r libraries}
+devtools::load_all(".")
+library(dplyr)
+```
+
+```{r}
+uk_cqr3 <- readr::read_rds(here::here("data_results", "uk_cqr3.rds"))
+
+uk_cqr <- uk_cqr3 |> filter(method %in% c("original", "cqr"))
+uk_cqr_asymmetric <- uk_cqr3 |> filter(method %in% c("original", "cqr_asymmetric"))
+uk_cqr_multiplicative <- uk_cqr3 |> filter(method %in% c("original", "cqr_multiplicative"))
+```
+
+```{r}
+uk_cqr_asymmetric |>
+  extract_training_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model")) |>
+  select(method:dispersion) |>
+  arrange(model)
+```
+
+```{r}
+uk_cqr_asymmetric |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model")) |>
+  select(method:dispersion) |>
+  arrange(model)
+```
+
+
+# CQR Asymmetric
+
+Intervals can get shifted in space for asymmetric version, adjustments to lower bound tend to be stronger than to upper bound.
+
+```{r}
+q <- 0.1
+h <- 2
+t <- "Cases"
+l <- "GB"
+
+plot_intervals(uk_cqr_asymmetric,
+  model = "epiforecasts-EpiExpert", target_type = t,
+  horizon = h, quantile = q
+)
+```
+
+
+large adjustments to lower bound for `seabbs` model.
+Note again slow adaptation to lower uncertainty at the end
+
+Consider situation at data point 9 => dashed red line
+
+```{r}
+q <- 0.05
+plot_intervals(uk_cqr_asymmetric,
+  model = "seabbs", target_type = t,
+  horizon = h, quantile = q, highlight_time_point = 11
+)
+```
+
+
+## Case Study
+
+Analyze jump in lower quantile prediction from 9th to 10th data point
+
+```{r}
+# all for original method
+mod <- "seabbs"
+
+subset_original <- uk_cqr_asymmetric |> filter(method == "original")
+subset_asymmetric <- uk_cqr_asymmetric |> filter(method == "cqr_asymmetric")
+
+quantiles_list_original <- filter_combination(subset_original, mod, l, t, h, q)
+quantiles_list_asymmetric <- filter_combination(subset_asymmetric, mod, l, t, h, q)
+
+quantiles_low_original <- quantiles_list_original$quantiles_low
+true_values_original <- quantiles_list_original$true_values
+quantiles_high_original <- quantiles_list_original$quantiles_high
+```
+
+Large discrepancy between true value and lower quantile prediction for 9th data point.
+Thus large positive score of $415$, which is also chosen as the margin (maximum of lower socres vector is selected for $q = 0.05$).
+
+```{r}
+# code of cqr_multiplicative
+scores_list_original <- compute_scores_asymmetric(
+  true_values_original[1:9], quantiles_low_original[1:9], quantiles_high_original[1:9]
+)
+
+# quantiles_low_original - true_values_original
+scores_list_original$scores_lower
+
+margin_lower_original <- compute_margin(scores_list_original$scores_lower, 2 * q)
+margin_lower_original
+```
+
+Thus, updated lower quantile prediction for time point 10 is original lower bound at time point 10 = 336 - margin_lower = 415 = updated lower bound = -79
+
+```{r}
+# cqr_asymmetric method
+
+# can contain lower quantile predictions of 0
+quantiles_low_asymmetric <- quantiles_list_asymmetric$quantiles_low
+true_values_asymmetric <- quantiles_list_asymmetric$true_values
+quantiles_high_asymmetric <- quantiles_list_asymmetric$quantiles_high
+
+quantiles_low_original[10] - margin_lower_original
+quantiles_low_asymmetric[10]
+```
+
+
+## Effect of large adjustment of lower bound continues for further data points
+
+Now consider situation at data point 10
+
+```{r}
+# code of cqr_multiplicative
+scores_list_original <- compute_scores_asymmetric(
+  true_values_original[1:10], quantiles_low_original[1:10], quantiles_high_original[1:10]
+)
+
+# quantiles_low_original - true_values_original
+scores_list_original$scores_lower
+
+margin_lower_original <- compute_margin(scores_list_original$scores_lower, 2 * q)
+margin_lower_original
+```
+
+time series is one observation longer => $99$% quantile is selected
+**lower margin is now 383, computation is still dominated by large score of 415 at time point 9** => all further adjustments are dominated by single time point that creates a large margin
+
+```{r}
+quantiles_low_original[11] - margin_lower_original
+quantiles_low_asymmetric[11]
+```
+
+Now consider situation at data point 11
+
+```{r}
+# code of cqr_multiplicative
+scores_list_original <- compute_scores_asymmetric(
+  true_values_original[1:11], quantiles_low_original[1:11], quantiles_high_original[1:11]
+)
+
+# quantiles_low_original - true_values_original
+scores_list_original$scores_lower
+
+margin_lower_original <- compute_margin(scores_list_original$scores_lower, 2 * q)
+margin_lower_original
+```
+
+**lower margin now 350** => all further adjustments are dominated by single time point that creates a large margin, magnitude of correction only slowly decreases due to larger number of observations => margin is computed based on a lower quantile of the scores vector
+
+```{r}
+quantiles_low_original[12] - margin_lower_original
+quantiles_low_asymmetric[12]
+```
+
+
+
+## Global Evaluation
+
+```{r}
+df_eval_horizon <- eval_methods(uk_cqr_asymmetric, summarise_by = c("model"))
+plot_eval(df_eval_horizon, heatmap = FALSE)
+```
+
+
+```{r}
+uk_cqr_asymmetric_filtered <- uk_cqr_asymmetric |>
+  filter(model != "EuroCOVIDhub-baseline")
+
+df_eval_horizon <- eval_methods(
+  uk_cqr_asymmetric_filtered,
+  summarise_by = c("model", "horizon")
+)
+plot_eval(df_eval_horizon)
+```
+
+```{r}
+df_eval_horizon <- eval_methods(
+  uk_cqr_asymmetric_filtered,
+  summarise_by = c("model", "target_type")
+)
+plot_eval(df_eval_horizon)
+```
+
+```{r}
+df_eval_horizon <- eval_methods(
+  uk_cqr_asymmetric_filtered,
+  summarise_by = c("model", "quantile")
+)
+plot_eval(df_eval_horizon)
+```
+
+```{r}
+df_eval_horizon <- eval_methods(
+  uk_cqr_asymmetric_filtered,
+  summarise_by = c("target_type", "quantile")
+)
+plot_eval(df_eval_horizon)
+```
+
+```{r}
+df_eval_horizon <- eval_methods(
+  uk_cqr_asymmetric_filtered,
+  summarise_by = c("horizon", "quantile")
+)
+plot_eval(df_eval_horizon)
+```
+
+```{r}
+df_eval_horizon <- eval_methods(
+  uk_cqr_asymmetric_filtered,
+  summarise_by = c("horizon", "target_type")
+)
+plot_eval(df_eval_horizon)
+```

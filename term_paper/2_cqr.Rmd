@@ -24,6 +24,7 @@ knitr::opts_chunk$set(
 devtools::load_all(".")
 library(dplyr)
 library(ggplot2)
+library(patchwork)
 
 uk_cqr3 <- readr::read_rds(here::here("data_results", "uk_cqr3.rds"))
 
@@ -176,7 +177,8 @@ uk_cqr |>
   scoringutils::summarise_scores(by = c("method", "model", "target_type", "horizon", "quantile")) |>
   dplyr::filter(model == "seabbs", target_type == "Cases", horizon == 3, quantile == 0.1) |>
   dplyr::select(method:dispersion) |>
-  display_table(caption = "WIS improvement by CQR for one particular feature combination on the validation set.")
+  display_table(caption = "WIS improvement by CQR for one particular feature combination on the validation set.",
+                striped = FALSE)
 ```
 
 ```{r, ch2-uk-cqr-wis-general, echo=FALSE}
@@ -185,7 +187,8 @@ uk_cqr |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method")) |>
   dplyr::select(method:dispersion) |>
-  display_table(caption = "Overall WIS improvement by CQR on the validation set.")
+  display_table(caption = "Overall WIS improvement by CQR on the validation set.",
+                striped = FALSE)
 ```
 
 Yet, the pure effect of increasing coverage does not automatically imply that the Weighted Interval Score has improved as well due to the trade-off between coverage and precision.
@@ -194,91 +197,136 @@ Thus, we explicitly compute the WIS, once for the specific covariate combination
 Both tables confirm the visual impression of \Cref{fig:ch2-uk-cqr-intervals}:
 CQR improves the Weighted Interval Score by increasing the `dispersion` value, a measure for the prediction interval width.
 This effect is particularly strong in case if the `seabbs` model but still applies to a more moderate extent to most of the other forecasting models.
+Since many of the general findings for traditional CQR coincide between the UK data and the EU Forecast Hub data, we jump straight to the latter.
 
-Since many of the findings for traditional CQR coincide between the UK data and the EU Forecast Hub data, we jump straight to the latter.
-
----
-
-Poland as Outlier that needs further investigation
-
-```{r}
+```{r, ch2-hub-cqr-location, echo=FALSE, out.width="80%", fig.cap="CQR proves to be beneficial for the vast majority of countries, with the major exception of Poland"}
 df_cqr_hub_location <- eval_methods(hub_cqr, summarise_by = c("location_name"))
-plot_eval(df_cqr_hub_location, heatmap = FALSE) + labs(y = NULL)
+plot_eval(df_cqr_hub_location, heatmap = FALSE) + labs(y = NULL, title = "CQR Improvements of Weighted Interval Score by Country")
 ```
 
-Compare WIS on Training vs Validation Set => Hypothesis of Distribution Shift
+First, we investigate if CQR is equally effective across all countries.
+\Cref{fig:ch2-hub-cqr-location} indicates that this is clearly *not* the case: CQR is beneficial on out of sample data in almost all $18$ selected countries.
+The strongest effect in absolute value, however, can be observed for Poland in *negative* direction.
 
-```{r hub-cqr-poland-training, echo=FALSE}
+At first sight this finding seems like a data entry error, there is no obvious reason why such a general algorithm like Conformalized Quantile Regression might not work for one specific location.
+The large negative effect is also interesting in light of \Cref{thm:cqr}: We *know* that CQR always improves the forecast intervals on the training set which, in particular, applies to Poland as well.
+We can confirm this theoretical guarantee empirically by evaluating the Weighted Interval Score for Poland on the training set only.
+\Cref{tab:ch2-hub-cqr-poland-table} summarizes the training and validation scores for three selected forecasting models.
+
+```{r, ch2-hub-cqr-poland-table, echo=FALSE}
 cqr_poland <- hub_cqr |> filter(location_name == "Poland")
 
-cqr_poland |>
+tab1 <- cqr_poland |>
   extract_training_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method", "model")) |>
   arrange(model) |>
-  select(method:dispersion) |>
-  filter(model %in% c("epiforecasts-EpiNow2", "EuroCOVIDhub-ensemble", "IEM_Health-CovidProject")) |>
-  display_table(caption = "Weighted Interval Score for Poland by Model on the Training Set")
-```
+  select(method:interval_score) |>
+  rename(`training score` = interval_score) |>
+  filter(model %in% c("epiforecasts-EpiNow2", "EuroCOVIDhub-ensemble", "IEM_Health-CovidProject"))
 
-```{r hub-cqr-poland-validation, echo=FALSE}
-cqr_poland |>
+tab2 <- cqr_poland |>
   extract_validation_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method", "model")) |>
   arrange(model) |>
-  select(method:dispersion) |>
-  filter(model %in% c("epiforecasts-EpiNow2", "EuroCOVIDhub-ensemble", "IEM_Health-CovidProject")) |>
-  display_table(caption = "Weighted Interval Score for Poland by Model on the Validation Set")
+  select(method:interval_score) |>
+  rename(`validation score` = interval_score) |>
+  filter(model %in% c("epiforecasts-EpiNow2", "EuroCOVIDhub-ensemble", "IEM_Health-CovidProject"))
+
+tab1 |>
+  left_join(tab2, by = c("method", "model")) |>
+  display_table(caption = "Weighted Interval Score for Poland by Model on Training and Validation Set")
 ```
 
-Compare development of Case incidences in 2021 with Germany => CQR inflexible, refer to later section for more detailed explanation connected to underlying algorithm
+Indeed, CQR improves the WIS for all three models in-sample whereas the performance out-of-sample drops drastically. 
+This finding provides evidence that the observations used for the initial training phase must be *fundamentally different* to those encountered in the Time Series Cross Validation process.
+More specifically it suggests a *distribution shift* of the true observed values and/or the original quantile predictions right at the split of training and validation phase. 
+Further, the *scale* of training and validation scores is quite different, which usually stems from different magnitudes of the observed incidences in absolute terms.
 
-```{r hub-cqr-poland-intervals, echo=FALSE}
+```{r, ch2-hub-cqr-poland-intervals, echo=FALSE, fig.cap="Development of Covid-19 Cases in 2021 in Poland and Germany"}
 p1 <- cqr_poland |>
-  plot_intervals(model = "IEM_Health-CovidProject", target_type = "Cases", base_size = 8)
+  plot_intervals(model = "IEM_Health-CovidProject", target_type = "Cases", base_size = 8) + 
+  labs(title = "Predicted Cases for Poland 1 week ahead")
 
 p2 <- hub_cqr |>
   filter(location == "DE") |>
-  plot_intervals(model = "IEM_Health-CovidProject", target_type = "Cases", base_size = 8)
+  plot_intervals(model = "IEM_Health-CovidProject", target_type = "Cases", base_size = 8) +
+  labs(title = "Predicted Cases for Germany 1 week ahead")
 
 p1 + p2
 ```
 
-Overall Performance for each country.
-Larger Effect for more extreme quantiles.
+\Cref{fig:ch2-hub-cqr-poland-intervals} confirms our hypothesis for $1$ week-ahead forecasts of $90$% prediction intervals for Covid-19 Cases.
+The left plot displays the development of observed and predicted values for the outlier Poland compared to the same setting for Germany where CQR is beneficial.
+A few weeks before the training-validation split which is highlighted by the grey dashed line, the Case incidences plummeted in Poland.
+In strong contrast to Germany, where the Covid-19 situation relaxed during the summer months of 2021 as well, the incidences remain low until late autumn in Poland (according to the collected data of the European Forecast Hub), which also explains the different scales of the interval scores in \Cref{tab:ch2-hub-cqr-poland-table}.
 
-```{r}
+These consistently low observed values are connected to low uncertainty of the original forecasts displayed in \Cref{fig:ch2-hub-cqr-poland-intervals} that were submitted only one week in advance.
+The forecasters were well aware of the current situation and could quickly react with lower point forecasts and narrower prediction intervals.
+CQR is not able to compete with this flexibility and requires a long time span to adapt to irregular behaviour.
+The reasons for these slow adjustments, which reveal a major downside of CQR, follow immediately from the underlying algorithm and are explained in detail in \Cref{downsides}.
+
+At the end of this section, we briefly summarize the performance of vanilla CQR across different *quantiles*, *target types* and *horizons*.
+To obtain more informative visual illustrations we exclude Poland from the further analysis.
+
+```{r, ch2-hub-cqr-loc-quantile, echo=FALSE, out.width="80%", fig.cap="CQR is most beneficial for extreme Quantiles"}
 hub_cqr_no_poland <- hub_cqr |> filter(location_name != "Poland")
 
 df_cqr_hub_location_quantile <- eval_methods(
   hub_cqr_no_poland,
   summarise_by = c("location_name", "quantile")
 )
-plot_eval(df_cqr_hub_location_quantile) + labs(y = NULL)
+plot_eval(df_cqr_hub_location_quantile) +
+  labs(y = NULL, title = "CQR Improvements by Country and Quantile")
 ```
 
-Larger Effect for greater Horizons.
+\Cref{fig:ch2-hub-cqr-loc-quantile} shows the performance of CQR for all $23$ quantile levels in the data set.
+Although the effect size varies by country, the general trend holds unanimously:
+Extreme quantiles in the tails of the predictive distribution benefit most from Post-Processing with a gradual decline towards centered quantiles.
+The same trend can be observed to an even larger extent for non-expert forecasts in the UK Covid-19 Forecasting Challenge Data.
 
-```{r}
+```{r, ch2-hub-cqr-loc-horizon, echo=FALSE, out.width="80%", fig.cap="CQR is most beneficial for large Forecast Horizons"}
 df_cqr_hub_location_horizon <- eval_methods(
   hub_cqr_no_poland,
   summarise_by = c("location_name", "horizon")
 )
-plot_eval(df_cqr_hub_location_horizon) + labs(y = NULL)
+plot_eval(df_cqr_hub_location_horizon) +
+  labs(y = NULL, title = "CQR Improvements by Country and Horizon")
 ```
 
-Strong Effect for Cases, almost no effect for Deaths
+Similar to quantiles there exist obvious tendencies for different forecast horizons as well.
+\Cref{fig:ch2-hub-cqr-loc-horizon} shows the performance of CQR across horizons, again stratified by country.
+Although the effects are more diverse compared to \Cref{fig:ch2-hub-cqr-loc-quantile}, CQR generally works better for larger forecast horizons.
+Exceptions of this rule are Croatia, which is the only country besides Poland with a negative effect of CQR, and Malta, where the trend is actually reversed and CQR corrections are most beneficial for short-term forecasts.
 
-```{r}
+Both of the previous figures suggest that Post-Processing with Conformalized Quantile Regression is worthwhile whenever the uncertainty is comparably high, which is the case for both quantiles in the tails and large forecast horizons.
+
+```{r, ch2-hub-cqr-target-type-table, echo=FALSE}
 hub_cqr_no_poland |>
   extract_validation_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method", "target_type")) |>
   select(method:dispersion) |>
   arrange(target_type) |>
-  display_table(caption = "CQR Performance by Target Type for European Forecast Hub Data excluding Poland")
+  display_table(caption = "CQR Improvements by Target Type for European Forecast Hub Data excluding Poland")
 ```
+
+Lastly, \Cref{tab:ch2-hub-cqr-target-type-table} aggregates Weighted Interval Scores on the validation set by target type.
+Interestingly, the observed effects disagree for the first time: While forecasts for Covid-19 Cases benefit significantly, forecasts for Deaths become slightly worse through CQR adjustments.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -339,7 +387,7 @@ Even more problematic, the large correction margin only vanishes very gradually 
 In \Cref{fig:ch2-uk-cqr-asym-intervals} the lower quantile prediction of asymmetric CQR approaches the original lower quantile forecast very slowly after the jump in observed Cases.
 The following paragraphs aim to explain this inflexibility in detail and draw the connection to the underlying algorithm that was developed ealier in this chapter.
 
-### CQR downsides 
+### CQR Downsides {#downsides}
 
 Going back to \Cref{cqr-asymmetric-theory} asymmetric CQR computes two separate score vectors based on the original lower and upper quantile forecasts and the vector of observed values.
 To confirm our findings visually we select the data subset of  \Cref{fig:ch2-uk-cqr-asym-intervals}.
@@ -449,7 +497,7 @@ TODO: Add Global Results that show differences to traditional CQR
 
 ## Multiplicative CQR {#cqr-multiplicative}
 
-### Theory {-}
+### Theory 
 
 On top of the asymmetric CQR version introduced in \Cref{cqr-asymmetric}, we can extend the CQR algorithm further.
 So far, the adjustments to the original prediction interval were always chosen in *additive* form.
@@ -478,7 +526,7 @@ where we have to exclude original predictions with the value $0$.
 Since in our application of Covid-19 Cases and Deaths all values are non-negative, we threshold the scores at zero such that $E_{i, low}$ equals $0$ whenever $\hat{ q}_{\alpha, low}(X_i) \leq 0$.
 
 
-### Regularization {-}
+### Regularization 
 
 While the idea of multiplicative correction terms is appealing, it turns out that the approach above is flawed in two ways:
 
@@ -523,7 +571,7 @@ While the idea of multiplicative correction terms is appealing, it turns out tha
     Similarly, when the upper bound is adjusted upwards $(Q_{1 - \alpha, high} > 1)$, the lower bound must decrease $(Q_{1 - \alpha, low} < 1)$ leading to larger intervals overall after post-processing.
 
 
-### Results {-}
+### Results
 
 As noted in the previous section, *naive* multiplicative Conformalized Quantile Regression without any regularization is useless for post-processing quantile predictions.
 Typically, one can observe strong overfitting on the training set such that the training performance indicates promising effects, yet the scores on the validation set are *much* worse than the original forecasts.

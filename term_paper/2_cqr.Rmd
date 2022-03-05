@@ -15,7 +15,12 @@ linkcolor: blue
 links-as-notes: true
 ---
 
-```{r}
+```{r, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center",
+  out.width = "100%", dpi = 300, fig.asp = 0.618, collapse = TRUE
+)
+
 devtools::load_all(".")
 library(dplyr)
 
@@ -26,15 +31,20 @@ uk_cqr_asymmetric <- uk_cqr3 |> filter(method %in% c("original", "cqr_asymmetric
 uk_cqr_multiplicative <- uk_cqr3 |> filter(method %in% c("original", "cqr_multiplicative"))
 ```
 
-```{r}
-display_table <- function(df, caption) {
-  df |>
+```{r, include=FALSE}
+display_table <- function(df, caption, bold_header = TRUE, striped = TRUE) {
+  tab <- df |>
     kableExtra::kbl(
       digits = 2, align = "c", booktabs = TRUE, caption = caption
     ) |>
-    kableExtra::kable_styling(
-      position = "center", full_width = FALSE, latex_options = "striped"
-    )
+    kableExtra::row_spec(row = 0, bold = bold_header) |>
+    kableExtra::kable_styling(position = "center", full_width = FALSE)
+
+  if (striped) {
+    tab <- tab |> kableExtra::kable_styling(latex_options = "striped")
+  }
+
+  return(tab)
 }
 ```
 
@@ -85,7 +95,7 @@ Thus, the first statement of \Cref{thm:cqr} provides a coverage *guarantee* in t
 The second statement adds an *upper-bound* to the coverage probability which gets tighter with increasing sample size and asymptotically converges to the desired coverage level $1 - \alpha$ such that lower bound and upper bound are asymptotically identical.
 
 
-### Algorithm
+### Algorithm {#algorithm}
 
 The CQR algorithm is best described as a multi-step procedure.
 
@@ -135,10 +145,24 @@ This limitation is adressed in \Cref{cqr-asymmetric}.
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ## Asymmetric CQR {#cqr-asymmetric}
 
-As noted in \Cref{cqr-traditional} this section suggests a first extension to the original algorithm.
-Instead of limiting ourselves to choosing the *same* margin $Q_{1 - \alpha}(E, I_2)$ for adjusting the original lower and upper quantile predictions, we allow for individual and, thus, generally different margins $Q_{1 - \alpha, low}(E, I_2)$ and $Q_{1 - \alpha, high}(E, I_2)$ such that the post-processed prediction interval is given by 
+### Theory {#cqr-asymmetric-theory}
+
+As noted in \Cref{cqr-traditional} this section suggests a first extension to the original CQR algorithm.
+Instead of limiting ourselves to choose the *same* margin $Q_{1 - \alpha}(E, I_2)$ for adjusting the original lower and upper quantile predictions, we allow for individual and, thus, generally different margins $Q_{1 - \alpha, low}(E, I_2)$ and $Q_{1 - \alpha, high}(E, I_2)$ such that the post-processed prediction interval is given by 
 <!--  -->
 $$
 \begin{aligned}
@@ -156,6 +180,142 @@ E_{i, high} &:= Y_i - \hat{ q}_{\alpha, high}(X_i) \quad \forall \; i \in I_2
 \end{aligned}
 $$
 <!--  -->
+
+
+### Results 
+
+To avoid repetitions with respect to \Cref{cqr-traditional} we only briefly mention where asymmetric and vanilla CQR have similar effects and rather focus on the differences.
+
+```{r, ch2-uk-cqr-asym-intervals, echo=FALSE, out.width="80%", fig.cap="Illustration of CQR's slow reaction process"}
+mod <- "seabbs"
+h <- 2
+t <- "Cases"
+l <- "GB"
+q <- 0.05
+
+plot_intervals(
+  uk_cqr_asymmetric,
+  model = mod, target_type = t, horizon = h, quantile = q, highlight_time_point = 11
+)
+```
+
+\Cref{fig:ch2-uk-cqr-asym-intervals} nicely demonstrates the key characteristics of asymmetric CQR: Adjustments of the lower and upper interval bounds are independent from each other.
+Considering the last interval on the far right the lower bound is adjusted downwards by a large amount whereas the upper bound is increased only slightly.
+This behaviour implies that, in contrast to traditional CQR, original and corrected prediction intervals are generally *not* centered around the same midpoint.
+
+The plot also illustrates what we have already seen in \Cref{cqr-traditional}: 
+Once the true value is not contained in the prediction interval and there is a large discrepancy towards the closest boundary, all CQR versions tend to *overcompensate* in the next time step.
+This jump can be observed from time step $9$ to time step $10$, where the latter is highlighted by the red dashed line.
+Even more problematic, the large correction margin only vanishes very gradually afterwards even if the observed Time Series has stabilized.
+In \Cref{fig:ch2-uk-cqr-asym-intervals} the lower quantile prediction of asymmetric CQR approaches the original lower quantile forecast very slowly after the jump in observed Cases.
+The following paragraphs aim to explain this inflexibility in detail and draw the connection to the underlying algorithm that was developed ealier in this chapter.
+
+### CQR downsides 
+
+Going back to \Cref{cqr-asymmetric-theory} asymmetric CQR computes two separate score vectors based on the original lower and upper quantile forecasts and the vector of observed values.
+To confirm our findings visually we select the data subset of  \Cref{fig:ch2-uk-cqr-asym-intervals}.
+
+Consider the intervals one step prior to the red vertical line.
+At this point in time the training set includes the first $9$ elements of true values and predicted quantiles which are then used to compute a list of lower and upper scores:
+
+```{r, include=FALSE}
+subset_original <- uk_cqr_asymmetric |> filter(method == "original")
+subset_asymmetric <- uk_cqr_asymmetric |> filter(method == "cqr_asymmetric")
+
+quantiles_list <- filter_combination(subset_original, mod, l, t, h, q)
+quantiles_list_asymmetric <- filter_combination(subset_asymmetric, mod, l, t, h, q)
+
+quantiles_low <- quantiles_list$quantiles_low
+true_values <- quantiles_list$true_values
+quantiles_high <- quantiles_list$quantiles_high
+```
+
+```{r}
+scores_list <- compute_scores_asymmetric(
+  true_values[1:9], quantiles_low[1:9], quantiles_high[1:9]
+)
+scores_list$scores_lower
+```
+
+```{r, include=FALSE}
+largest_score <- round(scores_list$scores_lower[9], 1)
+```
+
+The vector of lower scores is calculated by the difference of true values and lower predicted quantiles at each time step.
+Due to the jump from time point $9$ to $10$ the final element of the lower score vector has a large value of `r largest_score`.
+
+Next, the (scalar) lower margin is computed:
+
+```{r, eval=FALSE}
+margin <- compute_margin(scores_list$scores_lower, quantile)
+margin
+```
+
+```{r, echo=FALSE}
+margin <- compute_margin(scores_list$scores_lower, 2 * q)
+margin
+```
+
+Due to the small sample size of $9$ observations and the relatively small quantile level of $0.05$ the margin is simply the *maximum* or $100$% quantile of the lower scores.
+The *updated* lower quantile prediction for the $10$th time point is thus the original lower quantile prediction at time point $10$ minus the margin, i.e.
+
+```{r, eval=FALSE}
+quantiles_low[10] - margin
+```
+
+```{r, echo=FALSE}
+(quantiles_low[10] - margin) |>
+  unname() |>
+  round(2)
+```
+
+which coincides with \Cref{fig:ch2-uk-cqr-asym-intervals}.
+
+The procedure now continues by consecutively adding the next elements to the vector of true values and original quantile predictions.
+Since the differences in observed incidence of Cases and predicted lower bound are all much *smaller* for the remaining time steps, the **same** value `r largest_score` remains the maximum of the lower score vector until the end!
+Thus, if like in the case above, the margin always equaled the maximum score, the adjustments would stay that large independent of the future development of the time series.
+
+In fact, the only difference from that scenario to **Step 4** of \Cref{algorithm} is that the *quantile* of the score vector that determines the value of the margin depends on the *size* of the score vector.
+Since the size increases by ine with each time step during the Time Series Cross Validation process, this quantile slowly declines.
+For instance, the margin which is responsible for adjusting forcasts at time point $11$ is not simply the maximum anymore:
+
+```{r, eval=FALSE}
+scores_list <- compute_scores_asymmetric(
+  true_values[1:10], quantiles_low[1:10], quantiles_high[1:10]
+)
+margin <- compute_margin(scores_list$scores_lower, quantile)
+margin
+```
+
+```{r, echo=FALSE}
+scores_list <- compute_scores_asymmetric(
+  true_values[1:10], quantiles_low[1:10], quantiles_high[1:10]
+)
+
+margin_lower_original <- compute_margin(scores_list$scores_lower, 2 * q)
+margin_lower_original
+```
+
+In this case the $99$% quantile is an interpolation of the largest and second largest score, as implemented by the `stats::quantile()` function.
+
+The cycle proceeds in this way until the end.
+The conclusion of this brief case study is that all modifications of the traditional CQR algorithm suffer from a slow reaction time towards distribution shifts and particularly sudden jumps within observed values and original forecasts.
+This major downside of Conformalized Quantile Regression is an immediate consequence of the **margin** computation which finally determines the magnitude of forecast adjustments.
+
+
+TODO: Add Global Results that show differences to traditional CQR
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## Multiplicative CQR {#cqr-multiplicative}
@@ -236,45 +396,76 @@ While the idea of multiplicative correction terms is appealing, it turns out tha
 
 ### Results {-}
 
-As noted in the previous section *naive* multiplicative Conformalized Quantile Regression without any regularization is useless for post-processing quantile predictions.
+As noted in the previous section, *naive* multiplicative Conformalized Quantile Regression without any regularization is useless for post-processing quantile predictions.
 Typically, one can observe strong overfitting on the training set such that the training performance indicates promising effects, yet the scores on the validation set are *much* worse than the original forecasts.
 Further, the adjusted intervals are shifted upwards and usually too large.
 
 Before numerically evaluating the performance of *regularized* CQR, it is instructive to look at a visual comparison of the original and post-processed forecasts of all three CQR modifications for one specific feature combination, which is shown in \Cref{fig:ch2-uk-cqr3-intervals}. 
 
-```{r, ch2-uk-cqr3-intervals, fig.cap="Comparison of CQR variations on the UK data set", out.width="80%"}
-plot_intervals(uk_cqr3, model = "epiforecasts-EpiExpert_direct", target_type = "Cases", quantile = 0.2, horizon = 2)
+```{r, ch2-uk-cqr3-intervals, echo=FALSE, fig.cap="Comparison of CQR variations on the UK data set", out.width="80%"}
+plot_intervals(
+  df = uk_cqr3, model = "epiforecasts-EpiExpert_direct", target_type = "Cases",
+  quantile = 0.2, horizon = 2
+)
 ```
 
 The effect of scaling the score vectors in step $1$ of the regularization procedure and constraining lower and upper margins in the second step can be detected immediately:
 Similar to vanilla CQR, the corrected intervals are now centered around the same midpoint as the original forecasts.
-In strong contrast to the additive CQR versions, however, the issue of interval explosion has not only been diminished by downscaling the scores, but rather *reverted* such that the interval widths now actually *decreased* at most time points and generally appear too narrow.
+In strong contrast to the additive CQR versions, however, the issue of interval explosion has not only been diminished by downscaling the scores, but rather *reversed* such that the interval widths now actually *decreased* at most time points and generally appear too narrow.
 
-TODO: Theorem does not apply => no guarantee of improvement on training set, explain numerical results briefly
-
-```{r}
+```{r, ch2-cqr-mult-training, echo=FALSE}
 uk_cqr_multiplicative |>
   extract_training_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method")) |>
   select(method:overprediction) |>
-  display_table(caption = "Performance of Multiplicative CQR on the Training Set")
+  display_table(
+    caption = "Performance of Multiplicative CQR on the Training Set",
+    striped = FALSE
+  )
 ```
 
-```{r}
+Moreover, we no longer have any theoretical guarantees of improved forecasts on the training set since \Cref{thm:cqr} only applies to the original additive and symmetric version of CQR.
+This fact is confirmed empirically by \Cref{tab:ch2-cqr-mult-training} which shows the Weighted Interval Score aggregated over all categories of `model`, `target_type`, `horizon` and `quantile`.
+Indeed, the multiplicative adjustments result in a slightly worse Weighted Interval Score.
+
+Recall that this behaviour is different from the unregularized version, which performed better than the original forecasts across almost all feature combinations.
+On the flipside, the performance on the validation set improved dramatically compared to the naive implementation, even though it does *not* lead to a score improvement in absolute terms as is shown in \Cref{tab:ch2-cqr-mult-validation} separated by the forecasting `model.`
+Interestingly, multiplicative CQR indicates the strongest *relative* performance for the `EuroCOVIDhub-baseline` model where the additive CQR algorithms struggle the most.
+Overall the score differences across different forecasting models appear to be smoothed out compared to the previous CQR versions which also results from the regularization component that is unique to the multiplicative modification.
+
+```{r, ch2-cqr-mult-validation, echo=FALSE}
 uk_cqr_multiplicative |>
   extract_validation_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method", "model")) |>
+  filter(!(model %in% c("epiforecasts-EpiExpert_direct", "epiforecasts-EpiExpert_Rt"))) |>
   select(method:dispersion) |>
   arrange(model) |>
-  display_table(caption = "Performance of Multiplicative CQR for each Model on the Validation Set")
+  display_table(caption = "Performance of Multiplicative CQR by Model on the Validation Set")
 ```
 
-The behaviour of \Cref{fig:ch2-uk-cqr3-intervals} can be observed across many other feature combinations: 
-Starting from huge intervals in the naive implementation, the effect of scaling the score vectors tends to be too extreme.
-As a consequence, we experimented with adding an additional hyperparameter $\lambda$ to dampen the regularization.
-However, we could not find any values of $\lambda$ within the trade-off between lower scaling effects and too large intervals and stronger regularization at the cost of too narrow intervals that consistently outperformed even the original forecasts.
+The impression of too narrow adjusted intervals does not generalize to the entire data set.
+The `dispersion` column in \Cref{tab:ch2-cqr-mult-validation} shows that the intervals are downsized only for some models such as `epiforecasts-EpiExpert` whereas for others like `epiforecasts-ensemble` the distance between lower and upper bound is larger on average.
 
-Hence, we must conclude that the original CQR algorithm as described in [@romano2019] can *not* be modified towards multiplicative margins in any straightforward way. 
+```{r, ch2-cqr-mult-dispersion, echo=FALSE}
+uk_cqr_multiplicative |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "quantile")) |>
+  select(method, quantile, dispersion) |>
+  arrange(quantile) |>
+  tidyr::pivot_wider(names_from = quantile, values_from = dispersion) |>
+  select(method:`0.45`) |>
+  display_table(
+    caption = "Dispersion of Multiplicative CQR by Quantile on the Validation Set",
+    striped = FALSE
+  )
+```
+
+\Cref{tab:ch2-cqr-mult-dispersion} suggests a connection of the `dispersion` change by multiplicative CQR with the `quantile` level.
+Aggregated over all models, target types and horizons the dispersion value is increased by a large amount for extreme quantiles and remains in a similar range to before towards the quantiles in the center of the predictive distribution.
+This behaviour is in line with the previously seen additive correction methods and underlines that \Cref{fig:ch2-uk-cqr3-intervals} is not representative for all feature combinations in the UK data set.
+
+Overall, we must conclude that the original CQR algorithm as described in [@romano2019] can *not* be modified towards multiplicative margins in any straightforward way. 
 For this reason, we do not extend the analysis of multiplicative CQR to the European Forecast Hub data set and do not include it in the detailed method comparison in \Cref{comparison}. 

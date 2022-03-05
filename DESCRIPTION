@@ -35,7 +35,6 @@ Imports:
     foreach,
     ggplot2,
     lubridate,
-    nloptr,
     rlang,
     scales,
     scoringutils,
@@ -47,6 +46,7 @@ Suggests:
     here,
     kableExtra,
     knitr,
+    nloptr,
     readr,
     rmarkdown,
     testthat (>= 3.0.0)

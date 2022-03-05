@@ -8,20 +8,16 @@ QSA_FLEXIBlE_SYMMETRIC <- TRUE
 QSA_FLEXIBLE <- TRUE
 
 
-#devtools::load_all()
-library(dplyr)
-library(scoringutils)
-library(data.table)
-library(tidyr)
-library(forcats)
-library(foreach)
-library(doParallel)
+devtools::load_all()
+library("doParallel")
+library("foreach")
+# if (!require("pacman")) install.packages("pacman")
+# pacman::p_load("dplyr", "data.table", "tidyr", "forcats", "foreach", "doParallel", "here", "postforecasts")
+
 registerDoParallel(cores=12)
 #https://stackoverflow.com/questions/30688307/parallelization-doesnt-work-with-the-foreach-package
 #my mac has 2 cores, see this by running the following line in your terminal: system_profiler SPHardwareDataType
 #https://techwiser.com/how-many-cores-does-my-cpu-have/
-
-Sys.sleep(10)
 
 cv_init_training <- 0.5
 
@@ -61,7 +57,7 @@ locations <- model_country_combinations |>
 
 if (QSA_UNIFORM) {
   df_updated <- update_predictions(
-    df = uk_data, methods = "qsa_uniform", models = complete_models,
+    df = hub_data, methods = "qsa_uniform", models = models,
     cv_init_training = cv_init_training, verbose = TRUE, parallel = TRUE
   )
   
@@ -76,7 +72,7 @@ if (QSA_UNIFORM) {
 
 if (QSA_FLEXIBLE_SYMMETRIC) {
   df_updated <- update_predictions(
-    df = uk_data, methods = "qsa_flexible_symmetric", models = complete_models,
+    df = hub_data, methods = "qsa_flexible_symmetric", models = models,
     cv_init_training = cv_init_training, verbose = TRUE, parallel = TRUE
   )
   
@@ -91,7 +87,7 @@ if (QSA_FLEXIBLE_SYMMETRIC) {
 
 if (QSA_FLEXIBLE_SYMMETRIC) {
   df_updated <- update_predictions(
-    df = uk_data, methods = "qsa_flexible", models = complete_models,
+    df = hub_data, methods = "qsa_flexible", models = models,
     cv_init_training = cv_init_training, verbose = TRUE, parallel = TRUE
   )
   

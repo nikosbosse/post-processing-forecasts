@@ -11,9 +11,6 @@ QSA_FLEXIBLE <- TRUE
 devtools::load_all()
 library("doParallel")
 library("foreach")
-# if (!require("pacman")) install.packages("pacman")
-# pacman::p_load("dplyr", "data.table", "tidyr", "forcats", "foreach", "doParallel", "here", "postforecasts")
-
 registerDoParallel(cores=12)
 #https://stackoverflow.com/questions/30688307/parallelization-doesnt-work-with-the-foreach-package
 #my mac has 2 cores, see this by running the following line in your terminal: system_profiler SPHardwareDataType

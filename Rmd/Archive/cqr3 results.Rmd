@@ -66,10 +66,8 @@ uk_cqr_asymmetric |>
 Intervals can get shifted in space for asymmetric version, adjustments to lower bound tend to be stronger than to upper bound.
 
 ```{r}
-q <- 0.1
-h <- 2
-t <- "Cases"
-l <- "GB"
+q <- 0.05
+
 
 plot_intervals(uk_cqr_asymmetric,
   model = "epiforecasts-EpiExpert", target_type = t,
@@ -84,6 +82,9 @@ Note again slow adaptation to lower uncertainty at the end
 Consider situation at data point 9 => dashed red line
 
 ```{r}
+h <- 2
+t <- "Cases"
+l <- "GB"
 q <- 0.05
 plot_intervals(uk_cqr_asymmetric,
   model = "seabbs", target_type = t,

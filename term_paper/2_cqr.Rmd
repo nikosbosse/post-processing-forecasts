@@ -23,12 +23,21 @@ knitr::opts_chunk$set(
 
 devtools::load_all(".")
 library(dplyr)
+library(ggplot2)
 
 uk_cqr3 <- readr::read_rds(here::here("data_results", "uk_cqr3.rds"))
 
 uk_cqr <- uk_cqr3 |> filter(method %in% c("original", "cqr"))
 uk_cqr_asymmetric <- uk_cqr3 |> filter(method %in% c("original", "cqr_asymmetric"))
 uk_cqr_multiplicative <- uk_cqr3 |> filter(method %in% c("original", "cqr_multiplicative"))
+
+hub_cqr2_1 <- readr::read_rds(here::here("data_results", "hub_cqr2_1.rds"))
+hub_cqr2_2 <- readr::read_rds(here::here("data_results", "hub_cqr2_2.rds"))
+hub_cqr2_3 <- readr::read_rds(here::here("data_results", "hub_cqr2_3.rds"))
+
+hub_cqr2 <- bind_rows(hub_cqr2_1, hub_cqr2_2, hub_cqr2_3)
+hub_cqr <- hub_cqr2 |> filter(method != "cqr_asymmetric")
+hub_cqr_asymmetric <- hub_cqr2 |> filter(method != "cqr")
 ```
 
 ```{r, include=FALSE}
@@ -140,16 +149,136 @@ Note that the *same* margin $Q_{1 - \alpha}(E, I_2)$ is subtracted from the orig
 This limitation is adressed in \Cref{cqr-asymmetric}.
 
 
+### Results
 
+We first analyze the Effect of CQR in the UK Covid-19 Forecasting Challenge data and point out common trends of CQR adjustments.
+Then, we investigate if these trends generalize to the larger European Forecast Hub data set.
 
+The first finding that is valid for almost all feature combinations is that CQR *expands* the original forecast intervals.
+Due to **step 5** of \Cref{algorithm} it moves lower and upper bound in a *symmetric* way by using the same margin for lower and upper corrections.
+This implies that the interval *midpoint* remains unchanged when applying the traditional CQR algorithm.
 
+```{r, ch2-uk-cqr-intervals, echo=FALSE, out.width="80%", fig.cap="CQR tends to make prediction intervals larger, here for the `seabbs` forecasting model"}
+plot_intervals(
+  uk_cqr,
+  model = "seabbs", target_type = "Cases", horizon = 3, quantile = 0.1
+)
+```
 
+One extreme example of this behaviour is given in \Cref{fig:ch2-uk-cqr-intervals}.
+Since the `seabbs` forecasts are submitted by single individual, we find evidence for the hypothesis stated in \Cref{data} that humans tend to be too confident in their own predictions resulting in too narrow uncertainty bounds.
+By extending the intervals symmetrically CQR maintains *pointwise* information from the original forecasts while simultaneously increasing interval coverage.
 
+```{r, ch2-uk-cqr-wis-specific, echo=FALSE}
+uk_cqr |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model", "target_type", "horizon", "quantile")) |>
+  dplyr::filter(model == "seabbs", target_type == "Cases", horizon == 3, quantile == 0.1) |>
+  dplyr::select(method:dispersion) |>
+  display_table(caption = "WIS improvement by CQR for one particular feature combination on the validation set.")
+```
 
+```{r, ch2-uk-cqr-wis-general, echo=FALSE}
+uk_cqr |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method")) |>
+  dplyr::select(method:dispersion) |>
+  display_table(caption = "Overall WIS improvement by CQR on the validation set.")
+```
 
+Yet, the pure effect of increasing coverage does not automatically imply that the Weighted Interval Score has improved as well due to the trade-off between coverage and precision.
+Thus, we explicitly compute the WIS, once for the specific covariate combination of \Cref{fig:ch2-uk-cqr-intervals} in \Cref{tab:ch2-uk-cqr-wis-specific} and once aggregated over all *models*, *target types*, *horizons* and *quantiles* in \Cref{tab:ch2-uk-cqr-wis-general}.
 
+Both tables confirm the visual impression of \Cref{fig:ch2-uk-cqr-intervals}:
+CQR improves the Weighted Interval Score by increasing the `dispersion` value, a measure for the prediction interval width.
+This effect is particularly strong in case if the `seabbs` model but still applies to a more moderate extent to most of the other forecasting models.
 
+Since many of the findings for traditional CQR coincide between the UK data and the EU Forecast Hub data, we jump straight to the latter.
 
+---
+
+Poland as Outlier that needs further investigation
+
+```{r}
+df_cqr_hub_location <- eval_methods(hub_cqr, summarise_by = c("location_name"))
+plot_eval(df_cqr_hub_location, heatmap = FALSE) + labs(y = NULL)
+```
+
+Compare WIS on Training vs Validation Set => Hypothesis of Distribution Shift
+
+```{r hub-cqr-poland-training, echo=FALSE}
+cqr_poland <- hub_cqr |> filter(location_name == "Poland")
+
+cqr_poland |>
+  extract_training_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model")) |>
+  arrange(model) |>
+  select(method:dispersion) |>
+  filter(model %in% c("epiforecasts-EpiNow2", "EuroCOVIDhub-ensemble", "IEM_Health-CovidProject")) |>
+  display_table(caption = "Weighted Interval Score for Poland by Model on the Training Set")
+```
+
+```{r hub-cqr-poland-validation, echo=FALSE}
+cqr_poland |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "model")) |>
+  arrange(model) |>
+  select(method:dispersion) |>
+  filter(model %in% c("epiforecasts-EpiNow2", "EuroCOVIDhub-ensemble", "IEM_Health-CovidProject")) |>
+  display_table(caption = "Weighted Interval Score for Poland by Model on the Validation Set")
+```
+
+Compare development of Case incidences in 2021 with Germany => CQR inflexible, refer to later section for more detailed explanation connected to underlying algorithm
+
+```{r hub-cqr-poland-intervals, echo=FALSE}
+p1 <- cqr_poland |>
+  plot_intervals(model = "IEM_Health-CovidProject", target_type = "Cases", base_size = 8)
+
+p2 <- hub_cqr |>
+  filter(location == "DE") |>
+  plot_intervals(model = "IEM_Health-CovidProject", target_type = "Cases", base_size = 8)
+
+p1 + p2
+```
+
+Overall Performance for each country.
+Larger Effect for more extreme quantiles.
+
+```{r}
+hub_cqr_no_poland <- hub_cqr |> filter(location_name != "Poland")
+
+df_cqr_hub_location_quantile <- eval_methods(
+  hub_cqr_no_poland,
+  summarise_by = c("location_name", "quantile")
+)
+plot_eval(df_cqr_hub_location_quantile) + labs(y = NULL)
+```
+
+Larger Effect for greater Horizons.
+
+```{r}
+df_cqr_hub_location_horizon <- eval_methods(
+  hub_cqr_no_poland,
+  summarise_by = c("location_name", "horizon")
+)
+plot_eval(df_cqr_hub_location_horizon) + labs(y = NULL)
+```
+
+Strong Effect for Cases, almost no effect for Deaths
+
+```{r}
+hub_cqr_no_poland |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "target_type")) |>
+  select(method:dispersion) |>
+  arrange(target_type) |>
+  display_table(caption = "CQR Performance by Target Type for European Forecast Hub Data excluding Poland")
+```
 
 
 

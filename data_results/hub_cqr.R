@@ -73,17 +73,14 @@ if (CQR2) {
 
   df_combined <- df_updated |> collect_predictions()
 
-  # split in 2 data frames to keep file sizes below github limit of 100MB
-  num_rows <- as.integer(nrow(df_combined) / 2)
-
-  df_combined_1 <- df_combined |>
-    dplyr::slice(1:num_rows)
-
-  df_combined_2 <- df_combined |>
-    dplyr::slice((num_rows + 1):nrow(df_combined))
+  # split in 3 data frames to keep file sizes below github limit of 100MB
+  df_combined_1 <- df_combined |> dplyr::filter(method == "original")
+  df_combined_2 <- df_combined |> dplyr::filter(method == "cqr")
+  df_combined_3 <- df_combined |> dplyr::filter(method == "cqr_asymmetric")
 
   readr::write_rds(df_combined_1, file = here::here("data_results", "hub_cqr2_1.rds"))
   readr::write_rds(df_combined_2, file = here::here("data_results", "hub_cqr2_2.rds"))
+  readr::write_rds(df_combined_3, file = here::here("data_results", "hub_cqr2_3.rds"))
 }
 
 if (CQR_QSA_UNIFORM_ENSEMBLE_SUBSET) {

@@ -45,7 +45,13 @@ knitr::write_bib(
 
 \newpage
 
-```{r child=here::here("term_paper", "2_cqr.Rmd")}
+```{r child=here::here("term_paper", "2_cqr_1.Rmd")}
+```
+
+```{r child=here::here("term_paper", "2_cqr_2.Rmd")}
+```
+
+```{r child=here::here("term_paper", "2_cqr_3.Rmd")}
 ```
 
 \newpage

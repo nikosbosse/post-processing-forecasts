@@ -222,10 +222,7 @@ tab2 <- hub_cqr2 |>
 tab1 |>
   left_join(tab2, by = "method") |>
   display_table(
-    caption = paste(
-      "Performance of asymmetric CQR for UK",
-      "and European Forecast Hub Data on Validation Set"
-    )
+    caption = "Performance of asymmetric CQR on Validation Set"
   )
 ```
 
@@ -237,36 +234,34 @@ uk_cqr_asym_model_quantile <- eval_methods(
   uk_cqr_asymmetric |> filter(model != "EuroCOVIDhub-baseline"),
   summarise_by = c("model", "quantile")
 )
-p1 <- plot_eval(uk_cqr_asym_model_quantile) +
+p1 <- plot_eval(uk_cqr_asym_model_quantile, base_size = 7) +
   labs(
     y = NULL,
-    title = "CQR Asymmetric Performance by Model and Quantile",
+    title = "CQR Asymmetric Performance\nby Model and Quantile",
     subtitle = NULL
   ) +
   theme(
-    axis.text.x = element_text(color = c(b, rep(c(t, b), 11)))
+    axis.text.x = element_text(color = c(b, rep(c(t, t, b, t), 5), t, b))
   )
 
 uk_cqr_asym_horizon_quantile <- eval_methods(
   uk_cqr_asymmetric,
   summarise_by = c("horizon", "quantile")
 )
-p2 <- plot_eval(uk_cqr_asym_horizon_quantile) +
+p2 <- plot_eval(uk_cqr_asym_horizon_quantile, base_size = 7) +
   labs(
     y = NULL,
-    title = "CQR Asymmetric Performance by Horizon and Quantile",
+    title = "CQR Asymmetric Performance\nby Horizon and Quantile",
     subtitle = NULL
   ) +
   theme(
-    axis.text.x = element_text(color = c(b, rep(c(t, b), 11)))
+    axis.text.x = element_text(color = c(b, rep(c(t, t, b, t), 5), t, b))
   )
 
 p1 + p2
 ```
 
-
-
-```{r, hub-cqr-asymmetric-location, echo=FALSE, fig.cap="Asymmetric CQR has negative effects on almost all countries"}
+```{r, hub-cqr-asymmetric-location, echo=FALSE, out.width="80%", fig.cap="Asymmetric CQR has negative effects on almost all countries"}
 hub_cqr_asym_location <- eval_methods(hub_cqr_asymmetric, summarise_by = "location_name")
 plot_eval(hub_cqr_asym_location, heatmap = FALSE) +
   labs(y = NULL, title = "QSA Asymmetric Performance by Country")
@@ -283,24 +278,24 @@ hub_cqr_asym_location_quantile <- eval_methods(
   hub_cqr_asymmetric_no_poland,
   summarise_by = c("location_name", "quantile")
 )
-p1 <- plot_eval(hub_cqr_asym_location_quantile) +
+p1 <- plot_eval(hub_cqr_asym_location_quantile, base_size = 7) +
   labs(
     y = NULL,
-    title = "CQR Asymmetric Performance by Country and Quantile",
+    title = "CQR Asymmetric Performance\nby Country and Quantile",
     subtitle = NULL
   ) +
   theme(
-    axis.text.x = element_text(color = c(b, rep(c(t, b), 11)))
+    axis.text.x = element_text(color = c(b, rep(c(t, t, b, t), 5), t, b))
   )
 
 hub_cqr_asym_location_horizon <- eval_methods(
   hub_cqr_asymmetric_no_poland,
   summarise_by = c("location_name", "horizon")
 )
-p2 <- plot_eval(hub_cqr_asym_location_horizon) +
+p2 <- plot_eval(hub_cqr_asym_location_horizon, base_size = 7) +
   labs(
     y = NULL,
-    title = "CQR Asymmetric Performance by Country and Horizon",
+    title = "CQR Asymmetric Performance\nby Country and Horizon",
     subtitle = NULL
   )
 
@@ -326,9 +321,13 @@ tab1 |>
   left_join(tab2, by = c("method", "target_type")) |>
   arrange(target_type) |>
   display_table(
-    caption = paste(
-      "Performance of asymmetric CQR for UK and European",
-      "Forecast Hub Data for Covid-19 Cases and Deaths"
-    )
+    caption = "Performance of asymmetric CQR for Covid-19 Cases and Deaths"
   )
 ```
+
+In summary, asymmetric Conformalized Quantile Regression can lead to improved prediction intervals as it is the case for the UK data set.
+However, the vast majority of countries in the European Forecast Hub did not benefit from this first CQR modification.
+
+Compared to the traditional CQR algorithm, relaxing the symmetry assumption had a negative effect on the Weighted Interval Score across both data sets.
+It is worth noting that allowing for separate margins did *not* cause significant overfitting as one might assume, the original CQR algorithm outperforms the asymmetric version even on the training set.
+The magnitude of the performance differences between the two methods is analyzed in \Cref{comparison}.

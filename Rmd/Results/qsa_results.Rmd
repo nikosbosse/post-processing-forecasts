@@ -39,7 +39,9 @@ The following analysis of QSA Uniform results is meant as a continuation to the 
 We load the QSA Uniform results by filtering them out of the data set also containing the CQR results. Note that in the following we will refer to the QSA Uniform postprocessing method simply as QSA as we do not consider other QSA methods in this analysis.
 
 ```{r}
-uk_qsa_uniform <- readr::read_rds(here::here("data_results", "uk_cqr_qsa_uniform_ensemble.rds")) |> dplyr::filter( method %in%  c("original", "qsa_uniform"))
+uk_qsa_uniform <- readr::read_rds(here::here("data_results", "uk_qsa_uniform.rds"))
+uk_qsa_flexible_symmetric <- readr::read_rds(here::here("data_results", "uk_qsa_flexible_symmetric.rds"))
+uk_qsa_flexible <- readr::read_rds(here::here("data_results", "uk_qsa_flexible.rds"))
 ```
 
 ## Visualizing the raw data

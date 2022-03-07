@@ -1,0 +1,72 @@
+---
+output:
+  bookdown::pdf_document2:
+    includes:
+      in_header: preamble.tex
+    toc: FALSE
+    highlight: tango
+    number_sections: TRUE
+    df_print: tibble
+    latex_engine: pdflatex
+bibliography: [paper.bib, packages.bib]
+biblio-style: apalike
+urlcolor: black
+linkcolor: blue
+links-as-notes: true
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center",
+  out.width = "100%", dpi = 300, fig.asp = 0.618, collapse = TRUE
+)
+
+devtools::load_all(".")
+library(dplyr)
+library(ggplot2)
+library(patchwork)
+
+uk_qsa_uniform <- readr::read_rds(here::here("data_results", "uk_qsa_uniform.rds"))
+uk_qsa_flexible_symmetric <- readr::read_rds(here::here("data_results", "uk_qsa_flexible_symmetric.rds"))
+uk_qsa_flexible <- readr::read_rds(here::here("data_results", "uk_qsa_flexible.rds"))
+```
+
+## Results
+
+As for the CQR method, we investigate how well QSA performs for post-processing Covid-19 forecasts. We mainly focus on the UK Covid-19 Forecasting Challenge data set and only mention `qsa_uniform` results in the European Forecast Hub data due to computational restrictions.
+
+```{r, tab:qsa_uniform-val-set, echo=FALSE}
+tab_uniform <- uk_qsa_uniform |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method")) |>
+  dplyr::select(method:dispersion, underprediction, overprediction)
+
+tab_uniform
+```
+
+We begin by examining the results of the `qsa_uniform` method and taking a high level view. \Cref{tab:qsa_uniform-val-set} presents the performance on the validation set, aggregated over all *models*, *target types*, *horizons* and *quantiles*. `qsa_uniform` clearly improves the Weighted Interval Score as it drops by `r (tab_uniform$interval_score[1] - tab_uniform$interval_score[2]) / tab_uniform$interval_score[1] * 100` percent. As expected post-processing makes the prediction intervals larger as the dispersion increases by a factor of `r tab_uniform$dispersion[2] / tab_uniform$dispersion[1]`. 
+
+The increased intervals cover more observations and thereby reduce the under- and overprediction by `r (tab_uniform$underprediction[1] - tab_uniform$underprediction[2]) / tab_uniform$underprediction[1] * 100` and `r (tab_uniform$overprediction[1] - tab_uniform$overprediction[2]) / tab_uniform$overprediction[1] * 100`. Interestingly while both decreases are similar in terms of relative performance increases, there absolute effects on the interval score differ substantially. The underprediction reduction decreases the WIS by `r tab_uniform$underprediction[1] - tab_uniform$underprediction[2]` which amounts to a relative decrease of merely `r (tab_uniform$underprediction[1] - tab_uniform$underprediction[2]) / tab_uniform$interval_score[1] * 100` percent, while the overprediction drops by `r tab_uniform$overprediction[1] - tab_uniform$overprediction[2]` which in relativ terms are `r (tab_uniform$overprediction[1] - tab_uniform$overprediction[2]) / tab_uniform$interval_score[1] * 100` percent. The main driver behind the increasing in the intervals, is that they do not reach high enough. Thus by increasing the intervals and achieving better coverage of larger observations, while at the same time sacrificing interval sharpness, `qsa_uniform` improves the WIS.
+
+This finding, of the post processing methods increasing intervals, confirms the hypothesis that humans tend to be too confident in their own forecasts leading to narrow prediction intervals.
+
+
+
+
+
+```{r}
+uk_qsa_flexible_symmetric |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method")) |>
+  dplyr::select(method:dispersion, underprediction, overprediction)
+```
+
+```{r}
+uk_qsa_flexible |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method")) |>
+  dplyr::select(method:dispersion, underprediction, overprediction)
+```

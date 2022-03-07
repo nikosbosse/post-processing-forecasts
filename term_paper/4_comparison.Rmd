@@ -15,6 +15,37 @@ linkcolor: blue
 links-as-notes: true
 ---
 
+```{r, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center",
+  out.width = "100%", dpi = 300, fig.asp = 0.618, collapse = TRUE
+)
+
+devtools::load_all(".")
+library(dplyr)
+library(ggplot2)
+library(patchwork)
+
+uk_complete <- readr::read_rds(here::here("data_results", "uk_complete.rds"))
+```
+
+```{r, include=FALSE}
+display_table <- function(df, caption, bold_header = TRUE, striped = FALSE) {
+  tab <- df |>
+    kableExtra::kbl(
+      digits = 2, align = "c", booktabs = TRUE, caption = caption
+    ) |>
+    kableExtra::row_spec(row = 0, bold = bold_header) |>
+    kableExtra::kable_styling(position = "center", full_width = FALSE)
+
+  if (striped) {
+    tab <- tab |> kableExtra::kable_styling(latex_options = "striped")
+  }
+
+  return(tab)
+}
+```
+
 # Method Comparison {#comparison}
 
 This chapter aims to compare the effectiveness of all Post-Processing methods that were introduced in the previous chapters.
@@ -91,3 +122,8 @@ df_updated <- df |>
   collect_predictions() |>
   add_ensemble()
 ```
+
+```{r}
+
+```
+

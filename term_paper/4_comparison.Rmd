@@ -30,7 +30,8 @@ uk_complete <- readr::read_rds(here::here("data_results", "uk_complete.rds"))
 ```
 
 ```{r, include=FALSE}
-display_table <- function(df, caption, bold_header = TRUE, striped = FALSE) {
+display_table <- function(df, caption, bold_header = TRUE,
+                          striped = FALSE) {
   tab <- df |>
     kableExtra::kbl(
       digits = 2, align = "c", booktabs = TRUE, caption = caption
@@ -123,7 +124,164 @@ df_updated <- df |>
   add_ensemble()
 ```
 
-```{r}
+```{r, echo=FALSE}
+tab_training <- uk_complete |>
+  extract_training_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = "method") |>
+  select(method:dispersion) |>
+  rename(`training score` = interval_score)
 
+tab_validation <- uk_complete |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = "method") |>
+  select(method:dispersion) |>
+  rename(`validation score` = interval_score)
+
+tab_validation |>
+  mutate(`training score` = tab_training$`training score`) |>
+  relocate(`training score`, .after = `validation score`) |>
+  arrange(`validation score`) |>
+  display_table(
+    caption = "WIS of all Post-Processing Methods on Training and Validation Set"
+  )
 ```
 
+```{r, include=FALSE}
+weights_df <- attr(uk_complete, which = "weights")
+
+weights_only <- do.call("rbind", weights_df$weights) |>
+  magrittr::set_colnames(value = c(
+    "cqr",  "cqr_asymmetric", "qsa_uniform", "qsa_flexible_symmetric",
+    "qsa_flexible"
+  )) |>
+  as_tibble()
+
+weights_full <- bind_cols(
+  weights_df |> select(-c(location, weights)),
+  weights_only
+) |>
+  rowwise() |>
+  mutate(rowsum = sum(c_across(cols = cqr:qsa_flexible))) |>
+  mutate(max_weight = max(c_across(cols = cqr:qsa_flexible))) |>
+  ungroup()
+```
+
+```{r, ch2-weight-thresholds, echo=FALSE}
+weights_full |>
+  summarise(
+    `> 0.5` = mean(max_weight > 0.5),
+    `> 0.9` = mean(max_weight > 0.9),
+    `> 0.99` = mean(max_weight > 0.99),
+  ) |>
+  display_table(caption = paste(
+    "Fraction of Feature Combinations where largest",
+    "Ensemble Weight exceeds Threshold"
+  ))
+```
+
+```{r, ch2-largest-weights, echo=FALSE}
+weights_full |>
+  rowwise() |>
+  mutate(best_method = which.max(c_across(cqr:qsa_flexible))) |>
+  mutate(best_method = case_when(
+    best_method == 1 ~ "cqr",
+    best_method == 2 ~ "cqr_asymmetric",
+    best_method == 3 ~ "qsa_uniform",
+    best_method == 4 ~ "qsa_flexible_symmetric",
+    best_method == 5 ~ "qsa_flexible"
+  )) |>
+  group_by(best_method) |>
+  summarise(
+    num_best = n(),
+    frac_best = num_best / nrow(weights_full)
+  ) |>
+  tidyr::pivot_longer(cols = num_best:frac_best) |>
+  tidyr::pivot_wider(names_from = best_method, values_from = value) |>
+  select(cqr, cqr_asymmetric, qsa_uniform, qsa_flexible_symmetric, qsa_flexible) |>
+  display_table(
+    caption = paste(
+      "Number (Row 1) and Fraction (Row 2)",
+      "of largest Ensemble Weights for each Method"
+    )
+  )
+```
+
+```{r, include=FALSE}
+# find rows for plot where ensemble weights are distributed and algorithm converged (sum
+# of weights close to 1)
+weights_full |>
+  filter(model == "seabbs", rowsum > 0.99, max_weight < 0.8)
+```
+
+```{r, echo=FALSE}
+mod <- "seabbs"
+t <- "Cases"
+h <- 4
+q <- 0.1
+
+plot_weights <- weights_full |>
+  filter(model == mod, target_type == t, horizon == h, quantile == q) |>
+  mutate(across(.cols = cqr:qsa_flexible, .fns = ~ round(.x, digits = 4)))
+
+plot_df <- uk_complete |>
+  mutate(method = case_when(
+    method == "cqr" ~ stringr::str_glue(
+      "cqr\nweight: {plot_weights$cqr}"
+    ),
+    method == "cqr_asymmetric" ~ stringr::str_glue(
+      "cqr_asymmetric\nweight: {plot_weights$cqr_asymmetric}"
+    ),
+    method == "qsa_uniform" ~ stringr::str_glue(
+      "qsa_uniform\nweight: {plot_weights$qsa_uniform}"
+    ),
+    method == "qsa_flexible_symmetric" ~ stringr::str_glue(
+      "qsa_flexible_symmetric\nweight: {plot_weights$qsa_flexible_symmetric}"
+    ),
+    method == "qsa_flexible" ~ stringr::str_glue(
+      "qsa_flexible\nweight: {plot_weights$qsa_flexible}"
+    ),
+    TRUE ~ method
+  ))
+
+plot_intervals(
+  plot_df,
+  model = mod, target_type = t, quantile = q, horizon = h
+) +
+  # guides(color = guide_legend(nrow = 1)) +
+  scale_color_brewer(palette = "Dark2")
+```
+
+
+```{r, echo=FALSE}
+df_method_model <- eval_methods(uk_complete, summarise_by = "model")
+p1 <- plot_eval(df_method_model, base_size = 7) +
+  labs(y = NULL, title = "Method Comparisons by Model and Target Type", subtitle = NULL) +
+  theme(axis.text.x = element_blank())
+
+df_method_target_type <- eval_methods(uk_complete, summarise_by = "target_type")
+p2 <- plot_eval(df_method_target_type, base_size = 7) +
+  labs(y = NULL, title = NULL, subtitle = NULL)
+
+p1 / p2
+```
+
+```{r, echo=FALSE}
+df_method_horizon <- eval_methods(uk_complete, summarise_by = "horizon")
+p1 <- plot_eval(df_method_horizon, base_size = 7) +
+  labs(title = "Method Comparisons by Horizon and Quantile", subtitle = NULL) +
+  theme(axis.text.x = element_blank())
+
+b <- "black"
+t <- "transparent"
+
+df_method_quantile <- eval_methods(uk_complete, summarise_by = "quantile")
+p2 <- plot_eval(df_method_quantile, base_size = 7) +
+  labs(title = NULL, subtitle = NULL) +
+  theme(
+    axis.text.y = element_text(color = c(b, rep(c(t, b), 11)))
+  )
+
+p1 / p2
+```

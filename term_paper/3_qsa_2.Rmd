@@ -63,6 +63,9 @@ uk_qsa_flexible_symmetric |>
   dplyr::select(method:dispersion, underprediction, overprediction)
 ```
 
+`qsa_uniform` and `qsa_flexible_symmetric` are both bound to symmetrically adjust upper and lower bounds of the prediction intervals. This is sensible for adjusting models who's residuals follow a symmetric distribution. If model residuals are however skewed, and thus interval coverage lacks more heavily on one side, symmetric adjustments lead to sub-optimal results. This happens because the model is confronted with a trade off where it adjusts one side to little and the other side to much. In the case where the post-processing increases intervals it is bound by the dispersion penalty that is heavier, since for each step it takes at reducing under-coverage on one end, it increases dispersion two fold as intervals are also increased in the other end. In the case of decreasing intervals, it is bound by a lack of coverage as for each step it decreases unnecessary large intervals on one side, it also decreases the interval on the other side leading to uncovered observations. Thus, in both cases where post-processing is warranted, but the model residuals are non-symmetrical, symmetric methods lead to sub-optimal adjustments on both sides of the interval.
+As the Covid-19 infection and death data is inherently non-symmetrically distributed, due to the observations being bounded between $[0,Inf]$ and them resulting from exponential growth, we expect model residuals to be skewed towards higher values. Therefor, we examine how the non-symmetric post-processing method `qsa_flexible` adjusts the forecasts and how it preforms in contrast to `qsa_uniform` and `qsa_flexible_symmetric`. 
+
 ```{r}
 uk_qsa_flexible |>
   extract_validation_set() |>

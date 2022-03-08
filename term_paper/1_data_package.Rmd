@@ -27,7 +27,7 @@ devtools::load_all()
 
 # Analysis Tools
 
-Data Analysis is inherently build upon two foundational components: High Quality Data that allows to gain insight into the underlying data generating process and a structured and reproducible way to extract information out of the collected data.
+Data Analysis is inherently build upon two fundamental components: High Quality Data that allows to gain insight into the underlying data generating process and a structured and reproducible way to extract information out of the collected data.
 
 \Cref{data} introduces the two data sets we worked with while \Cref{package} provides an overview about the `postforecasts` package, a unified framework to apply and analyze various post-processing techniques.
 

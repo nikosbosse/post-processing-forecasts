@@ -22,8 +22,26 @@ knitr::opts_chunk$set(
 )
 
 devtools::load_all()
+library(dplyr)
+library(ggplot2)
 ```
 
+```{r, include=FALSE}
+display_table <- function(df, caption, bold_header = TRUE, striped = FALSE) {
+  tab <- df |>
+    kableExtra::kbl(
+      digits = 2, align = "c", booktabs = TRUE, caption = caption
+    ) |>
+    kableExtra::row_spec(row = 0, bold = bold_header) |>
+    kableExtra::kable_styling(position = "center", full_width = FALSE)
+
+  if (striped) {
+    tab <- tab |> kableExtra::kable_styling(latex_options = "striped")
+  }
+
+  return(tab)
+}
+```
 
 # Analysis Tools
 
@@ -144,7 +162,7 @@ In contrast to classical Cross Validation for independent and identically distri
 
 The process is nicely illustrated in \Cref{fig:ch1-cv}^[Image Source: https://otexts.com/fpp3/tscv.html [@hyndman2021].].
 
-```{r, ch1-cv, echo=FALSE, out.width="80%", fig.cap="Time Series Cross Validation"}
+```{r, ch1-cv, echo=FALSE, out.width="60%", fig.cap="Time Series Cross Validation"}
 knitr::include_graphics(
   here::here("term_paper", "images", "cv-hyndman.png"),
   auto_pdf = TRUE
@@ -207,11 +225,11 @@ hub_1 <- readr::read_csv(here::here("data_modified", "hub_data_1_incidences.csv"
 hub_2 <- readr::read_csv(here::here("data_modified", "hub_data_2_incidences.csv"))
 hub_3 <- readr::read_csv(here::here("data_modified", "hub_data_3_incidences.csv"))
 
-hub <- dplyr::bind_rows(hub_1, hub_2, hub_3)
+hub <- bind_rows(hub_1, hub_2, hub_3)
 
 hub_germany <- hub |>
-  dplyr::filter(location == "DE") |>
-  dplyr::distinct(model, target_end_date, target_type, quantile, horizon,
+  filter(location == "DE") |>
+  distinct(model, target_end_date, target_type, quantile, horizon,
     .keep_all = TRUE
   )
 ```
@@ -248,13 +266,12 @@ df_combined |>
   extract_validation_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method", "target_type")) |>
-  dplyr::select(method:dispersion) |>
-  dplyr::arrange(target_type) |>
-  kableExtra::kbl(
-    digits = 2, align = "c", booktabs = TRUE,
+  select(method:dispersion) |>
+  arrange(target_type) |>
+  rename(`interval score` = interval_score, `target type` = target_type) |>
+  display_table(
     caption = "Comparison of the Weighted Interval Score after CQR Adjustments"
-  ) |>
-  kableExtra::kable_styling(position = "center", full_width = FALSE)
+  )
 ```
 
 \Cref{tab:ch1-wis-table} shows that CQR improved the Weighted Interval Score for Covid Cases on the validation set, whereas the predictive performance for Covid Deaths dropped slightly.
@@ -270,7 +287,7 @@ The `cv_init_training` parameter specifies the fraction of observations that is 
 As seen in \Cref{tab:ch1-wis-table} CQR increases the *dispersion* of the predictions for Cases significantly.
 One example of these wider intervals is visualized in \Cref{fig:ch1-intervals-germany}.
 
-```{r, ch1-intervals-germany, fig.cap="Original and CQR-adjusted Prediction Intervals for Covid-19 Cases in Germany", out.width="80%"}
+```{r, ch1-intervals-germany, fig.cap="Original and CQR-adjusted Prediction Intervals for Covid-19 Cases in Germany", out.width="70%"}
 plot_intervals(df_combined, target_type = "Cases", horizon = 2, quantile = 0.05)
 ```
 
@@ -289,7 +306,7 @@ Besides the target type (Cases or Deaths), it is also useful to compare CQR effe
 Quite intuitively, CQR generally has a stronger *relative* benefit for large time horizons and extreme quantiles, where the original forecaster faced a greater uncertainty.
 \Cref{fig:ch1-eval-germany} illustrates how, in special cases like this one, the effect on the validation set can show rather mixed trends due to disadvantageous adjustments for the two and three weeks-ahead $98$% prediction intervals.
 
-```{r, ch1-eval-germany, fig.cap="Relative Changes in the WIS through CQR for all Quantile-Horizon combinations", out.width="80%"}
+```{r, ch1-eval-germany, fig.cap="Relative Changes in the WIS through CQR for all Quantile-Horizon combinations", out.width="70%"}
 df_eval <- eval_methods(df_combined, summarise_by = c("quantile", "horizon"))
 plot_eval(df_eval)
 ```

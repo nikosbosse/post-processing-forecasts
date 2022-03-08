@@ -164,6 +164,7 @@ uk_cqr_multiplicative |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method")) |>
   select(method:overprediction) |>
+  rename(`interval score` = interval_score) |> 
   display_table(
     caption = "Performance of Multiplicative CQR on the Training Set",
     striped = FALSE
@@ -187,6 +188,7 @@ uk_cqr_multiplicative |>
   filter(!(model %in% c("epiforecasts-EpiExpert_direct", "epiforecasts-EpiExpert_Rt"))) |>
   select(method:dispersion) |>
   arrange(model) |>
+  rename(`interval score` = interval_score) |> 
   display_table(caption = "Performance of Multiplicative CQR by Model on the Validation Set")
 ```
 

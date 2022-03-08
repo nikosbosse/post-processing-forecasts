@@ -60,7 +60,8 @@ display_table <- function(df, caption, bold_header = TRUE, striped = FALSE) {
 This chapter introduces *Conformalized Quantile Regression (CQR)* as the first of two main Post-Processing procedures which are implemented in the `postforecasts` package.
 
 \Cref{cqr-traditional} explains the original Conformalized Quantile Regression algorithm as proposed by @romano2019.
-There, we highlight potential limitations of the traditional implementation that could potentially be diminished by more flexible variants of CQR that are discussed in \Cref{cqr-asymmetric} and \Cref{cqr-multiplicative}.
+The underlying more general concept of *Conformal Inference* is motivated by @tibshirani2019.
+We highlight potential limitations of the traditional implementation that could potentially be diminished by more flexible variants of CQR that are discussed in \Cref{cqr-asymmetric} and \Cref{cqr-multiplicative}.
 
 ## Traditional CQR {#cqr-traditional}
 
@@ -155,10 +156,10 @@ Thereby we start UK Covid-19 Forecasting Challenge data set and briefly point ou
 Then, we continue with a more detailed discussion of the findings on the larger European Forecast Hub data.
 
 One common characteristic that applies to almost all feature combinations is that CQR *expands* the original forecast intervals.
-As stated in **step 5** of \Cref{algorithm} it moves the original lower and upper bounds in a *symmetric* way either inwards or outwards by using the *same* margin.
+As stated in **Step 5** of \Cref{algorithm} it moves the original lower and upper bounds in a *symmetric* way either inwards or outwards by using the *same* margin.
 This implies that the interval *midpoint* remains unchanged when applying the traditional CQR algorithm.
 
-```{r, ch2-uk-cqr-intervals, echo=FALSE, out.width="80%", fig.cap="CQR tends to make prediction intervals larger, here for the \\texttt{seabbs} forecasting model"}
+```{r, ch2-uk-cqr-intervals, echo=FALSE, out.width="70%", fig.cap="CQR tends to make prediction intervals larger, here for the \\texttt{seabbs} forecasting model"}
 plot_intervals(
   uk_cqr,
   model = "seabbs", target_type = "Cases", horizon = 3, quantile = 0.1
@@ -174,8 +175,9 @@ uk_cqr |>
   extract_validation_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method", "model", "target_type", "horizon", "quantile")) |>
-  dplyr::filter(model == "seabbs", target_type == "Cases", horizon == 3, quantile == 0.1) |>
-  dplyr::select(method:dispersion) |>
+  filter(model == "seabbs", target_type == "Cases", horizon == 3, quantile == 0.1) |>
+  select(method:dispersion) |>
+  rename(`interval score` = interval_score, `target type` = target_type) |> 
   display_table(
     caption = "WIS improvement by CQR for one particular feature combination on the validation set.",
     striped = FALSE
@@ -187,7 +189,8 @@ uk_cqr |>
   extract_validation_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method")) |>
-  dplyr::select(method:dispersion) |>
+  select(method:dispersion) |>
+  rename(`interval score` = interval_score) |> 
   display_table(
     caption = "Overall WIS improvement by CQR on the validation set.",
     striped = FALSE
@@ -202,7 +205,7 @@ CQR improves the WIS by increasing the *dispersion* value, a measure for the int
 This effect is particularly strong in case of the `seabbs` model but still applies to a more moderate extent to most of the other forecasting models.
 
 
-```{r, ch2-hub-cqr-location, echo=FALSE, out.width="80%", fig.cap="CQR proves to be beneficial for the vast majority of countries, with the major exception of Poland"}
+```{r, ch2-hub-cqr-location, echo=FALSE, out.width="70%", fig.cap="CQR proves to be beneficial for the vast majority of countries, with the major exception of Poland"}
 df_cqr_hub_location <- eval_methods(hub_cqr, summarise_by = c("location_name"))
 plot_eval(df_cqr_hub_location, heatmap = FALSE) + labs(y = NULL, title = "CQR Improvements of Weighted Interval Score by Country")
 ```
@@ -275,34 +278,48 @@ The reasons for these slow adjustments, which reveal a major downside of CQR, fo
 Lastly, we summarize the performance of vanilla CQR across different *quantiles*, *target types* and *horizons*.
 To obtain more informative visual illustrations we exclude Poland from the further analysis.
 
-```{r, ch2-hub-cqr-loc-quantile, echo=FALSE, out.width="80%", fig.cap="CQR is most beneficial for extreme quantiles"}
+```{r, ch2-hub-cqr-eval, echo=FALSE, fig.cap="CQR is most beneficial for extreme Quantiles and large Forecast Horizons"}
 hub_cqr_no_poland <- hub_cqr |> filter(location_name != "Poland")
+
+b <- "black"
+t <- "transparent"
 
 df_cqr_hub_location_quantile <- eval_methods(
   hub_cqr_no_poland,
   summarise_by = c("location_name", "quantile")
 )
-plot_eval(df_cqr_hub_location_quantile) +
-  labs(y = NULL, title = "CQR Improvements by Country and Quantile")
-```
+p1 <- plot_eval(df_cqr_hub_location_quantile, base_size = 7) +
+  labs(
+    y = NULL,
+    title = "CQR Performance by\nCountry and Quantile",
+    subtitle = NULL
+  ) +
+  theme(
+    axis.text.x = element_text(color = c(b, rep(c(t, t, b, t), 5), t, b))
+  )
 
-\Cref{fig:ch2-hub-cqr-loc-quantile} shows the performance of CQR for all $23$ quantile levels in the data set.
-Although the effect size varies by country, the general trend holds unanimously:
-Extreme quantiles in the tails of the predictive distribution benefit most from post-processing with a gradual decline towards centered quantiles.
-The same trend can be observed to an even larger extent for non-expert forecasts in the UK Covid-19 Forecasting Challenge data set.
-
-```{r, ch2-hub-cqr-loc-horizon, echo=FALSE, out.width="80%", fig.cap="CQR is most beneficial for large Forecast Horizons"}
 df_cqr_hub_location_horizon <- eval_methods(
   hub_cqr_no_poland,
   summarise_by = c("location_name", "horizon")
 )
-plot_eval(df_cqr_hub_location_horizon) +
-  labs(y = NULL, title = "CQR Improvements by Country and Horizon")
+p2 <- plot_eval(df_cqr_hub_location_horizon, base_size = 7) +
+  labs(
+    y = NULL,
+    title = "CQR Performance by \nCountry and Horizon",
+    subtitle = NULL
+  )
+
+p1 + p2
 ```
 
+The left plot of \Cref{fig:ch2-hub-cqr-eval} shows the performance of CQR for all $23$ quantile levels in the data set.
+Although the effect size varies by country, the general trend holds unanimously:
+Extreme quantiles in the tails of the predictive distribution benefit most from post-processing with a gradual decline towards centered quantiles.
+The same trend can be observed to an even larger extent for non-expert forecasts in the UK Covid-19 Forecasting Challenge data set.
+
 Similar to quantiles there exist obvious tendencies for different forecast *horizons* as well.
-\Cref{fig:ch2-hub-cqr-loc-horizon} shows the performance of CQR across horizons, again stratified by country.
-Although the effects are more diverse compared to \Cref{fig:ch2-hub-cqr-loc-quantile}, CQR generally works better for larger forecast horizons.
+The right plot of \Cref{fig:ch2-hub-cqr-eval} shows the performance of CQR across horizons, again stratified by country.
+Although the effects are more diverse compared to the analysis across quantiles, CQR generally works better for larger forecast horizons.
 Exceptions of this rule are Croatia, which is the only country besides Poland with a negative effect of CQR, and Malta, where the trend is actually reversed and CQR corrections are most beneficial for short-term forecasts.
 
 Both of the previous figures suggest that post-processing with Conformalized Quantile Regression is worthwhile whenever the uncertainty is comparably high, which is the case for both quantiles in the tails and large forecast horizons.
@@ -314,6 +331,7 @@ hub_cqr_no_poland |>
   scoringutils::summarise_scores(by = c("method", "target_type")) |>
   select(method:dispersion) |>
   arrange(target_type) |>
+  rename(`interval score` = interval_score, `target type` = target_type) |> 
   display_table(caption = "CQR Improvements by Target Type for European Forecast Hub Data excluding Poland")
 ```
 

@@ -194,20 +194,20 @@ plot_intervals(
 \Cref{fig:ch4-intervals} provides a visual illustration of original and adjusted prediction intervals of all post-processing methods including the ensemble.
 It is important to note that the relative differences between all methods highly depend on the selected feature combination.
 For demonstration purposes we chose the `seabbs` model in combination with a large forecast horizon and a small quantile.
-As we have seen on multiple occasions throughout the previous chapters, these three factors correlate with large adjustments to the original forecasts.
-For large portions of the feature space the effect sizes and the effect differences between the methods are much smaller such that \Cref{fig:ch4-intervals} is not representative but still useful to gain some basic intuition.
+As we have seen on multiple occasions throughout the previous chapters, this configuration correlates with large adjustments to the original forecasts.
+For a random example of the feature space the effect sizes and the effect differences between the methods would likely be much smaller such that \Cref{fig:ch4-intervals} is not representative but still useful in order to gain some basic intuition.
 
-Except for the last observations of the time series the forecasts of the two CQR versions are quite similar and significantly closer to the original predictions than the QSA intervals. 
+Except for the last observations on the horizontal axis the forecasts of the two CQR versions are quite similar and significantly closer to the original predictions than the QSA intervals. 
 Within the QSA family `qsa_flexible` and `qsa_flexible_symmetric` produce almost identical corrections whereas `qsa_uniform` behaves quite differently from all other methods and consistently causes the largest intervals.
 The side-by-side comparison nicely illustrates that the traditional CQR version is the only method which adjusts lower and upper bounds symmetrically by an equal amount.
-Since the ensemble method is a linear combination of the individual methods, its corrections are generally not symmetric and the intervals are centered around a different midpoint than the original forecasts.
+Since the ensemble method is a linear combination of the individual methods, its corrections are generally not symmetric and the produced intervals are usually centered around a different midpoint than the original forecasts.
 
 \Cref{fig:ch4-intervals} corresponds to exactly one combination of `model`, `target_type`, `horizon` and `quantile` (pair).
 Thus, there exists exactly one optimization problem and one set of ensemble weights for this situation.
 The weights are identical for lower and upper bounds and across all time steps.
 The color legend displays the ensemble weights: 
 In this case only the asymmetric CQR and the flexible (not symmetric) QSA methods contribute to the ensemble.
-As a simple weighted average with weights close to $0.5$ the lower (upper) bounds of the ensemble intervals are therefore approximately halfway between the lower (upper) bounds of the `cqr_asymmetric` and `qsa_flexible` intervals.
+As a simple weighted average with weights close to $0.5$ the lower (upper) bounds of the ensemble intervals are approximately halfway between the lower (upper) bounds of the `cqr_asymmetric` and `qsa_flexible` intervals.
 
 ```{r, ch4-wis-comparison, echo=FALSE}
 tab_training <- uk_complete |>
@@ -249,11 +249,11 @@ This suggests that the five building block methods are not redundant in the sens
 - The asymmetric CQR method suffers most from *overfitting*.
 Compared to the European Forecast Hub data, where overfitting was not a major issue as described in \Cref{cqr-asymmetric}, the more flexible CQR modification results in the lowest training but highest validation score for the small UK data set.
 
-- In general, additional design *restrictions* such as identical weights in case of `qsa_uniform` and/or the symmetry assumption in case of `cqr` and `qsa_flexible_symmetric` have some kind of *regularization* effect which leads to better generalization to the validation set.
-Indeed, the *least* flexible versions of both method frameworks indicate the best validation performance and yet, unsurprisingly, the highest training score.
+- In general, additional design restrictions such as identical weights in case of `qsa_uniform` and/or the symmetry assumption in case of `cqr` and `qsa_flexible_symmetric` have some kind of *regularization* effect which leads to better generalization to the validation set.
+Indeed, the *least* flexible versions of both method frameworks indicate the best validation performance and yet, unsurprisingly, the worst training score.
 
 - All methods improve the original forecasts by *expanding* the prediction intervals which is indicated by the larger *dispersion* values.
-`qsa_flexible_symmetric` produces by far the widest intervals on average, yet we can not observe a correlation of better validation scores and narrower or wider prediction intervals. 
+`qsa_flexible_symmetric` produces by far the widest intervals on average, yet we can not observe a correlation of better validation scores and either narrower or wider prediction intervals. 
 
 ```{r, ch4-weight-thresholds, echo=FALSE}
 weights_full |>
@@ -269,7 +269,7 @@ weights_full |>
 ```
 
 \Cref{tab:ch4-wis-comparison} convincingly demonstrates that the ensemble model leads to the best forecasts. 
-Thus, we want to gain more insight how the ensemble predictions are created for this specific use case.
+Thus, we want to gain more insight how the ensemble predictions are created in this specific use case.
 Recall that the weights for each of the five building block methods are by construction nonnegative and (in case of convergence) sum to one.
 A different set of weights is computed for each of the $6 \cdot 2 \cdot 4 \cdot 11 = 528$ combinations of `model`, `target_type`, `horizon` and `quantile` (pairs).
 One question of interest is if the optimization algorithm tends more towards evenly distributed weights within each combination by assigning a positive weight to many component methods, or rather selects a single winning method (or two as in \Cref{fig:ch4-intervals}) with a weight of $1$ and all remaining methods are discarded with a weight of $0$.
@@ -329,15 +329,15 @@ p1 / p2
 ```
 
 Finally, we compare the different methods within each of the four major categories.
-\Cref{fig:ch4-model-target} shows how the methods perform for each forecasting model and for Covid-19 Cases vs. Covid-19 Deaths.
-The picture is surprisingly diverse: Along the rows of the top plot the `epiforecasts-EpiExpert_Rt` and the `seabbs` model benefit most from all methods whereas the `EuroCOVIDhub-baseline` model shows a negative effect for `cqr_symmetric` and `qsa_flexible`.
-In confirmation of \Cref{tab:ch4-largest-weights} these are exactly the methods with the strongest overall influence on the ensemble and, indeed, the ensemble produces worse forecasts for the `EuroCOVIDhub-baseline` model as well.
+\Cref{fig:ch4-model-target} shows relative improvements stratified either by forecasting model (top) or by target type (bottom).
+The picture is surprisingly diverse: Discriminating between the models first the `epiforecasts-EpiExpert_Rt` and the `seabbs` model benefit most overall whereas the `EuroCOVIDhub-baseline` model shows a negative effect for `cqr_symmetric` and `qsa_flexible`.
+In confirmation of \Cref{tab:ch4-largest-weights} the latter two are exactly the methods with the strongest impact on the ensemble which, indeed, cannot improve the original forecasts for the `EuroCOVIDhub-baseline` model either.
 For all other models the flexible non-symmetric QSA version and the ensemble consistently outperform the remaining alternatives.
 
-The mixed nature is even more significant in the bottom plot.
-Based on this impression we can not draw conclusions of Cases or Deaths benefit more from post-processing, the effects simply vary too much across different methods.
-Comparing within the columns `qsa_flexible` and the ensemble are the only methods which indicate stronger benefits for Covid-19 Cases, all others perform better for Deaths.
-While \Cref{fig:ch4-model-target} reveals the ensemble model as a good post-processing choice for Covid Cases, `cqr_asymmetric` and `qsa_flexible_symmetric` show promising results for Covid Deaths.
+The ambiguity of the results is even more highlighted by the bottom plot.
+Based on the heatmap alone we cannot draw any conclusions if Cases or Deaths benefit more from post-processing in general, the effects simply vary too much across different methods.
+Comparing within the columns `qsa_flexible` and the ensemble are the only methods which indicate stronger benefits for Covid-19 Cases, all alternatives perform better for Deaths.
+Within the rows \Cref{fig:ch4-model-target} reveals the ensemble model as a good post-processing choice for Covid Cases, while `cqr_asymmetric` and `qsa_flexible_symmetric` show promising results for Covid Deaths.
 
 ```{r, ch4-horizon-quantile, echo=FALSE, fig.cap="Method Comparison for each Forecast Horizon and Quantile Level"}
 df_method_horizon <- eval_methods(uk_complete, summarise_by = "horizon")
@@ -358,16 +358,17 @@ p2 <- plot_eval(df_method_quantile, base_size = 7) +
 p1 / p2
 ```
 
-Considering forecast horizons and quantiles in \Cref{fig:ch4-horizon-quantile}, the similarities between the methods are now much stronger than in \Cref{fig:ch4-model-target}.
-As we already know from previous chapters, all methods work better for larger horizons and quantiles in the tails.
-The ensemble predictions are again closest to `qsa_flexible` and lead to the largest performance gains for three and four week-ahead predictions while simultaneously indicating the worst results for short-term one week ahead forecasts.
-The classical `cqr` method is the only method that reliably works for any forecast horizon, although the effect sizes are quite small.
+When stratifying by forecast horizons and quantiles in \Cref{fig:ch4-horizon-quantile}, the similarities between the methods are much stronger than in \Cref{fig:ch4-model-target}.
+As we already know from previous chapters, all methods generally work better for larger horizons and quantiles in the tails.
+Aus usual the ensemble predictions are closest to `qsa_flexible` and lead to the largest performance gains for three and four week-ahead predictions while simultaneously indicating the *worst* results for short-term one week ahead forecasts.
+The classical `cqr` method is the only method that reliably works for any forecast horizon, yet the effect sizes are quite small.
 
-The bottom plot across different quantile levels is interesting as well: `qsa_flexible_symmetric` and `qsa_uniform` have the largest positive effect for very small or very large quantiles, while the performance drops off rapidly towards the center.
+The bottom plot of \Cref{fig:ch4-horizon-quantile} provides a deeper understanding on the interaction between post-processing method and quantile level.
+`qsa_flexible_symmetric` and `qsa_uniform` have the largest positive effect for very small or very large quantiles with a significant drop in performance towards the center.
 In contrast, the `qsa_flexible` and the ensemble method cause more balanced improvements that are less sensitive to the location of the predictive distribution.
-The asymmetric CQR version is the only method which has a negative effect and should thus be avoided for post-processing forecasts of centered quantiles. 
+The asymmetric CQR version is the only method with a (partially) negative impact and should thus be avoided for post-processing forecasts of centered quantiles. 
 
 In summary, \Cref{fig:ch4-model-target} and \Cref{fig:ch4-horizon-quantile} do not allow generic recommendations which post-processing method should be used.
 The ensemble model as the overall winner from \Cref{tab:ch4-wis-comparison} tends to have the largest effect sizes, both in positive and negative direction (except for the quantile plot).
-It thus offers a good choice when upsides and downsides are equally weighted in the user's cost function.
+It thus offers a good choice if upsides and downsides contribute equally to the user's cost function.
 In case of risk aversion the traditional CQR method might be preferable, it is the only method which *exclusively* leads to performance improvements for all category levels across both figures.

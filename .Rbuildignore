@@ -5,6 +5,10 @@
 ^presentations$
 ^term_paper$
 ^Readme_files$
+^tests/Archiv$
+^tests/test-parallel-qsa\.R$
+^nohup\.out$
+$postforecasts_0\.0\.0\.9000\.tar\.gz$
 ^Readme\.Rmd$
 ^Readme\.md$
 ^Readme\.pdf$

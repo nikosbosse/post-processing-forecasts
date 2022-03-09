@@ -1,3 +1,5 @@
+#' @importFrom foreach %dopar%
+
 fix_quantile_crossing <- function(df_updated, model, location, target_type, horizon) {
   target_end_dates <- unique(df_updated$target_end_date)
 
@@ -29,16 +31,18 @@ fix_quantile_crossing <- function(df_updated, model, location, target_type, hori
   return(df_updated)
 }
 
-wrapper_parallel_update_subset_qsa <- function(model, location, target_type, horizon) {
-  subset_updated <- parallel_update_subset_qsa(
-    df = df_preprocessed, method = method, model = model, location = location,
-    target_type = target_type, horizon = horizon, cv_init_training = cv_init_training,
-    penalty_weight = penalty_weight, optim_method = optim_method,
-    lower_bound_optim = lower_bound_optim, upper_bound_optim = upper_bound_optim,
-    steps_optim = steps_optim
-  )
-  return(subset_updated)
-}
+# TODO: Fix function signature or remove function if it is not needed
+
+# wrapper_parallel_update_subset_qsa <- function(model, location, target_type, horizon) {
+#   subset_updated <- parallel_update_subset_qsa(
+#     df = df_preprocessed, method = method, model = model, location = location,
+#     target_type = target_type, horizon = horizon, cv_init_training = cv_init_training,
+#     penalty_weight = penalty_weight, optim_method = optim_method,
+#     lower_bound_optim = lower_bound_optim, upper_bound_optim = upper_bound_optim,
+#     steps_optim = steps_optim
+#   )
+#   return(subset_updated)
+# }
 
 rbind_and_saving <- function(...) {
   df_combined <- rbind(...)
@@ -89,7 +93,7 @@ update_predictions <- function(df, methods = c(
         # QSA run in parallel
 
         # Define all combinations of variables over which we id the time series to which we apply qsa
-        time_series_ids <- setNames(data.frame(
+        time_series_ids <- stats::setNames(data.frame(
           matrix(ncol = 4, nrow = 0)
         ), c("model", "location", "target_type", "horizon"))
         for (m in models) {

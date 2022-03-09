@@ -16,3 +16,31 @@ links-as-notes: true
 ---
 
 # Conclusion {-}
+
+
+- developed a fully functional R package that is easily extendable with little changes in the user interface
+
+- explained key characteristics of each method
+
+- revealed limitations, linked theory to empirical findings by analyzing the effect of potential shortcomings on real data and 
+
+- proposed modifications which could solve these limitations and compared their out-of-sample performance with the original versions
+
+- analyzed similarities and differences within and between the two families of methods
+
+- showed how combining information into an ensemble method leads to best performance
+
+- faced computational bottlenecks and thus leveraged parallel computing 
+
+
+- multiple ways to extend out work
+
+- most straightforwar way: research and implement more methods 
+
+- understand inner workings of post-processing methods better by comparing their performance across different data sets or subsets of a large data set
+
+- apply our methods to a more general forecasting domain that is unrelated of Covid-19 predictions and observe which methods generalize best to new contexts
+
+- collaborate with other resarch groups to integrate our package into a general framework for time series forecasts that unites the entire process of data preprocessing, constructing prediction models and fine tune results with post-processing
+
+- we believe that the research with respect to developing and understanding post-processing of time series forecasts is far from saturated and there remain lots of opportunities to consolidate and expand our knowledge

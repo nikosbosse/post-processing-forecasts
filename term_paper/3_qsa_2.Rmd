@@ -29,6 +29,9 @@ library(patchwork)
 uk_qsa_uniform <- readr::read_rds(here::here("data_results", "uk_qsa_uniform.rds"))
 uk_qsa_flexible_symmetric <- readr::read_rds(here::here("data_results", "uk_qsa_flexible_symmetric.rds"))
 uk_qsa_flexible <- readr::read_rds(here::here("data_results", "uk_qsa_flexible.rds"))
+
+#TODO: add display table function with captions
+#TODO: add empty spaces, less bliock text.
 ```
 
 ## Results
@@ -42,7 +45,7 @@ tab_uniform <- uk_qsa_uniform |>
   scoringutils::summarise_scores(by = c("method")) |>
   dplyr::select(method:dispersion, underprediction, overprediction)
 
-tab_uniform
+tab_uniform #TODO: put inline computation in r chunk and name variables to then call in inline code so that its better readable and compiles
 ```
 
 We begin by examining the results of the `qsa_uniform` method and taking a high level view. \Cref{tab:qsa_uniform-val-set} presents the performance on the validation set, aggregated over all *models*, *target types*, *horizons* and *quantiles*. `qsa_uniform` clearly improves the Weighted Interval Score as it drops by `r (tab_uniform$interval_score[1] - tab_uniform$interval_score[2]) / tab_uniform$interval_score[1] * 100` percent. As expected post-processing makes the prediction intervals larger as the dispersion increases by a factor of `r tab_uniform$dispersion[2] / tab_uniform$dispersion[1]`. 
@@ -51,7 +54,7 @@ The increased intervals cover more observations and thereby reduce the under- an
 
 This finding, of the post processing methods increasing intervals, confirms the hypothesis that humans tend to be too confident in their own forecasts leading to narrow prediction intervals.
 
-Figure \Cref{fig:qsa_uniform-hor-quant} shows the WIS changes of `qsa_uniform` for each *horizon* and *quantile* combination, aggregated by *models* and *target types*. `qsa_uniform` is beneficial for extreme quantiles at large horizons. however it also substantially overfits extreme quantiles at the horizon of 1. interestingly,  near to no changes can be observed for the smaller prediction intervals lying within the 0.25 and 0.75 quantiles.
+Figure \Cref{fig:qsa_uniform-hor-quant} shows the WIS changes of `qsa_uniform` for each *horizon* and *quantile* combination, aggregated by *models* and *target types*. `qsa_uniform` is beneficial for extreme quantiles at large horizons. however it also substantially overfits extreme quantiles at the horizon of $1$. interestingly,  near to no changes can be observed for the smaller prediction intervals lying within the $0.25$ and $0.75$ quantiles.
 
 
 ```{r, qsa_uniform-hor-quant, echo=FALSE, out.width="80%", fig.cap="QSA Uniform beneficial  for extreme Quantiles at large Horizons"}

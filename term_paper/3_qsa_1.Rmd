@@ -90,9 +90,9 @@ library(postforecasts)
 library(doParallel)
 registerDoParallel(cores = 2)
 
-#df_updated_parallel <- update_predictions(df,
-#  methods = "qsa_flexible",
-#  parallel = TRUE,
-#  verbose = TRUE)
+df_updated_parallel <- update_predictions(df,
+  methods = "qsa_flexible",
+  parallel = TRUE,
+  verbose = TRUE)
 ```
 To observe the progress of the computations users can set the `verbose=TRUE` in order to print the logging output that the `foreach` function provides.

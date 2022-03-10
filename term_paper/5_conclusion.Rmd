@@ -17,30 +17,25 @@ links-as-notes: true
 
 # Conclusion {-}
 
+This project investigated the effects of post-processing Covid-19 forecasts.
 
-- developed a fully functional R package that is easily extendable with little changes in the user interface
+We focused on two families of post-processing algorithms, Conformalized Quantile Regression and Quantile Spread Averaging, and explained key characteristics of each method.
+Starting from the original CQR and the simplest uniform QSA method, we revealed their theoretical limitations and linked them to empirical findings in real-world data sets.
+Further, we proposed two modifications within each family which lead to greater flexibility and could potentially solve the detected shortcomings.
 
-- explained key characteristics of each method
+Finally, we compared the out-of-sample performance of each method. 
+For the UK Covid-19 Forecasting Challenge data QSA improved the original forecasts by a greater amount than CQR.
+The best overall performance, however, is achieved by combining information of the individual methods into one ensemble model.
+Throughout the comparison we gained a deeper understanding by analyzing similarities and differences within and between the two post-processing frameworks CQR and QSA and showed that there is not a single method that dominates its competition across the entire feature space.
+Rather, the performance ranking highly depends on the original forecasting model, the forecast horizon, the quantile level and, in the context of Covid-19 predictions, the target type, i.e. Covid-19 Cases or Covid-19 Deaths.
 
-- revealed limitations, linked theory to empirical findings by analyzing the effect of potential shortcomings on real data and 
+From a technical perspective, we developed a fully functional R package which implements all individual post-processing methods and the ensemble model.
+The package is designed to be easily extendable in the future with few changes to the user interface.
+Due to computational hurdles that we faced during the implementation of Quantile Spread Averaging we leveraged parallel computing to make computations feasible.
 
-- proposed modifications which could solve these limitations and compared their out-of-sample performance with the original versions
+There exist multiple directions to extend our work.
+The most straightforward approach is to research and implement further post-processing algorithms and compare their effectiveness with the existing methods.
+Further, one could apply our methods to more general forecasting domains unrelated to Covid-19 predictions and analyze which methods generalize best to new contexts.
+From a more global perspective, it might be valuable to collaborate with research groups of similar interests and integrate our package into a generic time series forecasting framework that unites the entire process of data pre-processing, constructing prediction models and ultimately fine tuning prediction results via post-processing.
 
-- analyzed similarities and differences within and between the two families of methods
-
-- showed how combining information into an ensemble method leads to best performance
-
-- faced computational bottlenecks and thus leveraged parallel computing 
-
-
-- multiple ways to extend out work
-
-- most straightforwar way: research and implement more methods 
-
-- understand inner workings of post-processing methods better by comparing their performance across different data sets or subsets of a large data set
-
-- apply our methods to a more general forecasting domain that is unrelated of Covid-19 predictions and observe which methods generalize best to new contexts
-
-- collaborate with other resarch groups to integrate our package into a general framework for time series forecasts that unites the entire process of data preprocessing, constructing prediction models and fine tune results with post-processing
-
-- we believe that the research with respect to developing and understanding post-processing of time series forecasts is far from saturated and there remain lots of opportunities to consolidate and expand our knowledge
+Beyond our own project, we believe that research with respect to developing and understanding post-processing of time series forecasts is far from saturated and there remain many opportunities to consolidate and broaden the current state of knowledge.

@@ -153,7 +153,7 @@ optimize_spread_factor <- function(method, subset, penalty_weight, optim_method,
       if (is.null(par)) {
         par <- c(1)
       }
-      optim_results <- optim(
+      optim_results <- stats::optim(
         par = par, fn = wrapper, subset = subset, method_pp = method, penalty_weight = penalty_weight,
         gr = NULL, method = optim_method
       ) # , hessian=T)
@@ -161,27 +161,27 @@ optimize_spread_factor <- function(method, subset, penalty_weight, optim_method,
     }
   } else if (method == "qsa_flexible") {
     # getting number of spreads as: number of quantiles without the mean
-    num_spreads <- length(na.omit(unique(subset$quantile))) - 1 #-1 due to mean
+    num_spreads <- length(stats::na.omit(unique(subset$quantile))) - 1 #-1 due to mean
 
     if (is.null(par)) {
       par <- rep(1, num_spreads)
     }
 
-    optim_results <- optim(
+    optim_results <- stats::optim(
       par = par, fn = wrapper, subset = subset, method_pp = method,
       penalty_weight = penalty_weight, gr = NULL, method = optim_method
     ) # , hessian=T)
     optimal_spread_factor <- optim_results$par
   } else if (method == "qsa_flexible_symmetric") {
     # getting number of spreads as: number of quantiles without the mean
-    num_spreads <- length(na.omit(unique(subset$quantile))) - 1 #-1 due to mean
+    num_spreads <- length(stats::na.omit(unique(subset$quantile))) - 1 #-1 due to mean
     num_of_params <- num_spreads / 2
 
     if (is.null(par)) {
       par <- rep(1, num_of_params)
     }
 
-    optim_results <- optim(
+    optim_results <- stats::optim(
       par = par, fn = wrapper, subset = subset, method_pp = method,
       penalty_weight = penalty_weight, gr = NULL, method = optim_method
     ) # , hessian=T)

@@ -13,29 +13,61 @@ biblio-style: apalike
 urlcolor: black
 linkcolor: blue
 links-as-notes: true
+editor_options: 
+  chunk_output_type: console
 ---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center",
+  out.width = "100%", dpi = 300, fig.asp = 0.618, collapse = TRUE
+)
+
+devtools::load_all(".")
+library(dplyr)
+library(ggplot2)
+library(patchwork)
+
+uk_complete <- readr::read_rds(here::here("data_results", "uk_complete.rds"))
+```
+
+```{r, include=FALSE}
+display_table <- function(df, caption, bold_header = TRUE,
+                          striped = FALSE) {
+  tab <- df |>
+    kableExtra::kbl(
+      digits = 2, align = "c", booktabs = TRUE, caption = caption
+    ) |>
+    kableExtra::row_spec(row = 0, bold = bold_header) |>
+    kableExtra::kable_styling(position = "center", full_width = FALSE)
+
+  if (striped) {
+    tab <- tab |> kableExtra::kable_styling(latex_options = "striped")
+  }
+
+  return(tab)
+}
+```
 
 # Method Comparison {#comparison}
 
-This chapter aims to compare the effectiveness of all Post-Processing methods that were introduced in the previous chapters.
-In particular, we investigate if some methods consistently outperform other procedures across a wide range of scenarios, i.e. different data sets and different covariate combinations.
-
+This chapter aims to compare the effectiveness of all post-processing methods that were introduced throughout previous chapters.
+In particular, we investigate if some methods consistently *outperform* other procedures across a wide range of scenarios.
 Further, it will be interesting to observe the *types* of adjustments to the original forecasts:
-Some methods might improve the Weighted Interval Score by *extending* the interval width and thus increasing coverage whereas others might yield a similar final score by *shrinking* the prediction intervals leading to a higher precision.
-One can imagine even more variations: Moving the interval bounds farther apart or closer together can happen in *symmetric* or *asymmetric* manner and the interval's midpoint might stay *fixed* or get *shifted* throughout the post-processing process.
+Some methods might improve the Weighted Interval Score by *extending* the interval width and thus increasing coverage, whereas others might yield a comparable final score by *shrinking* the prediction intervals leading to higher precision.
+One can imagine even more variations: Moving the interval bounds farther apart or closer together can happen *symmetricly* or *asymmetricly* and the interval's midpoint might stay *fixed* or get *shifted* by the post-processing algorithm.
 
 Before jumping into the analysis, we propose one additional model that, in contrast to those we have covered so far, does not add any new information to the equation.
 Instead, it *combines* the predictions from existing post-processing methods to build an *ensemble* prediction.
-The idea is that leveraging information from multiple independent algorithms can stabilize estimation since the ensemble learns to focus on a model with a strong performance for one particular covariate set while the same model might perform worse for a different covariate set and, thus, make little contributions to the ensemble in that case.
-
+The idea is that leveraging information from multiple independent algorithms can stabilize estimation since the ensemble learns to focus on the strongest individual model within each area of the feature space.
 Next, we explain the mathematical reasoning behind the ensemble model in more detail.
 
 ## Ensemble Model {#ensemble}
 
-There exist various options how to combine multiple building blocks into one ensemble.
-We chose an approach that can be efficiently computed by well-understood algorithms on the one hand and is highly interpretable on the other hand.
+There exist various options how to generally combine multiple building blocks into one ensemble.
+We chose an approach that can be efficiently computed by well-understood optimization algorithms and, at the same time, is highly interpretable.
 Each quantile prediction of our ensemble model is a *convex combination* of the individual methods, i.e. a linear combination where all weights are contained in the unit interval and sum up to one.
-Hence, the resulting value lives on the same scale as the original predictions and each weight can be interpreted as the *fractional contribution* of each building block method 
+Hence, the resulting value lives on the same scale as the original predictions and each weight can be interpreted as the *fractional contribution* of the corresponding building block method. 
 
 Consider one particular feature combination of `model`, `location`, `horizon`, `target_type` and `quantile`.
 Let $n$ specify the number of observations in the training set within this combination, $\mathbf{y} \in \mathbb{R}^n$ the vector of true values, $\mathbf{l}_1, \ldots, \mathbf{l}_k \in \mathbb{R}^n$ vectors of original lower quantile predictions and $\mathbf{u}_1, \ldots, \mathbf{u}_k \in \mathbb{R}^n$ vectors of original upper quantile predictions from $k$ different post-processing procedures.
@@ -62,7 +94,7 @@ We omit the subscripts at this point to keep the notation clean.
 
 The Interval Score always considers *pairs* of quantiles $\alpha$ and $1 - \alpha$ as outer bounds of a $(1 - 2 \alpha) \cdot 100\%$ prediction interval.
 The best results are achieved when a separate weight vector for each quantile pair is computed.
-Since our data sets contain $11$ quantile pairs, $2$ target types and $4$ horizons and we consider $6$ different forecasters, the ensemble model requires solving $11 \cdot 2 \cdot 4 \cdot 6 = 528$ nonlinear optimization problems for each location, which amounts to $18 \cdot 528 = 9504$ optimization problems for the European Hub Data Set.
+Since our data sets contain $11$ quantile pairs, $2$ target types, $4$ horizons and we consider $6$ different forecasting models, the ensemble model requires solving $11 \cdot 2 \cdot 4 \cdot 6 = 528$ nonlinear optimization problems for each location, which amounts to $18 \cdot 528 = 9504$ optimization problems for the European Hub Data Set.
 
 Due to this high computational cost the *maximum number of iterations* within each optimization is an important hyperparameter that balances the trade-off between computational feasibilty and sufficient convergence of the iterative optimization algorithm.
 Here, we ultimately settled with $10.000$ maximum steps which could ensure convergence with respect to a *tolerance level* of $10^{-8}$ in the vast majority of cases.
@@ -74,14 +106,14 @@ Finally, it is worth noting that the weight vector of the ensemble model $\mathb
 ## Comparison of CQR, QSA & Ensemble
 
 Now that we have introduced *Conformalized Quantile Regression* in \Cref{cqr}, *Quantile Spread Averaging* in \Cref{qsa} and the *Ensemble* Model in \Cref{ensemble}, the obvious question is which of the methods performs best.
-Thus, this section is dedicated to a detailed comparison across various covariate combinations as well as both the UK Forecasting Challenge data and the European Forecast Hub data.
-
-Except for some minor modifications for computational efficiency, the results that constitute the starting point of the analysis in this chapter can be generated with the following commands, where `df` represents either the UK or the European Forecast Hub data set:
+This section conducts a detailed comparison across various feature combinations.
+Due to the high computational demands of Quantile Spread Averaging, we limit the discussion to the compact UK Covid-19 Forecasting Challenge data set.
+The results that constitute the starting point of the analysis can be generated with the following commands:
 
 ```{r, eval=FALSE}
 library(postforecasts)
 
-df_updated <- df |>
+df_updated <- uk_data |>
   update_predictions(
     methods = c(
       "cqr", "cqr_asymmetric", "qsa_uniform", "qsa_flexible", "qsa_flexible_symmetric"
@@ -91,3 +123,252 @@ df_updated <- df |>
   collect_predictions() |>
   add_ensemble()
 ```
+
+```{r, include=FALSE}
+weights_df <- attr(uk_complete, which = "weights")
+
+weights_only <- do.call("rbind", weights_df$weights) |>
+  magrittr::set_colnames(value = c(
+    "cqr",  "cqr_asymmetric", "qsa_uniform", "qsa_flexible_symmetric",
+    "qsa_flexible"
+  )) |>
+  as_tibble()
+
+weights_full <- bind_cols(
+  weights_df |> select(-c(location, weights)),
+  weights_only
+) |>
+  filter(quantile < 0.5) |>
+  rowwise() |>
+  mutate(rowsum = sum(c_across(cols = cqr:qsa_flexible))) |>
+  mutate(max_weight = max(c_across(cols = cqr:qsa_flexible))) |>
+  ungroup()
+```
+
+```{r, include=FALSE}
+# find rows for plot where ensemble weights are distributed and algorithm converged (sum
+# of weights close to 1)
+weights_full |>
+  filter(model == "seabbs", rowsum > 0.99, max_weight < 0.8)
+```
+
+```{r, ch4-intervals, echo=FALSE, fig.cap="Comparison of Prediction Intervals for all Post-Processing Methods including the Ensemble"}
+mod <- "seabbs"
+t <- "Cases"
+h <- 4
+q <- 0.025
+
+plot_weights <- weights_full |>
+  filter(model == mod, target_type == t, horizon == h, quantile == q) |>
+  mutate(across(.cols = cqr:qsa_flexible, .fns = ~ round(.x, digits = 4)))
+
+plot_df <- uk_complete |>
+  mutate(method = case_when(
+    method == "cqr" ~ stringr::str_glue(
+      "cqr\nweight: {plot_weights$cqr}"
+    ),
+    method == "cqr_asymmetric" ~ stringr::str_glue(
+      "cqr_asymmetric\nweight: {plot_weights$cqr_asymmetric}"
+    ),
+    method == "qsa_uniform" ~ stringr::str_glue(
+      "qsa_uniform\nweight: {plot_weights$qsa_uniform}"
+    ),
+    method == "qsa_flexible_symmetric" ~ stringr::str_glue(
+      "qsa_flexible_symmetric\nweight: {plot_weights$qsa_flexible_symmetric}"
+    ),
+    method == "qsa_flexible" ~ stringr::str_glue(
+      "qsa_flexible\nweight: {plot_weights$qsa_flexible}"
+    ),
+    TRUE ~ method
+  ))
+
+plot_intervals(
+  plot_df,
+  model = mod, target_type = t, quantile = q, horizon = h, base_size = 8
+) +
+  scale_color_manual(
+    values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#e6ab02", "#a65628")
+  )
+```
+
+\Cref{fig:ch4-intervals} provides a visual illustration of original and adjusted prediction intervals of all post-processing methods including the ensemble.
+It is important to note that the relative differences between all methods highly depend on the selected feature combination.
+For demonstration purposes we chose the `seabbs` model in combination with a large forecast horizon and a small quantile.
+As we have seen on multiple occasions throughout the previous chapters, this configuration correlates with large adjustments to the original forecasts.
+For a random example of the feature space the effect sizes and the effect differences between the methods would likely be much smaller such that \Cref{fig:ch4-intervals} is not representative but still useful in order to gain some basic intuition.
+
+Except for the last observations on the horizontal axis the forecasts of the two CQR versions are quite similar and significantly closer to the original predictions than the QSA intervals. 
+Within the QSA family `qsa_flexible` and `qsa_flexible_symmetric` produce almost identical corrections whereas `qsa_uniform` behaves quite differently from all other methods and consistently causes the largest intervals.
+The side-by-side comparison nicely illustrates that the traditional CQR version is the only method which adjusts lower and upper bounds symmetrically by an equal amount.
+Since the ensemble method is a linear combination of the individual methods, its corrections are generally not symmetric and the produced intervals are usually centered around a different midpoint than the original forecasts.
+
+\Cref{fig:ch4-intervals} corresponds to exactly one combination of `model`, `target_type`, `horizon` and `quantile` (pair).
+Thus, there exists exactly one optimization problem and one set of ensemble weights for this situation.
+The weights are identical for lower and upper bounds and across all time steps.
+The color legend displays the ensemble weights: 
+In this case only the asymmetric CQR and the flexible (not symmetric) QSA methods contribute to the ensemble.
+As a simple weighted average with weights close to $0.5$ the lower (upper) bounds of the ensemble intervals are approximately halfway between the lower (upper) bounds of the `cqr_asymmetric` and `qsa_flexible` intervals.
+
+```{r, ch4-wis-comparison, echo=FALSE}
+tab_training <- uk_complete |>
+  extract_training_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = "method") |>
+  select(method:dispersion) |>
+  rename(`training score` = interval_score)
+
+tab_validation <- uk_complete |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = "method") |>
+  select(method:dispersion) |>
+  rename(`validation score` = interval_score)
+
+tab_validation |>
+  mutate(`training score` = tab_training$`training score`) |>
+  relocate(`training score`, .after = `validation score`) |>
+  arrange(`validation score`) |>
+  display_table(
+    caption = "WIS of all Post-Processing Methods on Training and Validation Set on UK Data"
+  )
+```
+
+\Cref{fig:ch4-intervals} shows that different methods can have significantly different effects, yet it does not provide any hints which method improves the Weighted Interval Score most.
+\Cref{tab:ch4-wis-comparison} collects the WIS for each method on the training and validation set, aggregated over all models, target types, horizons and quantiles and sorted by increasing validation score.
+There are a couple of interesting findings:
+
+- All six custom methods improve out-of-sample performance compared to the original predictions on the UK data set.
+
+- All three QSA versions lead to lower validation scores than any CQR variant. 
+Thus, based on this first impression, the familiy of QSA post-processing methods clearly outperforms the CQR algorithm for the UK data.
+
+- The ensemble model is the clear winner: 
+Combining information from multiple QSA and CQR methods works better on new data than any individual method on its own.
+This suggests that the five building block methods are not redundant in the sense that they have different strengths and weaknesses depending on the location in feature space.
+
+- The asymmetric CQR method suffers most from *overfitting*.
+Compared to the European Forecast Hub data, where overfitting was not a major issue as described in \Cref{cqr-asymmetric}, the more flexible CQR modification results in the lowest training but highest validation score for the small UK data set.
+
+- In general, additional design restrictions such as identical weights in case of `qsa_uniform` and/or the symmetry assumption in case of `cqr` and `qsa_flexible_symmetric` have some kind of *regularization* effect which leads to better generalization to the validation set.
+Indeed, the *least* flexible versions of both method frameworks indicate the best validation performance and yet, unsurprisingly, the worst training score.
+
+- All methods improve the original forecasts by *expanding* the prediction intervals which is indicated by the larger *dispersion* values.
+`qsa_flexible_symmetric` produces by far the widest intervals on average, yet we can not observe a correlation of better validation scores and either narrower or wider prediction intervals. 
+
+```{r, ch4-weight-thresholds, echo=FALSE}
+weights_full |>
+  summarise(
+    `> 0.5` = mean(max_weight > 0.5),
+    `> 0.9` = mean(max_weight > 0.9),
+    `> 0.99` = mean(max_weight > 0.99),
+  ) |>
+  display_table(caption = paste(
+    "Fraction of Feature Combinations where largest",
+    "Ensemble Weight exceeds Threshold"
+  ))
+```
+
+\Cref{tab:ch4-wis-comparison} convincingly demonstrates that the ensemble model leads to the best forecasts. 
+Thus, we want to gain more insight how the ensemble predictions are created in this specific use case.
+Recall that the weights for each of the five building block methods are by construction nonnegative and (in case of convergence) sum to one.
+A different set of weights is computed for each of the $6 \cdot 2 \cdot 4 \cdot 11 = 528$ combinations of `model`, `target_type`, `horizon` and `quantile` (pairs).
+One question of interest is if the optimization algorithm tends more towards evenly distributed weights within each combination by assigning a positive weight to many component methods, or rather selects a single winning method (or two as in \Cref{fig:ch4-intervals}) with a weight of $1$ and all remaining methods are discarded with a weight of $0$.
+
+\Cref{tab:ch4-weight-thresholds} provides a first insight into the weight distribution of the ensemble model.
+In $97$% of all feature combinations a single method has a larger weight than all of the competing methods combined.
+Further, in more than half of the optimization solutions the ensemble emulates one particular method by concentrating the entire weight mass on a single point.
+Hence, although we can not observe a strict *winner takes it all* procedure, the weight distribution is heavily skewed towards one contributing component at each location in feature space.
+
+```{r, ch4-largest-weights, echo=FALSE}
+weights_full |>
+  rowwise() |>
+  mutate(best_method = which.max(c_across(cqr:qsa_flexible))) |>
+  mutate(best_method = case_when(
+    best_method == 1 ~ "cqr",
+    best_method == 2 ~ "cqr_asymmetric",
+    best_method == 3 ~ "qsa_uniform",
+    best_method == 4 ~ "qsa_flexible_symmetric",
+    best_method == 5 ~ "qsa_flexible"
+  )) |>
+  group_by(best_method) |>
+  summarise(
+    num_best = n(),
+    frac_best = num_best / nrow(weights_full)
+  ) |>
+  tidyr::pivot_longer(cols = num_best:frac_best) |>
+  tidyr::pivot_wider(names_from = best_method, values_from = value) |>
+  select(cqr, cqr_asymmetric, qsa_uniform, qsa_flexible_symmetric, qsa_flexible) |>
+  display_table(
+    caption = paste(
+      "Number (Row 1) and Fraction (Row 2)",
+      "of largest Ensemble Weights for each Method"
+    )
+  )
+```
+
+Now that we have discovered that there seems to be a single method that clearly outperforms its competition for most covariate combinations, we want to find out *which* of the five post-processing methods takes the winning trophy most often.
+\Cref{tab:ch4-largest-weights} displays the frequency with which the ensemble assigns the largest weight to each method.
+The first row contains the absolute number of times and the second row the fraction of all $528$ optimization problems where the methods contributed most to the ensemble model.
+
+In more than $90$% of cases the largest weight is given to either the asymmetric CQR or the flexible QSA method whereas the uniform QSA method almost never has the largest impact on the ensemble.
+This finding is particularly interesting in comparison with \Cref{tab:ch4-wis-comparison}: Since the ensemble is fitted on the *training* set, it distributes the weights according to the training set performance of each individual method.
+`cqr_asymmetric` and `qsa_flexible` indeed have the best training scores whereas `qsa_uniform` performs worst on the training set which exactly corresponds to the order of \Cref{tab:ch4-largest-weights}.
+With this connection in mind it seems even more surprising that the ensemble method generalizes very well to out-of-sample data while simultaneously rewarding potentially overfitting methods like `cqr_asymmetric` during its own learning process.
+
+```{r, ch4-model-target, echo=FALSE, fig.cap="Method Comparison for each Forecasting Model and Target Type"}
+df_method_model <- eval_methods(uk_complete, summarise_by = "model")
+p1 <- plot_eval(df_method_model, base_size = 7) +
+  labs(y = NULL, title = "Method Comparison by Model and Target Type", subtitle = NULL) +
+  theme(axis.text.x = element_blank())
+
+df_method_target_type <- eval_methods(uk_complete, summarise_by = "target_type")
+p2 <- plot_eval(df_method_target_type, base_size = 7) +
+  labs(y = NULL, title = NULL, subtitle = NULL)
+
+p1 / p2
+```
+
+Finally, we compare the different methods within each of the four major categories.
+\Cref{fig:ch4-model-target} shows relative improvements stratified either by forecasting model (top) or by target type (bottom).
+The picture is surprisingly diverse: Discriminating between the models first the `epiforecasts-EpiExpert_Rt` and the `seabbs` model benefit most overall whereas the `EuroCOVIDhub-baseline` model shows a negative effect for `cqr_symmetric` and `qsa_flexible`.
+In confirmation of \Cref{tab:ch4-largest-weights} the latter two are exactly the methods with the strongest impact on the ensemble which, indeed, cannot improve the original forecasts for the `EuroCOVIDhub-baseline` model either.
+For all other models the flexible non-symmetric QSA version and the ensemble consistently outperform the remaining alternatives.
+
+The ambiguity of the results is even more highlighted by the bottom plot.
+Based on the heatmap alone we cannot draw any conclusions if Cases or Deaths benefit more from post-processing in general, the effects simply vary too much across different methods.
+Comparing within the columns `qsa_flexible` and the ensemble are the only methods which indicate stronger benefits for Covid-19 Cases, all alternatives perform better for Deaths.
+Within the rows \Cref{fig:ch4-model-target} reveals the ensemble model as a good post-processing choice for Covid Cases, while `cqr_asymmetric` and `qsa_flexible_symmetric` show promising results for Covid Deaths.
+
+```{r, ch4-horizon-quantile, echo=FALSE, fig.cap="Method Comparison for each Forecast Horizon and Quantile Level"}
+df_method_horizon <- eval_methods(uk_complete, summarise_by = "horizon")
+p1 <- plot_eval(df_method_horizon, base_size = 7) +
+  labs(title = "Method Comparison by Horizon and Quantile", subtitle = NULL) +
+  theme(axis.text.x = element_blank())
+
+b <- "black"
+t <- "transparent"
+
+df_method_quantile <- eval_methods(uk_complete, summarise_by = "quantile")
+p2 <- plot_eval(df_method_quantile, base_size = 7) +
+  labs(title = NULL, subtitle = NULL) +
+  theme(
+    axis.text.y = element_text(color = c(b, rep(c(t, b), 11)))
+  )
+
+p1 / p2
+```
+
+When stratifying by forecast horizons and quantiles in \Cref{fig:ch4-horizon-quantile}, the similarities between the methods are much stronger than in \Cref{fig:ch4-model-target}.
+As we already know from previous chapters, all methods generally work better for larger horizons and quantiles in the tails.
+Aus usual the ensemble predictions are closest to `qsa_flexible` and lead to the largest performance gains for three and four week-ahead predictions while simultaneously indicating the *worst* results for short-term one week ahead forecasts.
+The classical `cqr` method is the only method that reliably works for any forecast horizon, yet the effect sizes are quite small.
+
+The bottom plot of \Cref{fig:ch4-horizon-quantile} provides a deeper understanding on the interaction between post-processing method and quantile level.
+`qsa_flexible_symmetric` and `qsa_uniform` have the largest positive effect for very small or very large quantiles with a significant drop in performance towards the center.
+In contrast, the `qsa_flexible` and the ensemble method cause more balanced improvements that are less sensitive to the location of the predictive distribution.
+The asymmetric CQR version is the only method with a (partially) negative impact and should thus be avoided for post-processing forecasts of centered quantiles. 
+
+In summary, \Cref{fig:ch4-model-target} and \Cref{fig:ch4-horizon-quantile} do not allow generic recommendations which post-processing method should be used.
+The ensemble model as the overall winner from \Cref{tab:ch4-wis-comparison} tends to have the largest effect sizes, both in positive and negative direction (except for the quantile plot).
+It thus offers a good choice if upsides and downsides contribute equally to the user's cost function.
+In case of risk aversion the traditional CQR method might be preferable, it is the only method which *exclusively* leads to performance improvements for all category levels across both figures.

@@ -81,7 +81,7 @@ $$
 
 ### CQR Downsides {#downsides}
 
-```{r, ch2-uk-cqr-asym-intervals, echo=FALSE, out.width="80%", fig.cap="Illustration of CQR's slow reaction process"}
+```{r, ch2-uk-cqr-asym-intervals, echo=FALSE, out.width="70%", fig.cap="Illustration of CQR's slow reaction process"}
 mod <- "seabbs"
 h <- 2
 t <- "Cases"
@@ -205,14 +205,14 @@ tab1 <- uk_cqr_asymmetric |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = "method") |>
   select(method:interval_score) |>
-  rename(uk_interval_score = interval_score)
+  rename(`uk interval score` = interval_score)
 
-tab2 <- hub_cqr2 |>
+tab2 <- hub_cqr_asymmetric |>
   extract_validation_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = "method") |>
   select(method:interval_score) |>
-  rename(hub_interval_score = interval_score)
+  rename(`hub interval score` = interval_score) 
 
 tab1 |>
   left_join(tab2, by = "method") |>
@@ -268,7 +268,7 @@ While the effect is still positive for quantiles less than $0.15$ or greater tha
 The same statement holds for three or four week-ahead predictions.
 For short term forecasts, however, the effect is negative across *all* quantile levels.
 
-```{r, hub-cqr-asymmetric-location, echo=FALSE, out.width="80%", fig.cap="Asymmetric CQR has negative effects on almost all countries"}
+```{r, hub-cqr-asymmetric-location, echo=FALSE, out.width="70%", fig.cap="Asymmetric CQR has negative effects on almost all countries"}
 hub_cqr_asym_location <- eval_methods(hub_cqr_asymmetric, summarise_by = "location_name")
 plot_eval(hub_cqr_asym_location, heatmap = FALSE) +
   labs(y = NULL, title = "QSA Asymmetric Performance by Country")
@@ -324,18 +324,18 @@ tab1 <- uk_cqr_asymmetric |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method", "target_type")) |>
   select(method:interval_score) |>
-  rename(uk_interval_score = interval_score)
+  rename(`uk interval score` = interval_score, `target type` = target_type)
 
 tab2 <- hub_cqr_asymmetric_no_poland |>
   extract_validation_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method", "target_type")) |>
   select(method:interval_score) |>
-  rename(hub_interval_score = interval_score)
+  rename(`hub interval score` = interval_score, `target type` = target_type)
 
 tab1 |>
-  left_join(tab2, by = c("method", "target_type")) |>
-  arrange(target_type) |>
+  left_join(tab2, by = c("method", "target type")) |>
+  arrange(`target type`) |>
   display_table(
     caption = "Performance of asymmetric CQR for Covid-19 Cases and Deaths"
   )

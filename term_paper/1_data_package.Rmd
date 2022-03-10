@@ -22,22 +22,39 @@ knitr::opts_chunk$set(
 )
 
 devtools::load_all()
+library(dplyr)
+library(ggplot2)
 ```
 
+```{r, include=FALSE}
+display_table <- function(df, caption, bold_header = TRUE, striped = FALSE) {
+  tab <- df |>
+    kableExtra::kbl(
+      digits = 2, align = "c", booktabs = TRUE, caption = caption
+    ) |>
+    kableExtra::row_spec(row = 0, bold = bold_header) |>
+    kableExtra::kable_styling(position = "center", full_width = FALSE)
+
+  if (striped) {
+    tab <- tab |> kableExtra::kable_styling(latex_options = "striped")
+  }
+
+  return(tab)
+}
+```
 
 # Analysis Tools
 
-Data Analysis is inherently build upon two foundational components: High Quality Data that allows to gain insight into the underlying data generating process and a structured and reproducible way to extract information out of the collected data.
+Data Analysis is inherently build upon two fundamental components: High Quality Data that allows to gain insight into the underlying data generating process and a structured and reproducible way to extract information out of the collected data.
 
-\Cref{data} introduces the two data sets we worked with while \Cref{package} provides an overview about the `postforecasts` package, a unified framework to apply and analyze various post-processing techniques.
+\Cref{data} introduces the two data sets we worked with whereas \Cref{package} provides an overview about the `postforecasts` package, a unified framework to apply and analyze various post-processing techniques.
 
 
 
 ## Data & Methodology {#data}
 
-This section first introduces the two data sources that all of our analysis is based on.
-The final paragraphs continue with a description of our evaluation procedure from a theoretical point of view.
-
+This section first describes the two data sources that all of our analysis is based on.
+The final paragraphs explain our evaluation procedure from a theoretical point of view.
 
 
 ### UK Covid-19 Crowd Forecasting Challenge
@@ -47,12 +64,11 @@ The challenge was not restricted to experienced researchers in the field but rat
 
 One of the main motivations was to gather evidence for or against the hypothesis that humans are highly capable of precise *point forecasts*.
 Yet, at the same time, they tend to be too confident in their beliefs such that prediction *intervals* are chosen too narrow.
-In fact, this tendency represents one motivation for post-processing: Extract valuable information from point forecasts and adjust the corresponding prediction intervals with a systematic correction procedure.
+In fact, this tendency presents one motivation for post-processing: Extract valuable information from point forecasts and adjust the corresponding prediction intervals with a systematic correction procedure.
 
 In case of individuals that are unfamiliar with statistical methodology, specifying forecasts for very specific quantiles of the predictive distribution might lead to inconsistencies.
 Therefore all participants could determine an uncertainty parameter around their median prediction via an interactive web application such that all quantile predictions could be concluded in an automatic fashion.
-Note that this procedure leads to *symmetric* forecast intervals.
-
+Note that this procedure inherently leads to *symmetric* forecast intervals.
 The results of the $12$-week challenge are [publicly available](https://epiforecasts.io/uk-challenge/).
 
 
@@ -112,7 +128,7 @@ The penalties $\frac{2}{\alpha} \cdot (l-y)$ and $\frac{2}{\alpha} \cdot (y-u)$ 
 
 - The penalty gets larger for smaller values of $\alpha$, i.e. for higher nominal coverage levels $(1 - \alpha)$.
 
-A set of $K$ Interval Scores with different quantile levels $\alpha_1, \ldots, \alpha_K$ can be aggregated to a single number, the **Weighted Interval Score**:
+A set of $K$ Interval Scores with different quantile levels $\alpha_1, \ldots, \alpha_K$ can be aggregated to a single number, the **Weighted Interval Score**, via the formula
 <!--  -->
 $$
 \begin{aligned}
@@ -133,7 +149,7 @@ Just like any statistical model the post-processing methods must be evaluated on
 Rather than starting from the raw data, i.e. the observed Covid-19 Cases and Deaths, our data sets already consist of existing quantile predictions.
 As a consequence, no part of our data set must be dedicated to fitting the quantile regression models in the first place. 
 
-Our evaluation procedure can therefore be split into two steps:
+Our evaluation procedure can be split into two steps:
 
 1.  Use a *training set* to learn parameters of the post-processing procedure in consideration.
 
@@ -142,15 +158,14 @@ Our evaluation procedure can therefore be split into two steps:
 Instead of a hard cut-off between the splits we used *Time Series Cross Validation* to leverage a higher fraction of the data set for training.
 In contrast to classical Cross Validation for independent and identically distributed data, Time Series Cross Validation iterates through the data set along the time dimension one step at a time.
 
-The process is nicely illustrated in \Cref{fig:ch1-cv}^[Image Source: https://otexts.com/fpp3/tscv.html [@hyndman2021].].
-
-```{r, ch1-cv, echo=FALSE, out.width="80%", fig.cap="Time Series Cross Validation"}
+```{r, ch1-cv, echo=FALSE, out.width="60%", fig.cap="Time Series Cross Validation"}
 knitr::include_graphics(
   here::here("term_paper", "images", "cv-hyndman.png"),
   auto_pdf = TRUE
 )
 ```
 
+The process is nicely illustrated in \Cref{fig:ch1-cv}^[Image Source: https://otexts.com/fpp3/tscv.html [@hyndman2021].].
 At each iteration the validation set is composed of the one step ahead prediction based on all observations prior to and including the current time point.
 The algorithm typically starts with a minimum number of observations as the initial training set, which can be considered a hyperparameter that has to be specified at the beginning of training.
 
@@ -160,30 +175,28 @@ The algorithm typically starts with a minimum number of observations as the init
 ## The `postforecasts` Package {#package}
 
 One core aspect of our project was the development of a fully functional package in the statistical programming language `R` [@R-base] that unites a collection of different post-processing algorithms into a well-designed and user friendly interface.
-This section can be understood as a compact guide how to use our package effectively and explains some of the thought process that went into the implementation.
-It is worth noting that the `postforecasts` package adheres to all formal requirements for an R package such that `RCMDCHECK` does not produce any warnings or errors.
-The source code is publicly available on [GitHub](https://github.com/nikosbosse/post-processing-forecasts).
+This section can be understood as a compact guide how to use our package effectively and explains parts of the thought process that went into the implementation.
+It is worth noting that the `postforecasts` package adheres to all formal requirements for an R package and can be installed from our [GitHub](https://github.com/nikosbosse/post-processing-forecasts) repository, where the source code is publicly available.
 
 
 
 ### Overview {#overview}
 
-The `postforecasts` functions that are meant to be visible to the end-user can be grouped into three categories:
+The `postforecasts` functions exported to the end-user can be grouped into three categories:
 
 1.  Exploratory
 
-    The `plot_quantiles()`, `plot_intervals()` and `plot_intervals_grid()` functions visualize the development of true Covid-19 Cases and Deaths over time as well as corresponding original and post-processed quantile predictions.
+    The `plot_quantiles()`, `plot_intervals()` and `plot_intervals_grid()` functions visualize the development of true Covid-19 Cases and Deaths over time as well as corresponding original and adjusted quantile predictions.
 
 2.  Model Fitting
 
     The `update_predictions()` function is the workhorse of the entire `postforecasts` package.
-    It specifies both the raw data and the post-processing method(s) that should be applied to this data set.
+    It specifies both the raw data and the post-processing method(s) that should be applied to the data set.
     The function returns a list of $k+1$ equally shaped data frames for $k$ selected post-processing methods where the first element is given by the original, possibly filtered, data frame.
 
     All list elements can be analyzed separately or collectively by stacking them into one large data frame with the `collect_predictions()` function.
     The combined data frame is designed to work well with analysis functions of the [scoringutils](https://epiforecasts.io/scoringutils/) package [@R-scoringutils].
     If multiple post-processing methods are applied, an ensemble model of all selected methods can be added via the `add_ensemble()` function, which lets the user access both the weighted ensemble predictions and a data frame with the corresponding weights.
-    The ensemble approach will be further explained in \Cref{comparison} .
 
 3.  Evaluation
 
@@ -194,7 +207,7 @@ The `postforecasts` functions that are meant to be visible to the end-user can b
     To simplify interpretation the `eval_methods()` function computes *relative* or *percentage* changes in the Weighted Interval Score for each selected method compared to the original quantile predictions.
     Further, these relative changes can be visualized by the `plot_eval()` function.
 
-The following section demonstrates the complete workflow described above to give an impression of the *interaction* between all implemented functions.
+The following section demonstrates the complete workflow described above to give an impression of the *interaction* between the functions.
 
 
 
@@ -207,16 +220,16 @@ hub_1 <- readr::read_csv(here::here("data_modified", "hub_data_1_incidences.csv"
 hub_2 <- readr::read_csv(here::here("data_modified", "hub_data_2_incidences.csv"))
 hub_3 <- readr::read_csv(here::here("data_modified", "hub_data_3_incidences.csv"))
 
-hub <- dplyr::bind_rows(hub_1, hub_2, hub_3)
+hub <- bind_rows(hub_1, hub_2, hub_3)
 
 hub_germany <- hub |>
-  dplyr::filter(location == "DE") |>
-  dplyr::distinct(model, target_end_date, target_type, quantile, horizon,
+  filter(location == "DE") |>
+  distinct(model, target_end_date, target_type, quantile, horizon,
     .keep_all = TRUE
   )
 ```
 
-\Cref{fig:ch1-quantiles-germany} illustrates the $5$%, $20$% $80$% and $95$% quantile predictions of the `EuroCOVIDhub-ensemble` during the summer months of $2021$ in Germany.
+\Cref{fig:ch1-quantiles-germany} illustrates the $5$%, $20$% $80$% and $95$% quantile predictions of the `EuroCOVIDhub-ensemble` forecasting model during the summer months of $2021$ in Germany.
 
 ```{r, ch1-quantiles-germany, fig.cap="Original Quantile Predictions for Covid-19 Cases and Deaths in Germany 2021"}
 plot_quantiles(
@@ -226,7 +239,7 @@ plot_quantiles(
 ```
 
 The original predictions look quite noisy overall with the clear trend that uncertainty and, hence, the interval width increases with growing forecast horizons.
-We want to analyze if one particular post-processing method, *Conformalized Quantile Regression* which is explained in much more detail in \Cref{cqr}, improves the predictive performance for this model on a validation set by computing the Weighted Interval Scores for Covid Cases and Covid Deaths separately:
+We want to analyze if one particular post-processing method, *Conformalized Quantile Regression* which is properly introduced in \Cref{cqr}, improves the predictive performance for this model on a validation set by computing the Weighted Interval Scores for Covid-19 Cases and Covid-19 Deaths separately:
 
 ```{r}
 df_updated <- update_predictions(
@@ -248,37 +261,36 @@ df_combined |>
   extract_validation_set() |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method", "target_type")) |>
-  dplyr::select(method:dispersion) |>
-  dplyr::arrange(target_type) |>
-  kableExtra::kbl(
-    digits = 2, align = "c", booktabs = TRUE,
+  select(method:dispersion) |>
+  arrange(target_type) |>
+  rename(`interval score` = interval_score, `target type` = target_type) |>
+  display_table(
     caption = "Comparison of the Weighted Interval Score after CQR Adjustments"
-  ) |>
-  kableExtra::kable_styling(position = "center", full_width = FALSE)
+  )
 ```
 
-\Cref{tab:ch1-wis-table} shows that CQR improved the Weighted Interval Score for Covid Cases on the validation set, whereas the predictive performance for Covid Deaths dropped slightly.
+\Cref{tab:ch1-wis-table} shows that CQR improved the WIS for Covid-19 Cases, whereas the predictive performance for Covid-19 Deaths dropped slightly.
 
 The `update_predictions()` and `collect_predictions()` combination immediately generalize to multiple post-processing methods.
 The only syntax change is a vector input of strings for the `methods` argument instead of a single string.
-Hence, if not desired, the user does not have to worry about which input and output features each method requires in its raw form nor how exactly each method is implemented.
-This design allows for maximum syntactic consistency through masking internal functionality.
+Hence, if not desired, the user does not have to learn separate interfaces for each method nor be familar with the precise implementation.
+This design allows for maximum syntactic consistency by masking the internal functionality.
 
-Moreover, the `update_predictions()` function automatically takes care of *quantile crossing* [@bassett1982] by reordering the output predictions in increasing quantile order.
-The `cv_init_training` parameter specifies the fraction of observations that is used for the pure training set before starting the Time Series Cross Validation process.
+Further, the `update_predictions()` function automatically takes care of *quantile crossing* [@bassett1982] by reordering the output predictions in increasing quantile order.
+The `cv_init_training` parameter specifies the fraction of observations that is used for the pure training set before the Time Series Cross Validation process starts.
 
 As seen in \Cref{tab:ch1-wis-table} CQR increases the *dispersion* of the predictions for Cases significantly.
 One example of these wider intervals is visualized in \Cref{fig:ch1-intervals-germany}.
 
-```{r, ch1-intervals-germany, fig.cap="Original and CQR-adjusted Prediction Intervals for Covid-19 Cases in Germany", out.width="80%"}
+```{r, ch1-intervals-germany, fig.cap="Original and CQR-adjusted Prediction Intervals for Covid-19 Cases in Germany", out.width="70%"}
 plot_intervals(df_combined, target_type = "Cases", horizon = 2, quantile = 0.05)
 ```
 
-Indeed, the 2 weeks-ahead $90$% prediction intervals for Covid Cases in Germany are expanded by CQR.
+Indeed, the 2 weeks-ahead $90$% prediction intervals for Covid Cases in Germany are widened by CQR.
 The grey dashed line indicates the end of the training set within the Cross Validation as specified by the `cv_init_training` parameter.
 
 Recall from \Cref{fig:ch1-quantiles-germany} that prediction uncertainty increases with larger forecast horizons.
-Similarly, CQR adjustments also increase in size for forecasts that are submitted further in advance, which can be seen in \Cref{fig:ch1-intervalsgrid-germany} along the horizontal dimension.
+Similarly, CQR *corrections* also increase in size for forecasts that are submitted further in advance, which can be seen in \Cref{fig:ch1-intervalsgrid-germany} along the horizontal dimension.
 Interestingly, CQR expands the intervals only for Cases whereas the forecasts for Deaths are narrowed!
 
 ```{r, ch1-intervalsgrid-germany, fig.cap="Original and CQR-adjusted Prediction Intervals for different Forecast Horizons"}
@@ -289,7 +301,7 @@ Besides the target type (Cases or Deaths), it is also useful to compare CQR effe
 Quite intuitively, CQR generally has a stronger *relative* benefit for large time horizons and extreme quantiles, where the original forecaster faced a greater uncertainty.
 \Cref{fig:ch1-eval-germany} illustrates how, in special cases like this one, the effect on the validation set can show rather mixed trends due to disadvantageous adjustments for the two and three weeks-ahead $98$% prediction intervals.
 
-```{r, ch1-eval-germany, fig.cap="Relative Changes in the WIS through CQR for all Quantile-Horizon combinations", out.width="80%"}
+```{r, ch1-eval-germany, fig.cap="Relative Changes in the WIS through CQR for all Quantile-Horizon combinations", out.width="70%"}
 df_eval <- eval_methods(df_combined, summarise_by = c("quantile", "horizon"))
 plot_eval(df_eval)
 ```

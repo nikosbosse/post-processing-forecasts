@@ -30,8 +30,8 @@ uk_qsa_uniform <- readr::read_rds(here::here("data_results", "uk_qsa_uniform.rds
 uk_qsa_flexible_symmetric <- readr::read_rds(here::here("data_results", "uk_qsa_flexible_symmetric.rds"))
 uk_qsa_flexible <- readr::read_rds(here::here("data_results", "uk_qsa_flexible.rds"))
 
-#TODO: add display table function with captions
-#TODO: add empty spaces, less block text.
+# TODO: add display table function with captions
+# TODO: add empty spaces, less block text.
 ```
 
 ```{r, include=FALSE}
@@ -63,10 +63,10 @@ tab_uniform <- uk_qsa_uniform |>
   scoringutils::summarise_scores(by = c("method")) |>
   dplyr::select(method:dispersion, underprediction, overprediction) |>
   rename(`interval score` = interval_score) #|>
-  #rename(`dispersion` = dispersion) |>
-  #rename(`underprediction` = underprediction) |>
-  #rename(`overprediction` = overprediction)
-  
+# rename(`dispersion` = dispersion) |>
+# rename(`underprediction` = underprediction) |>
+# rename(`overprediction` = overprediction)
+
 
 uniform_wis_rel <- (tab_uniform$interval_score[2] - tab_uniform$interval_score[1]) / tab_uniform$interval_score[1] * 100
 
@@ -84,7 +84,10 @@ uniform_over_pred_val <- tab_uniform$overprediction[2] - tab_uniform$overpredict
 
 uniform_over_pred_rel_wis <- (tab_uniform$overprediction[2] - tab_uniform$overprediction[1]) / tab_uniform$interval_score[1] * 100
 
-display_table(tab_uniform, caption="QSA Uniform improves WIS by increasing interval widths.", bold_header = TRUE, striped = FALSE)
+display_table(
+  tab_uniform,
+  caption = "QSA Uniform improves WIS by increasing interval widths.", bold_header = TRUE, striped = FALSE
+)
 ```
 
 We begin by examining the results of the `qsa_uniform` method and taking a high level view. \Cref{tab:qsa-uniform-val-set} presents the performance on the validation set, aggregated over all *models*, *target types*, *horizons* and *quantiles*. `qsa_uniform` clearly improves the Weighted Interval Score as it drops by `r uniform_wis_rel` percent. As expected post-processing makes the prediction intervals larger as the dispersion increases by a factor of `r uniform_dis_fac`. 
@@ -96,7 +99,7 @@ This finding, of the post processing methods increasing intervals, confirms the 
 Figure \Cref{fig:qsa-uniform-hor-quant} shows the WIS changes of `qsa_uniform` for each *horizon* and *quantile* combination, aggregated by *models* and *target types*. `qsa_uniform` is beneficial for extreme quantiles at large horizons. however it also substantially overfits extreme quantiles at the horizon of $1$. interestingly,  near to no changes can be observed for the smaller prediction intervals lying within the $0.25$ and $0.75$ quantiles.
 
 
-```{r, qsa-uniform-hor-quant, echo=FALSE, out.width="80%", fig.cap="QSA Uniform beneficial for extreme Quantiles at large Horizons."}
+```{r, qsa-uniform-hor-quant, echo=FALSE, out.width="70%", fig.cap="QSA Uniform beneficial for extreme Quantiles at large Horizons."}
 df_hor_quant <- eval_methods(uk_qsa_uniform, summarise_by = c("horizon", "quantile"))
 p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
 
@@ -130,15 +133,18 @@ flexible_symmetric_over_pred_val <- tab_flexible_symmetric$overprediction[2] - t
 
 flexible_symmetric_uniform_over_pred_rel_wis <- (tab_flexible_symmetric$overprediction[2] - tab_flexible_symmetric$overprediction[1]) / tab_flexible_symmetric$interval_score[1] * 100
 
-display_table(tab_flexible_symmetric, caption="QSA Flexible_Symmetric improves WIS by increasing interval widths.", bold_header = TRUE, striped = FALSE)
+display_table(
+  tab_flexible_symmetric,
+  caption = "QSA Flexible Symmetric improves WIS by increasing interval widths.", bold_header = TRUE, striped = FALSE
+)
 ```
 
 Table \Cref{tab:qsa-flexible-symmetric-val-set} presents the aggregated performance of `qsa_flexible_symmetric` on the validation set. The WIS remains lower in comparison to the original data, however it does lie above the v `qsa_uniform` by `r flexible_symmetric_wis_rel` percent. in the aggregate `qsa_flexible_symmetric` seems to overfit compared to the much more restrictive `qsa_uniform`. Further evidence of overfitting are that the dispersion increases even further with a factor of `r flexible_symmetric_dis_fac`, and that the underprediction as well as overprediction drop even lower with `r flexible_symmetric_under_pred_val` and `r flexible_symmetric_over_pred_val` percent changes. 
 
-In Figure \Cref{fig:qsa_flexible_symmetric-hor-quant} the WIS changes of `qsa_flexible_symmetric` for each *horizon* and *quantile* pair show how this more flexible method adjusted the different intervals. Suprisingly we see no changes in the inner quantiles between the $0.3$and $0.7$ quantiles. Apparently the intervals with coverages equal or smaller than $50$ percent where already quite optimal in the original human forecasts. Furthermore, the gains for the larger intervals remain similar, which suggests that the restriction to adjust all intervals with the same quantile spread factor, did not pose an issue for the Uk data set. In contrast, we rather observe an issue in the third horizon where more extreme quantile gains drop and extreme quantiles at lower horizon are overfitted by `qsa_flexible_symmetric` as the adjustments are worse than originally.
+In Figure \Cref{fig:qsa-flexible-symmetric-hor-quant} the WIS changes of `qsa_flexible_symmetric` for each *horizon* and *quantile* pair show how this more flexible method adjusted the different intervals. Suprisingly we see no changes in the inner quantiles between the $0.3$and $0.7$ quantiles. Apparently the intervals with coverages equal or smaller than $50$ percent where already quite optimal in the original human forecasts. Furthermore, the gains for the larger intervals remain similar, which suggests that the restriction to adjust all intervals with the same quantile spread factor, did not pose an issue for the Uk data set. In contrast, we rather observe an issue in the third horizon where more extreme quantile gains drop and extreme quantiles at lower horizon are overfitted by `qsa_flexible_symmetric` as the adjustments are worse than originally.
 
 
-```{r, qsa-flexible-symmetric-hor-quant, echo=FALSE, out.width="80%", fig.cap="QSA Flexible Symmetric overfits Quantiles at short Horizons."}
+```{r, qsa-flexible-symmetric-hor-quant, echo=FALSE, out.width="70%", fig.cap="QSA Flexible Symmetric overfits Quantiles at short Horizons."}
 df_hor_quant <- eval_methods(uk_qsa_flexible_symmetric, summarise_by = c("horizon", "quantile"))
 p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
 
@@ -148,7 +154,7 @@ p1
 
 
 `qsa_uniform` and `qsa_flexible_symmetric` are both bound to symmetrically adjust upper and lower bounds of the prediction intervals. This is sensible for adjusting models who's residuals follow a symmetric distribution. If model residuals are however skewed, and thus interval coverage lacks more heavily on one side, symmetric adjustments lead to sub-optimal results. This happens because the model is confronted with a trade off where it adjusts one side to little and the other side to much. In the case where the post-processing increases intervals it is bound by the dispersion penalty that is heavier, since for each step it takes at reducing undercoverage, e.g. underprediction or overprediction, on one end, it increases dispersion two fold as intervals are also increased in the other end. In the case of decreasing intervals, it is bound by a lack of coverage as for each step it decreases unnecessary large intervals on one side, it also decreases the interval on the other side leading to uncovered observations. Thus, in both cases where post-processing is warranted, but the model residuals are non-symmetrical, symmetric methods lead to sub-optimal adjustments on both sides of the interval.
-As the Covid-19 infection and death data is inherently non-symmetrically distributed, due to the observations being bounded between $[0,Inf]$ and them resulting from exponential growth, we expect model residuals to be skewed towards higher values. Therefor, we examine how the non-symmetric post-processing method `qsa_flexible` adjusts the forecasts and how it preforms in contrast to `qsa_uniform` and `qsa_flexible_symmetric`. 
+As the Covid-19 infection and death data is inherently non-symmetrically distributed, due to the observations being bounded between $[0,Inf]$ and them resulting from exponential growth, we expect model residuals to be skewed towards higher values. Therefore, we examine how the non-symmetric post-processing method `qsa_flexible` adjusts the forecasts and how it preforms in contrast to `qsa_uniform` and `qsa_flexible_symmetric`. 
 
 ```{r, qsa-flexible-val-set, echo=FALSE}
 tab_flexible <- uk_qsa_flexible |>
@@ -161,7 +167,7 @@ flexible_under_pred_rel <- (tab_flexible$underprediction[2] - tab_flexible$under
 
 flexible_over_pred_rel <- (tab_flexible$overprediction[2] - tab_flexible$overprediction[1]) / tab_flexible$overprediction[1] * 100
 
-display_table(tab_flexible, caption="QSA Flexible improves WIS by moving intervals upward.", bold_header = TRUE, striped = FALSE)
+display_table(tab_flexible, caption = "QSA Flexible improves WIS by moving intervals upward.", bold_header = TRUE, striped = FALSE)
 ```
 
 \Cref{tab:qsa-flexible-val-set} presents the aggregated performance of `qsa_flexible` on the validation set. The WIS is a clear improvement in comparison to the original data and lies in between the `qsa_uniform` and `qsa_flexible_symmetric`. Thus, it preforms slightly better than the `qsa_uniform` and slightly worse than the `qsa_flexible_symmetric` methods. Our main interest however lies in how intervals are adjusted, thus in the dispersion, underprediction and overprediction. The dispersion increases after post-processing, however to a lesser degree than for the other methods. The underprediction, most notably and in contrast to the symmetric approaches, substantially increases by `r flexible_under_pred_rel` percent, while still remaning the lowest of the three WIS components. The overprediction behaves similarly to the  `qsa_flexible_symmetric` method and decreases strongly by `r flexible_over_pred_rel` percent.

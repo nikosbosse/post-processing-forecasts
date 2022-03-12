@@ -67,12 +67,10 @@ knitr::write_bib(
 ```{r child=here::here("term_paper", "5_conclusion.Rmd")}
 ```
 
-<!-- 
 \newpage
 
 ```{r child=here::here("term_paper", "6_appendix.Rmd")}
 ```
--->
  
 \newpage
 

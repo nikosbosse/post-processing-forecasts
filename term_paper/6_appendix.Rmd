@@ -35,12 +35,12 @@ uk_qsa_flexible_symmetric <- readr::read_rds(here::here("data_results", "uk_qsa_
 uk_qsa_flexible <- readr::read_rds(here::here("data_results", "uk_qsa_flexible.rds"))
 
 uk_qsa_flexible_symmetric_no_original <- uk_qsa_flexible_symmetric |>
-  filter(method=="qsa_flexible_symmetric")
+  filter(method == "qsa_flexible_symmetric")
+
 uk_qsa_flexible_no_original <- uk_qsa_flexible |>
-  filter(method=="qsa_flexible")
+  filter(method == "qsa_flexible")
 
 uk_qsa <- bind_rows(uk_qsa_uniform, uk_qsa_flexible_symmetric_no_original, uk_qsa_flexible_no_original)
-
 ```
 
 ```{r, include=FALSE}
@@ -60,44 +60,48 @@ display_table <- function(df, caption, bold_header = TRUE, striped = FALSE) {
 }
 ```
 
-## QSA across Horizons and Target Types for different Models
+## QSA across Horizons and Target Types for different Models {-}
 
-```{r, qsa-all-models-horizons-models-target-types, echo=FALSE, out.width="80%", fig.cap="Forecasting improvements differ across horizons and target types for model forecasts. Model forecasts only improved across all horizons for the death predictions, while they dont improve or are have worse scores for qsa_flexible for case predictions."}
+```{r fig.cap="Forecasting improvements differ across horizons and target types for model forecasts. Model forecasts only improved across all horizons for the death predictions", fig.height=4, fig.width=4.8, qsa-all-models-horizons-models-target-types, echo=FALSE}
 uk_qsa_forecaster <- uk_qsa |>
-  dplyr::filter(model %in% c("EuroCOVIDhub-baseline", "EuroCOVIDhub-ensemble"), target_type == "Cases") #only model forecast
+  filter(model %in% c("EuroCOVIDhub-baseline", "EuroCOVIDhub-ensemble"), target_type == "Cases") # only model forecast
 
 df_hor_forecaster_cases <- eval_methods(uk_qsa_forecaster, summarise_by = "horizon") |>
-  select(horizon,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p1 <- plot_eval(df_hor_forecaster_cases, base_size = 8) + ggplot2::labs(x = NULL) + ggtitle("Cases") + ggplot2::labs(subtitle = "")
+  select(horizon, qsa_uniform, qsa_flexible_symmetric, qsa_flexible)
+
+p1 <- plot_eval(df_hor_forecaster_cases, base_size = 7) +
+  labs(x = NULL, title = "Cases (top) vs. Deaths (bottom)", subtitle = NULL)
 
 uk_qsa_forecaster <- uk_qsa |>
-  dplyr::filter(model %in% c("EuroCOVIDhub-baseline", "EuroCOVIDhub-ensemble"), target_type == "Deaths") #only model forecast
+  filter(model %in% c("EuroCOVIDhub-baseline", "EuroCOVIDhub-ensemble"), target_type == "Deaths") # only model forecast
 
 df_hor_forecaster_deaths <- eval_methods(uk_qsa_forecaster, summarise_by = "horizon") |>
-  select(horizon,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p2 <- plot_eval(df_hor_forecaster_deaths, base_size = 8) + ggplot2::labs(x = NULL) + ggtitle("Deaths") + ggplot2::labs(subtitle = "")
+  select(horizon, qsa_uniform, qsa_flexible_symmetric, qsa_flexible)
 
-p1 + p2
+p2 <- plot_eval(df_hor_forecaster_deaths, base_size = 7) +
+  labs(x = NULL, title = NULL, subtitle = NULL)
+
+p1 / p2
 ```
 
-```{r, qsa-all-models-horizons-humans-target-types, echo=FALSE, out.width="80%", fig.cap="Forecasting improvements differ across horizons and target types for model forecasts. Human forecasts are primarily improved for cases and the horizons of 3 and 4 weeks ahead. For deaths qsa_flexible worsens the score, especially for shorter horizons while qsa_uniform and qsa_flexible-symmetric slightly improve the scores across all horizons."}
+```{r fig.cap="Forecasting improvements differ across horizons and target types for model forecasts. Human forecasts are primarily improved for cases and the horizons of 3 and 4 weeks ahead. For deaths \\texttt{qsa\\_flexible} worsens the score", fig.height=4, fig.width=4.8, qsa-all-models-horizons-humans-target-types, echo=FALSE}
 uk_qsa_forecaster <- uk_qsa |>
-  dplyr::filter(model %in% c("epiforecasts-EpiExpert", "epiforecasts-EpiExpert_Rt", "epiforecasts-EpiExpert_direct", "seabbs"), target_type == "Cases") #only human forecast
+  filter(model %in% c("epiforecasts-EpiExpert", "epiforecasts-EpiExpert_Rt", "epiforecasts-EpiExpert_direct", "seabbs"), target_type == "Cases") # only human forecast
 
 df_hor_forecaster_cases <- eval_methods(uk_qsa_forecaster, summarise_by = "horizon") |>
-  select(horizon,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p1 <- plot_eval(df_hor_forecaster_cases, base_size = 8) + ggplot2::labs(x = NULL) + ggtitle("Cases") + ggplot2::labs(subtitle = "")
+  select(horizon, qsa_uniform, qsa_flexible_symmetric, qsa_flexible)
+
+p1 <- plot_eval(df_hor_forecaster_cases, base_size = 7) +
+  labs(x = NULL, title = "Cases (top) vs. Deaths (bottom)", subtitle = NULL)
 
 uk_qsa_forecaster <- uk_qsa |>
-  dplyr::filter(model %in% c("epiforecasts-EpiExpert", "epiforecasts-EpiExpert_Rt", "epiforecasts-EpiExpert_direct", "seabbs"), target_type == "Deaths") #only human forecast
+  filter(model %in% c("epiforecasts-EpiExpert", "epiforecasts-EpiExpert_Rt", "epiforecasts-EpiExpert_direct", "seabbs"), target_type == "Deaths") # only human forecast
 
 df_hor_forecaster_deaths <- eval_methods(uk_qsa_forecaster, summarise_by = "horizon") |>
-  select(horizon,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p2 <- plot_eval(df_hor_forecaster_deaths, base_size = 8) + ggplot2::labs(x = NULL) + ggtitle("Deaths") + ggplot2::labs(subtitle = "")
+  select(horizon, qsa_uniform, qsa_flexible_symmetric, qsa_flexible)
 
-p1 + p2
+p2 <- plot_eval(df_hor_forecaster_deaths, base_size = 7) +
+  labs(x = NULL, title = NULL, subtitle = NULL)
+
+p1 / p2
 ```
-
-
-
-# Second Appendix

@@ -365,8 +365,6 @@ uk_qsa |>
   dplyr::filter(model %in% c("EuroCOVIDhub-ensemble"), target_type == "Deaths", horizon %in% c(3), quantile %in% c(0.01,0.99)) |>
   eval_methods(summarise_by="quantile")
 
-uk_qsa_forecaster |> count(model)
-
 p1 <- plot_intervals(
   uk_qsa,
   model = "EuroCOVIDhub-ensemble", target_type = "Deaths", horizon = 4, quantile = 0.01

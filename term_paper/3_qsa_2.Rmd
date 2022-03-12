@@ -179,28 +179,25 @@ Due to the unsymmetrical nature of the misscoverage, in the aggregate, `qsa_flex
 
 ## Across Models
 
-```{r, qsa-all-methods-models, echo=FALSE}
-df_hor_quant <- eval_methods(uk_qsa, summarise_by = "model") |>
-  select(model,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
-p1
-```
+#```{r, qsa-all-methods-models, echo=FALSE}
+#df_hor_quant <- eval_methods(uk_qsa, summarise_by = "model") |>
+#  select(model,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
+#p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
+#p1
+#```
 
 
-```{r, qsa-all-methods-models, echo=FALSE}
-uk_qsa_human <- uk_qsa |>
-  dplyr::filter(model %in% c("epiforecasts-EpiExpert", "epiforecasts-EpiExpert_Rt", "epiforecasts-EpiExpert_direct", "seabbs")) #only human forecast
-
-uk_qsa_human |> count(model)
-
-df_hor_quant <- eval_methods(uk_qsa_human, summarise_by = "model") |>
-  select(model,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
-p1
-```
-
-
-
+#```{r, qsa-all-methods-models, echo=FALSE}
+#uk_qsa_human <- uk_qsa |>
+#  dplyr::filter(model %in% c("epiforecasts-EpiExpert", "epiforecasts-EpiExpert_Rt", #"epiforecasts-EpiExpert_direct", "seabbs")) #only human forecast
+#
+#uk_qsa_human |> count(model)
+#
+#df_hor_quant <- eval_methods(uk_qsa_human, summarise_by = "model") |>
+#  select(model,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
+#p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
+#p1
+#```
 
 
 ```{r, qsa-all-methods-models, echo=FALSE}
@@ -280,262 +277,253 @@ For the human forecasting models, namely `epiforecasts-EpiExpert`, `epiforecasts
 
 ## Across Target Types
 
-```{r, qsa-all-methods-models, echo=FALSE}
-df_hor_quant <- eval_methods(uk_qsa, summarise_by = "target_type") |>
+Comparing the QSA methods across target types reveals notable differences. Figure \Cref{fig:qsa-all-methods-target-types} shows the relative changes in WIS after applying `qsa_uniform`, `qsa_flexible_symmetric` and `qsa_flexible` to the original data broken down by the `target_type`. In the aggregate all three methods improve the score for both target types within a similar range. `qsa_flexible_symmetric` preforms best for `Deaths` and `qsa_uniform` for `Cases`.
+
+```{r, qsa-all-methods-target-types, echo=FALSE, out.width="80%", fig.cap="Across both Target Types all QSA mrthods improve the WIS."}
+df_target <- eval_methods(uk_qsa, summarise_by = "target_type") |>
   select(target_type,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
+p1 <- plot_eval(df_target, base_size = 8) + ggplot2::labs(x = NULL)
 p1
 ```
 
-```{r, qsa-all-methods-models, echo=FALSE}
+If we split models into human and model forecasts the results change as is depicted in Figure \Cref{fig:qsa-all-methods-target-types-model-groups}. Human forecasts primarily benefit from post processing for the `target_type` `Cases`, while model forecasts are only improved in their `Deaths` predictions. For both major improvements, as discussed regarding the human forcasted models, `qsa_flexible` reduces the WIS most, followed by `qsa_uniform` and `qsa_flexible_symmetric`. in terms of overfitting, we observe that `qsa_flexible` is the only model that increases the score most. these results once more illustrate that `qsa_flexible` is a riskier model, as it can lead to higher gains or losses due to its potential to more closely fit the training data. 
+
+```{r, qsa-all-methods-target-types-model-groups, echo=FALSE, out.width="80%", fig.cap="Forecasting improvements differ across target types for different model groups. Human forecasts are primarily improved for cases, while model forecast improvments are only found for deaths."}
 uk_qsa_human <- uk_qsa |>
   dplyr::filter(model %in% c("epiforecasts-EpiExpert", "epiforecasts-EpiExpert_Rt", "epiforecasts-EpiExpert_direct", "seabbs")) #only human forecast
 
-uk_qsa_human |> count(model)
-
-df_hor_quant <- eval_methods(uk_qsa_human, summarise_by = "target_type") |>
+df_target_human <- eval_methods(uk_qsa_human, summarise_by = "target_type") |>
   select(target_type,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
-p1
-```
+p1 <- plot_eval(df_target_human, base_size = 8) + ggplot2::labs(x = NULL) + ggtitle("Human Forecasts") + ggplot2::labs(subtitle = "")
 
-
-```{r, qsa-all-methods-models, echo=FALSE}
 uk_qsa_forecaster <- uk_qsa |>
-  dplyr::filter(model %in% c("EuroCOVIDhub-baseline", "EuroCOVIDhub-ensemble")) #only human forecast
+  dplyr::filter(model %in% c("EuroCOVIDhub-baseline", "EuroCOVIDhub-ensemble")) #only forecasting models
 
-uk_qsa_forecaster |> count(model)
-
-df_hor_quant <- eval_methods(uk_qsa_forecaster, summarise_by = "target_type") |>
+df_target_forecasters <- eval_methods(uk_qsa_forecaster, summarise_by = "target_type") |>
   select(target_type,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
-p1
+p2 <- plot_eval(df_target_forecasters, base_size = 8) + ggplot2::labs(x = NULL) + ggtitle("Model Forecasts") + ggplot2::labs(subtitle = "")
+
+p1 + p2 
+
 ```
 
-
-```{r, qsa-all-methods-target-types, echo=FALSE}
-tab_original_target_type <- uk_qsa_uniform |>
-  extract_validation_set() |>
-  scoringutils::score() |>
-  dplyr::filter(method == "original") |>
-  scoringutils::summarise_scores(by = c("target_type")) |>
-  dplyr::select(target_type:interval_score, dispersion, underprediction, overprediction)
-
-target_type_col <- tab_original_target_type$target_type
-tab_original_target_type <- tab_original_target_type |>
-  select(-target_type)
-
-
-tab_uniform_target_type <- uk_qsa_uniform |>
-  extract_validation_set() |>
-  scoringutils::score() |>
-  dplyr::filter(method == "qsa_uniform") |>
-  scoringutils::summarise_scores(by = c("target_type")) |>
-  dplyr::select(interval_score, dispersion, underprediction, overprediction)
-
-tab_uniform_target_type_changes <- (tab_uniform_target_type - tab_original_target_type) / tab_original_target_type * 100
-tab_uniform_target_type_changes$target_type <- target_type_col
-tab_uniform_target_type_changes$method <- "uniform"
-
-#Flexible Symmetric
-tab_flexible_symmetric_target_type <- uk_qsa_flexible_symmetric |>
-  extract_validation_set() |>
-  scoringutils::score() |>
-  dplyr::filter(method == "qsa_flexible_symmetric") |>
-  scoringutils::summarise_scores(by = c("target_type")) |>
-  dplyr::select(interval_score, dispersion, underprediction, overprediction)
-
-tab_flexible_symmetric_target_type_changes <- (tab_flexible_symmetric_target_type - tab_original_target_type) / tab_original_target_type * 100
-tab_flexible_symmetric_target_type_changes$target_type <- target_type_col
-tab_flexible_symmetric_target_type_changes$method <- "symmetric"
-
-
-# Flexible
-tab_flexible_target_type <- uk_qsa_flexible |>
-  extract_validation_set() |>
-  scoringutils::score() |>
-  dplyr::filter(method == "qsa_flexible") |>
-  scoringutils::summarise_scores(by = c("target_type")) |>
-  dplyr::select(interval_score, dispersion, underprediction, overprediction)
-
-tab_flexible_target_type_changes <- (tab_flexible_target_type - tab_original_target_type) / tab_original_target_type * 100
-tab_flexible_target_type_changes$target_type <- target_type_col
-tab_flexible_target_type_changes$method <- "flexible"
-
-
-tab_qsa_target_type_changes <- bind_rows(tab_uniform_target_type_changes, tab_flexible_symmetric_target_type_changes, tab_flexible_target_type_changes) |>
-  rename(wis = interval_score, dis=dispersion, under=underprediction, over=overprediction) |>
-  select(target_type, method, everything()) |>
-  arrange(
-    match(target_type, c("Cases", "Deaths")),
-    match(method, c("uniform", "symmetric", "flexible")), 
-    wis, dis, under, over)
-
-display_table(tab_qsa_model_changes, caption="QSA Methods differ in preformance across Target Types.", bold_header = TRUE, striped = FALSE)
-```
-
-Comparing the QSA methods across target types reveals notable differences. Table \Cref{tab:qsa-all-methods-target-types} shows the relative changes in WIS after applying `qsa_uniform`, `qsa_flexible_symmetric` and `qsa_flexible` to the original data broken down by the `target_type`.
-
-- Overall all methods help for both target types
-- for cases however the gain soley comes from human forecast models
-- for deaths gain comes soley from forecaster models
-- We see that flexible either makes big gain or big loss
-- uniform and symmetric either smaller gain or next to none, less risk
+#```{r, qsa-all-methods-target-types, echo=FALSE}
+#tab_original_target_type <- uk_qsa_uniform |>
+#  extract_validation_set() |>
+#  scoringutils::score() |>
+#  dplyr::filter(method == "original") |>
+#  scoringutils::summarise_scores(by = c("target_type")) |>
+#  dplyr::select(target_type:interval_score, dispersion, underprediction, overprediction)
+#
+#target_type_col <- tab_original_target_type$target_type
+#tab_original_target_type <- tab_original_target_type |>
+#  select(-target_type)
+#
+#
+#tab_uniform_target_type <- uk_qsa_uniform |>
+#  extract_validation_set() |>
+#  scoringutils::score() |>
+#  dplyr::filter(method == "qsa_uniform") |>
+#  scoringutils::summarise_scores(by = c("target_type")) |>
+#  dplyr::select(interval_score, dispersion, underprediction, overprediction)
+#
+#tab_uniform_target_type_changes <- (tab_uniform_target_type - tab_original_target_type) / #tab_original_target_type * 100
+#tab_uniform_target_type_changes$target_type <- target_type_col
+#tab_uniform_target_type_changes$method <- "uniform"
+#
+##Flexible Symmetric
+#tab_flexible_symmetric_target_type <- uk_qsa_flexible_symmetric |>
+#  extract_validation_set() |>
+#  scoringutils::score() |>
+#  dplyr::filter(method == "qsa_flexible_symmetric") |>
+#  scoringutils::summarise_scores(by = c("target_type")) |>
+#  dplyr::select(interval_score, dispersion, underprediction, overprediction)
+#
+#tab_flexible_symmetric_target_type_changes <- (tab_flexible_symmetric_target_type - tab_original_target_type) #/ tab_original_target_type * 100
+#tab_flexible_symmetric_target_type_changes$target_type <- target_type_col
+#tab_flexible_symmetric_target_type_changes$method <- "symmetric"
+#
+#
+## Flexible
+#tab_flexible_target_type <- uk_qsa_flexible |>
+#  extract_validation_set() |>
+#  scoringutils::score() |>
+#  dplyr::filter(method == "qsa_flexible") |>
+#  scoringutils::summarise_scores(by = c("target_type")) |>
+#  dplyr::select(interval_score, dispersion, underprediction, overprediction)
+#
+#tab_flexible_target_type_changes <- (tab_flexible_target_type - tab_original_target_type) / #tab_original_target_type * 100
+#tab_flexible_target_type_changes$target_type <- target_type_col
+#tab_flexible_target_type_changes$method <- "flexible"
+#
+#
+#tab_qsa_target_type_changes <- bind_rows(tab_uniform_target_type_changes, #tab_flexible_symmetric_target_type_changes, tab_flexible_target_type_changes) |>
+#  rename(wis = interval_score, dis=dispersion, under=underprediction, over=overprediction) |>
+#  select(target_type, method, everything()) |>
+#  arrange(
+#    match(target_type, c("Cases", "Deaths")),
+#    match(method, c("uniform", "symmetric", "flexible")), 
+#    wis, dis, under, over)
+#
+#display_table(tab_qsa_model_changes, caption="QSA Methods differ in preformance across Target Types.", #bold_header = TRUE, striped = FALSE)
+#```
 
 
 ## Across Horizons
 
-```{r, qsa-all-models-horizons, echo=FALSE, out.width="80%", fig.cap="QSA Flexible overfits as it intervals are to low in the training and to high in the validation set."}
-df_hor_quant <- eval_methods(uk_qsa, summarise_by = "horizon") |>
+Breaking down the results by the forecasting `horizon` also reveals notable patterns. Figure \Cref{fig:qsa-all-models-horizons} plots the WIS changes across horizons for all three methods. Across all QSA methods the improvements to the WIS increase with the `horizon`. The gains are primarily visible for the three and four week ahead predictions. In Contrast the increases in score and overfitting are primarily located at a horizon of one. 
+
+```{r, qsa-all-models-horizons, echo=FALSE, out.width="80%", fig.cap="QSA methods improve forecasts more for larger horizons. For smaller horizons they tend to voerfit, this is especially the case with qsa_flexible."}
+df_hor <- eval_methods(uk_qsa, summarise_by = "horizon") |>
   select(horizon,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
+p1 <- plot_eval(df_hor, base_size = 8) + ggplot2::labs(x = NULL)
 
 p1
 ```
 
-```{r, qsa-all-methods-models, echo=FALSE}
-uk_qsa_forecaster <- uk_qsa |>
-  dplyr::filter(model %in% c("EuroCOVIDhub-baseline", "EuroCOVIDhub-ensemble")) #only human forecast
+Again, a split of the post processed models into human and model forecasts reveals differences as depicted in Figure \Cref{qsa-all-models-horizons-model-groups}. We observe that the aggregate gains soley stem from the human forecast models and that the losses in the WIS are primarily from the model forecasts. Here the method performances also vary more. The largest gains and losses are reported for `qsa_flexible`, while `qsa_uniform` and `qsa_flexible_symmetric` also report improvements but overfit much less.
 
-uk_qsa_forecaster |> count(model)
-
-df_hor_quant <- eval_methods(uk_qsa_forecaster, summarise_by = "horizon") |>
-  select(horizon,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
-p1
-```
-
-
-```{r, qsa-all-methods-models, echo=FALSE}
+```{r, qsa-all-models-horizons-model-groups, echo=FALSE, out.width="80%", fig.cap="Forecasting improvements differ across horizons for different model groups. Human forecasts are primarily improved for horizons larger than 2, while model forecast are not improved at all and are overfitted with qsa_flexible."}
 uk_qsa_human <- uk_qsa |>
   dplyr::filter(model %in% c("epiforecasts-EpiExpert", "epiforecasts-EpiExpert_Rt", "epiforecasts-EpiExpert_direct", "seabbs")) #only human forecast
 
-uk_qsa_human |> count(model)
-
-df_hor_quant <- eval_methods(uk_qsa_human, summarise_by = "horizon") |>
+df_target_human <- eval_methods(uk_qsa_human, summarise_by = "horizon") |>
   select(horizon,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
-p1
-```
+p1 <- plot_eval(df_target_human, base_size = 8) + ggplot2::labs(x = NULL) + ggtitle("Human Forecasts") + ggplot2::labs(subtitle = "")
 
-```{r, qsa-all-methods-models, echo=FALSE}
 uk_qsa_forecaster <- uk_qsa |>
-  dplyr::filter(model %in% c("EuroCOVIDhub-baseline", "EuroCOVIDhub-ensemble"), target_type == "Deaths") #only human forecast
+  dplyr::filter(model %in% c("EuroCOVIDhub-baseline", "EuroCOVIDhub-ensemble")) #only forecasting models
 
-uk_qsa_forecaster |> count(model)
-
-df_hor_quant <- eval_methods(uk_qsa_forecaster, summarise_by = "horizon") |>
+df_target_forecasters <- eval_methods(uk_qsa_forecaster, summarise_by = "horizon") |>
   select(horizon,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
-p1
+p2 <- plot_eval(df_target_forecasters, base_size = 8) + ggplot2::labs(x = NULL) + ggtitle("Model Forecasts") + ggplot2::labs(subtitle = "")
+
+p1 + p2 
+
 ```
 
-```{r, qsa-all-methods-models, echo=FALSE}
-uk_qsa_forecaster <- uk_qsa |>
-  dplyr::filter(model %in% c("EuroCOVIDhub-baseline", "EuroCOVIDhub-ensemble"), target_type == "Cases") #only human forecast
-
-uk_qsa_forecaster |> count(model)
-
-df_hor_quant <- eval_methods(uk_qsa_forecaster, summarise_by = "horizon") |>
-  select(horizon,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
-p1
-```
+Additionally breaking down the results by target types as well, reveals the patterns in Figures \Cref{qsa-all-models-horizons-models-target-types} and \Cref{qsa-all-models-horizons-humans-target-types} of the appendix. They show gains for death and losses for case predictions across the board for model forecasts. Again, these tendencies are strongest for the `qsa_flexible` flavor of QSA. Human predictions are primarily improved for cases and the horizons of 3 and 4 weeks ahead. For deaths `qsa_flexible` worsens the score, especially for shorter horizons while `qsa_uniform` and `qsa_flexible_symmetric` slightly improve the scores across all horizons.
 
 
-```{r, qsa-all-methods-models, echo=FALSE}
-uk_qsa_human <- uk_qsa |>
-  dplyr::filter(model %in% c("epiforecasts-EpiExpert", "epiforecasts-EpiExpert_Rt", "epiforecasts-EpiExpert_direct", "seabbs"), target_type == "Deaths") #only human forecast
-
-uk_qsa_human |> count(model)
-
-df_hor_quant <- eval_methods(uk_qsa_human, summarise_by = "horizon") |>
-  select(horizon,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
-p1
-```
 
 
-```{r, qsa-all-methods-models, echo=FALSE}
-uk_qsa_human <- uk_qsa |>
-  dplyr::filter(model %in% c("epiforecasts-EpiExpert", "epiforecasts-EpiExpert_Rt", "epiforecasts-EpiExpert_direct", "seabbs"), target_type == "Cases") #only human forecast
+#```{r, qsa-all-methods-models, echo=FALSE}
+#uk_qsa_forecaster <- uk_qsa |>
+#  dplyr::filter(model %in% c("EuroCOVIDhub-baseline", "EuroCOVIDhub-ensemble"), target_type == "Deaths") #only #human forecast
+#
+#uk_qsa_forecaster |> count(model)
+#
+#df_hor_quant <- eval_methods(uk_qsa_forecaster, summarise_by = "horizon") |>
+#  select(horizon,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
+#p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
+#p1
+#```
 
-uk_qsa_human |> count(model)
-
-df_hor_quant <- eval_methods(uk_qsa_human, summarise_by = "horizon") |>
-  select(horizon,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
-p1
-```
-
-
-- In aggregate methods are more useful for larger horizons. So 3 and 4
-- However the gains are soley for the human forecast models in the aggregate
-- Gains and losses again larger for qsa flexible as for other methods
-- If we, in addition to splitting by model types also split by target types we see what we saw earlier: 
-  - gains for deaths and forecaster models across the board, especially strong for qsa_flexible
-  - losses for cases and forecaster models across the board, especially strong for qsa_flexible
-  
-  - losses for deaths and human models for qsa_flexible and only minor gains for other methods
-  - gains for cases and forecaster models especially strong for qsa_flexible and only for horizon 3 and 4
-  
-- overall gains increase for larger horizons, cut off between 2 and 3
+#```{r, qsa-all-methods-models, echo=FALSE}
+#uk_qsa_forecaster <- uk_qsa |>
+#  dplyr::filter(model %in% c("EuroCOVIDhub-baseline", "EuroCOVIDhub-ensemble"), target_type == "Cases") #only #human forecast
+#
+#uk_qsa_forecaster |> count(model)
+#
+#df_hor_quant <- eval_methods(uk_qsa_forecaster, summarise_by = "horizon") |>
+#  select(horizon,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
+#p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
+#p1
+#```
 
 
+#```{r, qsa-all-methods-models, echo=FALSE}
+#uk_qsa_human <- uk_qsa |>
+#  dplyr::filter(model %in% c("epiforecasts-EpiExpert", "epiforecasts-EpiExpert_Rt", #"epiforecasts-EpiExpert_direct", "seabbs"), target_type == "Deaths") #only human forecast
+#
+#uk_qsa_human |> count(model)
+#
+#df_hor_quant <- eval_methods(uk_qsa_human, summarise_by = "horizon") |>
+#  select(horizon,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
+#p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
+#p1
+#```
+
+Overall there is a tendency that forecast improvements increase and and the risk of overfitting simultaneously drops with increasing forecasting horizons.
+
+#- In aggregate methods are more useful for larger horizons. So 3 and 4
+#- However the gains are soley for the human forecast models in the aggregate
+#- Gains and losses again larger for qsa flexible as for other methods
+#- If we, in addition to splitting by model types also split by target types we see what we saw earlier: 
+#  - gains for deaths and forecaster models across the board, especially strong for qsa_flexible
+#  - losses for cases and forecaster models across the board, especially strong for qsa_flexible
+#  
+#  - losses for deaths and human models for qsa_flexible and only minor gains for other methods
+#  - gains for cases and forecaster models especially strong for qsa_flexible and only for horizon 3 and 4
+#  
+#- overall gains increase for larger horizons, cut off between 2 and 3
+#
 
 
 ## Across Quantiles
 
+WIS improvements also vary across the different quantiles and intervals. Figure \Cref{fig:qsa-all-models-quantiles} depicts the WIS across quantiles for the three QSA flavors. the improvements are larger for more extreme quantiles.
 
-```{r, qsa-all-models-horizons, echo=FALSE, out.width="80%", fig.cap="QSA Flexible overfits as it intervals are to low in the training and to high in the validation set."}
-df_hor_quant <- eval_methods(uk_qsa, summarise_by = "quantile") |>
+
+```{r, qsa-all-models-quantiles, echo=FALSE, out.width="80%", fig.cap="QSA improves forecasters larger for more extreme qunatiles and thus larger intervals."}
+df_quant <- eval_methods(uk_qsa, summarise_by = "quantile") |>
   select(quantile,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
+p1 <- plot_eval(df_quant, base_size = 8) + ggplot2::labs(x = NULL)
 
 p1
 ```
 
-```{r, qsa-all-models-horizons, echo=FALSE, out.width="80%", fig.cap="QSA Flexible overfits as it intervals are to low in the training and to high in the validation set."}
-uk_qsa_human <- uk_qsa |>
+As we have shown that aggregation across the `target_type`and `model` dimensions do not show the full picture, we also show the quantile improvements for the human forecasts of cases as well as the model forecasts of deaths in Figure \Cref{fig:qsa-quantiles-model-groups-target-types-best}. For human forecasts of cases the patterns remain similar to the aggregate. For model forecasts of deaths however, we observe larger improvements and that `qsa_flexible` is useful for small intervals. This results from the death prediction intervals beenfitting from non-symmetric adjustments. Furthermore model forecasts of deaths also seem to be one of the rare cases where `qsa_flexible_symmetric` outpreforms `qsa_uniform`.
+
+```{r, qsa-quantiles-model-groups-target-types-best, echo=FALSE, out.width="80%", fig.cap="QSA Flexible overfits as it intervals are to low in the training and to high in the validation set."}
+uk_qsa_human_cases <- uk_qsa |>
   dplyr::filter(model %in% c("epiforecasts-EpiExpert", "epiforecasts-EpiExpert_Rt", "epiforecasts-EpiExpert_direct", "seabbs"), target_type == "Cases") #only human forecast
 
-uk_qsa_human |> count(model)
-
-df_hor_quant <- eval_methods(uk_qsa_human, summarise_by = "quantile") |>
+df_hor_human_cases <- eval_methods(uk_qsa_human_cases, summarise_by = "quantile") |>
   select(quantile,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
+p1 <- plot_eval(df_hor_human_cases, base_size = 8) + ggplot2::labs(x = NULL) + ggtitle("Human Forecasts of Cases") + ggplot2::labs(subtitle = "")
 
-p1
-```
-
-
-```{r, qsa-all-methods-models, echo=FALSE}
 uk_qsa_forecaster <- uk_qsa |>
-  dplyr::filter(model %in% c("EuroCOVIDhub-baseline", "EuroCOVIDhub-ensemble"), target_type == "Deaths") #only human forecast
+  dplyr::filter(model %in% c("EuroCOVIDhub-baseline", "EuroCOVIDhub-ensemble"), target_type == "Deaths") #only model forecast
 
-uk_qsa_forecaster |> count(model)
-
-df_hor_quant <- eval_methods(uk_qsa_forecaster, summarise_by = "quantile") |>
+df_hor_forecaster_death <- eval_methods(uk_qsa_forecaster, summarise_by = "quantile") |>
   select(quantile,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
-p1
+p2 <- plot_eval(df_hor_forecaster_death, base_size = 8) + ggplot2::labs(x = NULL) + ggtitle("Model Forecasts of Deaths") + ggplot2::labs(subtitle = "")
+
+
+p1 + p2
 ```
 
 
-```{r, qsa-all-methods-models, echo=FALSE}
-uk_qsa_forecaster <- uk_qsa |>
-  dplyr::filter(model %in% c("EuroCOVIDhub-baseline", "EuroCOVIDhub-ensemble"), target_type == "Deaths", horizon %in% c(3,4)) #only human forecast
+#```{r, qsa-all-methods-models, echo=FALSE}
+#uk_qsa_forecaster <- uk_qsa |>
+#  dplyr::filter(model %in% c("EuroCOVIDhub-baseline", "EuroCOVIDhub-ensemble"), target_type == "Deaths") #only #human forecast
+#
+#uk_qsa_forecaster |> count(model)
+#
+#df_hor_quant <- eval_methods(uk_qsa_forecaster, summarise_by = "quantile") |>
+#  select(quantile,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
+#p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
+#p1
+#```
 
-uk_qsa_forecaster |> count(model)
 
-df_hor_quant <- eval_methods(uk_qsa_forecaster, summarise_by = "quantile") |>
-  select(quantile,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
-p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
-p1
-```
+#```{r, qsa-all-methods-models, echo=FALSE}
+#uk_qsa_forecaster <- uk_qsa |>
+#  dplyr::filter(model %in% c("EuroCOVIDhub-baseline", "EuroCOVIDhub-ensemble"), target_type == "Deaths", #horizon %in% c(3,4)) #only human forecast
+#
+#uk_qsa_forecaster |> count(model)
+#
+#df_hor_quant <- eval_methods(uk_qsa_forecaster, summarise_by = "quantile") |>
+#  select(quantile,qsa_uniform,qsa_flexible_symmetric,qsa_flexible)
+#p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
+#p1
+#```
+
+Further examination of the results, in particular subsetting the above results to the `horizon`of three and four revealed an exception to the accordion look of the quantile graphs. For large forecasting horizons and model forecasts of deaths, we observe worse WIS after the adjustments. These result from the high cost of not covering an observation at extreme quantiles. Figure \Cref{fig:qsa-large-quantiles-no-coverage} exemplifies this where all QSA methods substantially reduces the interval sizes in order to reduce dispersion, this then  result in undercoverage of the last week of august. Thus the QSA adjustments, especially for few data points ,as the 13 weeks of the UK data, can underestimate uncertainty at extreme quantiles. This risk increases with the flexibility of the QSA flavor.
 
 
-```{r, qsa-flexible-eu-baseline-intervals, echo=FALSE, out.width="80%", fig.cap="QSA Flexible overfits as it intervals are to low in the training and to high in the validation set."}
+```{r, qsa-large-quantiles-no-coverage, echo=FALSE, out.width="80%", fig.cap="QSA can underestimate uncertainty for extreme qunatiles and few data points to learn from."}
 uk_qsa |>
   dplyr::filter(model %in% c("EuroCOVIDhub-ensemble"), target_type == "Deaths", horizon %in% c(3), quantile %in% c(0.01,0.99)) |>
   eval_methods(summarise_by="quantile")
@@ -550,33 +538,33 @@ p1 <- plot_intervals(
 p1
 ```
 
-```{r, qsa-flexible-symmetric-hor-quant, echo=FALSE, out.width="80%", fig.cap="QSA Flexible overfits Quantiles at short Horizons."}
-df_hor_quant <- eval_methods(uk_qsa_flexible, summarise_by = c("horizon", "quantile"))
-df_hor_quant <- df_hor_quant |> 
-  filter(horizon > 1)
-p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
+#```{r, qsa-flexible-symmetric-hor-quant, echo=FALSE, out.width="80%", fig.cap="QSA Flexible overfits Quantiles #at short Horizons."}
+#df_hor_quant <- eval_methods(uk_qsa_flexible, summarise_by = c("horizon", "quantile"))
+#df_hor_quant <- df_hor_quant |> 
+#  filter(horizon > 1)
+#p1 <- plot_eval(df_hor_quant, base_size = 8) + ggplot2::labs(x = NULL)
+#
+#p1
+#```
 
-p1
-```
-
-- overall improvements are large for far out quantiles
-- for human models and cases this is the case as well
-- for forecaster models and deaths we see larger improvements and interestingly see qsa_flexible is useful for small intervals, apparently they need to be moved. also see qsa_flexible seems to preform well here
-- further digging deeper and only looking at horizons 3,4 reveal same patterns but more imrpovement for human models and cases
-- horizons 3,4 for forecaster models and deaths also show further improvements butt we see the most outer qunatiels wors for qsa_uniform and flexible
-- graph explains this by missing one observations .these outlier effects distort if we have so few observations as in this case.....
-- can also show that losses are at outscirts and mostely by qsa flexible!!
+#- overall improvements are large for far out quantiles
+#- for human models and cases this is the case as well
+#- for forecaster models and deaths we see larger improvements and interestingly see qsa_flexible is useful for #small intervals, apparently they need to be moved. also see qsa_flexible seems to preform well here
+#- further digging deeper and only looking at horizons 3,4 reveal same patterns but more imrpovement for human #models and cases
+#- horizons 3,4 for forecaster models and deaths also show further improvements butt we see the most outer #qunatiels wors for qsa_uniform and flexible
+#- graph explains this by missing one observations .these outlier effects distort if we have so few #observations as in this case.....
+#- can also show that losses are at outscirts and mostely by qsa flexible!!
 
 
 
 
 ## Conclusion
 
-- qsa uniform overall most consistent model
-- symmetric flexible didnt bring notable gains
-- qsa flexible works better or worse depending on the case
-- human forecaster models more improved ofr cases and forecaster models rather for deaths
-- regarding horizons and qunatile in general the further out the better
-
-- talk about improvements and next steps
+#- qsa uniform overall most consistent model
+#- symmetric flexible didnt bring notable gains
+#- qsa flexible works better or worse depending on the case
+#- human forecaster models more improved ofr cases and forecaster models rather for deaths
+#- regarding horizons and qunatile in general the further out the better
+#
+#- talk about improvements and next steps
 

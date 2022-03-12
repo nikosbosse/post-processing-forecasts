@@ -95,8 +95,8 @@ plot_intervals(
 ```
 
 \Cref{fig:ch2-uk-cqr-asym-intervals} nicely demonstrates the key characteristics of asymmetric CQR: Adjustments of the lower and upper interval bounds are independent from each other.
-Considering the last interval on the far right the lower bound is adjusted downwards by a large amount whereas the upper bound is increased only slightly.
-This behaviour implies that, contrary to traditional CQR, original and corrected prediction intervals are generally *not* centered around the same midpoint.
+Considering the last interval on the far right the lower bound is adjusted downwards by a large amount whereas the upper bound is only slightly increased.
+This behaviour implies that, contrary to traditional CQR, original and updated prediction intervals are generally *not* centered around the same midpoint.
 
 The plot also illustrates what we have already seen in \Cref{cqr-traditional}: 
 Once the true value is not contained in the prediction interval and there is a large discrepancy towards the closest boundary, all CQR versions tend to *overcompensate* in the next time step.
@@ -134,10 +134,10 @@ scores_list$scores_lower
 largest_score <- round(scores_list$scores_lower[9], 1)
 ```
 
-The vector of lower scores $E_{low}$ is given by $\hat{ q}_{\alpha, low}(X) - Y$, i.e. elementwise differences of true values and predicted lower quantiles at each time step.
+The vector of lower scores $E_{low}$ is given by $\hat{ q}_{\alpha, low}(X) - Y$, i.e. by elementwise differences of true values and predicted lower quantiles at each time step.
 Due to the jump from time point $9$ to $10$ the final element of the lower score vector has a large value of around `r largest_score`.
 
-Next, the (scalar) lower margin $Q_{1 - \alpha, low}(E_{low}$ is computed:
+Next, the (scalar) lower margin $Q_{1 - \alpha, low}(E_{low})$ is computed:
 
 ```{r, eval=FALSE}
 margin <- compute_margin(scores_list$scores_lower, quantile)
@@ -166,9 +166,9 @@ which coincides with \Cref{fig:ch2-uk-cqr-asym-intervals}.
 
 The procedure now continues by consecutively adding the next elements to the vector of true values and original quantile predictions.
 Since the differences of observed incidences and predicted lower bounds are all much smaller for the remaining time steps, the *same* value `r largest_score` remains the maximum of the lower score vector until the end!
-Thus, if like in the case above, the margin always equaled the maximum score, the adjustments would stay that large independent of the future development of the time series.
+Thus, if just like in the case above, the margin always equaled the maximum score, the adjustments would remain that large independent of the future development of the time series.
 
-In fact, the only difference from that scenario to *Step 4* of \Cref{algorithm} is that the quantile of the score vector that determines the value of the margin depends on the *size* of the score vector.
+In fact, the only difference from that scenario to Step 4 of \Cref{algorithm} is that the quantile of the score vector, which determines the value of the margin, depends on the *size* of the score vector.
 Since the size increases by one with each time step during the Cross Validation process, this quantile slowly declines.
 For instance, the margin which is responsible for adjusting forecasts at time point $11$ is not simply the maximum anymore:
 
@@ -189,12 +189,12 @@ margin_lower_original <- compute_margin(scores_list$scores_lower, 2 * q)
 margin_lower_original
 ```
 
-In this case the $99$% quantile is an interpolation of the largest and second largest score, as implemented by the `stats::quantile()` function.
-Hence, even though the score outlier is not chosen directly, it strongly impacts the margins of future time steps.
+In this case the $99$% quantile is a linear interpolation of the largest and second largest score, as implemented by the `stats::quantile()` function.
+Hence, even though the score outlier is not selected directly, it strongly impacts the margins of future time steps.
 
 The cycle proceeds in this way until the end.
-The conclusion of this brief case study is that all modifications of the traditional CQR algorithm suffer from a slow reaction time towards distribution shifts and particularly sudden jumps within observed values and original forecasts.
-This major downside of Conformalized Quantile Regression is an immediate consequence of the *margin* computation which finally determines the magnitude of forecast adjustments.
+The conclusion of this case study is that all modifications of the traditional CQR algorithm suffer from a slow reaction time towards distribution shifts and particularly sudden jumps within observed values and original forecasts.
+This major downside of CQR is an immediate consequence of the *margin* computation which ultimately determines the magnitude of forecast corrections
 
 
 ### Results
@@ -212,7 +212,7 @@ tab2 <- hub_cqr_asymmetric |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = "method") |>
   select(method:interval_score) |>
-  rename(`hub interval score` = interval_score) 
+  rename(`hub interval score` = interval_score)
 
 tab1 |>
   left_join(tab2, by = "method") |>
@@ -221,8 +221,8 @@ tab1 |>
   )
 ```
 
-Contrary to traditional CQR, the effect of asymmetric CQR highly depend on the underlying data set.
-\Cref{tab:uk-cqr-asymmetric-target-table} shows that this first CQR modification is beneficial for the UK data set by improving the out-of-sample Weighted Interval Score, yet the opposite is the case for the European Forecast Hub.
+Contrary to traditional CQR, the effect of asymmetric CQR highly depends on the underlying data set.
+\Cref{tab:uk-cqr-asymmetric-target-table} shows that the asymmetric version is beneficial for the UK data set by improving the out-of-sample Weighted Interval Score, yet the opposite is the case for the European Forecast Hub.
 
 ```{r, uk-cqr-asymmetric-eval, echo=FALSE, fig.cap="Mixed Results of asymmetric CQR on UK data"}
 b <- "black"
@@ -259,12 +259,12 @@ p2 <- plot_eval(uk_cqr_asym_horizon_quantile, base_size = 7) +
 p1 + p2
 ```
 
-To get a better intuition which circumstances contribute to a positive outcome, we analyze the effects in more granularity.
-\Cref{fig:hub-cqr-asymmetric-location} illustrates the relative improvements by asymmetric CQR for different forecasting models and different forecasting horizons stratified by the quantile level for the UK data.
-We exclude the `EuroCOVIDhub-baseline` model where the adjustments lead to a much *worse* score across all quantile levels.
+To get a better intuition which circumstances contribute to a positive or negative outcome, we analyze the effects in more granularity.
+\Cref{fig:hub-cqr-asymmetric-location} illustrates the relative improvements by asymmetric CQR for different forecasting models and different forecast horizons stratified by the quantile level for the UK data.
+We exclude the `EuroCOVIDhub-baseline` model where the adjustments uniformly lead to a much *worse* score.
 
 The general trends are similar to vanilla CQR: Areas of higher uncertainty profit more from post-processing.
-While the effect is still positive for quantiles less than $0.15$ or greater than $0.85$, the *original* predictions are more accurate for the center quantiles across all models.
+While the effect is still positive for quantiles less than $0.15$ or greater than $0.85$, the *original* predictions are more accurate for centered quantiles across all models.
 The same statement holds for three or four week-ahead predictions.
 For short term forecasts, however, the effect is negative across *all* quantile levels.
 
@@ -313,9 +313,9 @@ p2 <- plot_eval(hub_cqr_asym_location_horizon, base_size = 7) +
 p1 + p2
 ```
 
-Thus, we detect first evidence that the (at least partly) promising results for the smaller UK data set do *not* transfer to the larger European Forecast Hub in this case.
+Thus, we detect first evidence that the (at least partially) promising results for the smaller UK data set do *not* transfer to the larger European Forecast Hub in this case.
 \Cref{fig:hub-cqr-asymmetric-eval} convincingly shows that the performance indeed dropped for each quantile and horizon category.
-While the asymmetric adjustments still result in slightly better predictions for intervals with large nominal coverage level, the left plot is dominated by the negative effect for centered quantiles, except for the median prediction which remains untouched by all CQR versions.
+While the asymmetric updates still result in slightly better predictions for intervals with large nominal coverage level, the left plot is dominated by the negative effect for centered quantiles, except for the median prediction which remains untouched by all CQR versions.
 The right plot suggests that corrections with asymmetric CQR should be avoided altogether when only grouping by forecast horizons and not considering quantile levels separately.
 
 ```{r, hub-cqr-asymmetric-target-table, echo=FALSE}
@@ -346,7 +346,7 @@ Aggregated over all other categories, asymmetric CQR *does* improve the WIS for 
 In strong contrast, the post-processed intervals perform *much* worse than the original forecasts across both target types in the European Forecast Hub data set.
 
 In conclusion, asymmetric Conformalized Quantile Regression can lead to improved prediction intervals as it is the case for the UK data set.
-However, the vast majority of countries in the European Forecast Hub does not benefit from the first proposed CQR variant.
+However, the vast majority of countries in the European Forecast Hub do not benefit from this first CQR modification.
 Compared to the traditional CQR algorithm, giving up on symmetry leads to a worse performance across both data sets.
 It is worth noting that allowing for separate lower and upper margins does *not* cause significant overfitting as one might assume, the original CQR algorithm outperforms the asymmetric version even on the training set!
-The *magnitude* of the performance differences between the two methods is analyzed in \Cref{comparison}.
+This finding, however, only holds for the European Forecast Hub, a more detailed comparison of the two CQR versions for the UK data can be found in \Cref{comparison}.

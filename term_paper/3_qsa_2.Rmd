@@ -250,14 +250,16 @@ Regarding the last three models we even see a similar pattern among post process
 
 Comparing the QSA methods across target types reveals notable differences. \Cref{fig:qsa-all-methods-target-types} shows the relative changes in WIS after applying `qsa_uniform`, `qsa_flexible_symmetric` and `qsa_flexible` to the original data broken down by `target_type`. In the aggregate all three methods improve the score for both target types within a similar range. `qsa_flexible_symmetric` performs best for Covid-19 Deaths and `qsa_uniform` for Cases.
 
-```{r, qsa-all-methods-target-types, echo=FALSE, out.width="70%", fig.cap="Across both Target Types all QSA methods improve the WIS."}
+```{r, qsa-all-methods-target-types, echo=FALSE}
 df_target <- eval_methods(uk_qsa, summarise_by = "target_type") |>
   select(target_type, qsa_uniform, qsa_flexible_symmetric, qsa_flexible)
 
-plot_eval(df_target, base_size = 8) + labs(x = NULL, y = NULL)
+display_table(df_target,
+  caption = "Across both Target Types all QSA methods improve the WIS."
+)
 ```
 
-If we split the forecasting models into human and non-human groups the results change as is shown by \Cref{fig:qsa-all-methods-target-types-model-groups}. Human forecasts primarily benefit from post processing Covid-19 `Cases`, while model forecasts are only improved in their Deaths predictions. 
+If we split the forecasting models into human and non-human groups the results change as is shown by \Cref{tab:qsa-all-methods-target-types-model-groups}. Human forecasts primarily benefit from post processing Covid-19 `Cases`, while model forecasts are only improved in their Deaths predictions. 
 
 As discussed for the human forecast models `qsa_flexible` reduces the WIS most followed by `qsa_uniform` and `qsa_flexible_symmetric`. In terms of overfitting, we observe that `qsa_flexible` is the model that increases the score most. These results illustrate once again that `qsa_flexible` is a riskier model, as it can lead to higher gains or losses due to its potential to fit the training data too closely.
 

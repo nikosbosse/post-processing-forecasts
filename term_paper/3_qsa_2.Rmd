@@ -231,7 +231,7 @@ display_table(tab_qsa_model_changes,
 
 \Cref{tab:qsa-all-methods-models} displays the results of QSA post-processing for all three methods stratified by model. These more granular results reveal a pattern that is not visible in the aggregated results: The `qsa_flexible` method performs significantly worse for the `EuroCOVIDhub-baseline` model by increasing the WIS by `r round(tab_qsa_model_changes[3,3][[1]],2)`$\%$. It overfits the training set as indicated by \Cref{fig:qsa-flexible-eu-baseline-intervals}. 
 
-```{r, qsa-flexible-eu-baseline-intervals, echo=FALSE, out.width="70%", fig.cap="QSA Flexible overfits as it intervals are to low in the training and to high in the validation set."}
+```{r, qsa-flexible-eu-baseline-intervals, echo=FALSE, out.width="70%", fig.cap="QSA Flexible overfits as its intervals are too low in the training and too high in the validation set."}
 plot_intervals(
   uk_qsa,
   model = "EuroCOVIDhub-baseline", target_type = "Cases", horizon = 3, quantile = 0.2

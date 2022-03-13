@@ -59,7 +59,7 @@ The final paragraphs explain our evaluation procedure from a theoretical point o
 
 ### UK Covid-19 Crowd Forecasting Challenge
 
-As part of an ongoing research project by the [EpiForecasts](https://epiforecasts.io/) group at the London School of Hygiene & Tropical Medicine, the [UK Covid-19 Crowd Forecasting Challenge](https://www.crowdforecastr.org/2021/05/11/uk-challenge/) consisted of submitting weekly predictions of Covid-19 Cases and Deaths in the United Kingdom in $2021$.
+As part of an ongoing research project by the [EpiForecasts](https://epiforecasts.io/) group at the London School of Hygiene & Tropical Medicine, the UK Covid-19 Crowd Forecasting Challenge [@ukdata] consisted of submitting weekly predictions of Covid-19 Cases and Deaths in the United Kingdom in $2021$.
 The challenge was not restricted to experienced researchers in the field but rather intended to collect quantile predictions for the upcoming four weeks by non-expert individuals.
 
 One of the main motivations was to gather evidence for or against the hypothesis that humans are highly capable of precise *point forecasts*.
@@ -74,7 +74,7 @@ The results of the $12$-week challenge are [publicly available](https://epiforec
 
 ### European Covid-19 Forecast Hub
 
-According to their [webpage](https://covid19forecasthub.eu/index.html) the European Covid-19 Forecast Hub collects "short-term forecasts of Covid-19 cases and deaths across Europe, created by a multitude of infectious disease modelling teams". 
+According to their webpage the European Covid-19 Forecast Hub [@euhubdata] collects "short-term forecasts of Covid-19 cases and deaths across Europe, created by a multitude of infectious disease modelling teams". 
 
 In contrast to the compact UK data described above, the European Forecast Hub data contains almost two million observations for over $20$ European countries.
 Further, the forecasters are knowledgeable research groups that submit their weekly predictions based on statistical models.

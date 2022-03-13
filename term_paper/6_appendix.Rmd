@@ -60,7 +60,7 @@ display_table <- function(df, caption, bold_header = TRUE, striped = FALSE) {
 }
 ```
 
-## QSA across Horizons and Target Types for different Models {-}
+### QSA across Horizons and Target Types for different Models {-}
 
 ```{r fig.cap="Forecasting improvements differ across horizons and target types for model forecasts. Model forecasts only improved across all horizons for the death predictions", fig.height=4, fig.width=4.8, qsa-all-models-horizons-models-target-types, echo=FALSE}
 uk_qsa_forecaster <- uk_qsa |>

@@ -43,7 +43,7 @@ display_table <- function(df, caption, bold_header = TRUE, striped = FALSE) {
 }
 ```
 
-# Analysis Tools
+# Analysis Tools {#analysis-tools}
 
 Data Analysis is inherently build upon two fundamental components: High Quality Data that allows to gain insight into the underlying data generating process and a structured and reproducible way to extract information out of the collected data.
 

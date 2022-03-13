@@ -15,7 +15,7 @@ linkcolor: blue
 links-as-notes: true
 ---
 
-# Introduction {-}
+# Introduction {#conclusion}
 
 Forecasts can play an important role in informing public policy and personal decision making. During the Covid-19 pandemic, for example, governments and public support for political action, relied heavily on predictions of future case and death numbers. As epidemic developments depend on numerous factors including the decision processes of individuals, there is inherent uncertainty in epidemic forecasts. Thus, there is a growing consensus that these infectious disease forecasts should be probabilistic in nature [@bracher2021]. 
 
@@ -23,4 +23,6 @@ However, many forecasts, tend to be overconfident as a comprehensive review foun
 
 We apply post processing methods to human forecasts from the [UK Covid-19 Crowd Forecasting Challenge](https://www.crowdforecastr.org/2021/05/11/uk-challenge/) as well as model based forecasts provided by the [European Covid-19 Forecast Hub](https://covid19forecasthub.eu/index.html). Using these datasets we examine the contributions post-processing techniques can provide and their effects among varying *models*, *target types* such as cases and deaths, forecasting *horizons* and *quantiles*.
 
-Our analysis is divided into 
+In order to provide a suitable infrastructure for our analysis, simplify further extensions and provide a basis which other can use to investigate post-processing methods, we also developed the `postforecasts` R package. This report introduces the package, its use and provides examples through our analysis of the Covid-19 forecasts.
+
+The report is divided into the following sections: \Cref{#analysis-tools} introduces the two datasets and the main functions of the `postforecasts` package. \Cref{#cqr} presents post-processing methods based on Conformalized Quantile Regression, including a theoretical introduction as well as an analysis of there performance on the data. \Cref{#qsa} builds on this structure and explains Quantile Spread Adjustment based post-processing methods and explores their results. \Cref{#comparison} then compares all methods and presents an ensemble model. Finally, \Cref{#conclusion} summarizes the results and discusses their implications.

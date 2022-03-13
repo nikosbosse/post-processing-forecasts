@@ -15,7 +15,7 @@ linkcolor: blue
 links-as-notes: true
 ---
 
-# Conclusion {-}
+# Conclusion {#conclusion}
 
 This project investigated the effects of post-processing Covid-19 forecasts.
 

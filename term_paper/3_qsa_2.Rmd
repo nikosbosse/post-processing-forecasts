@@ -152,7 +152,7 @@ Due to the restriction of identical quantile spread adjustments for all quantile
 
 This happens because the model is confronted with a trade-off where it adjusts one side too little and the other side too much. If, for example, QSA wants to *increase* intervals to reduce underprediction or overprediction, it will do so until the gains in coverage are equal to the dispersion penalty for an additional increase in interval width. For a symmetric adjustment, on unsymmetrical data, it will find an  adjustment below the optimum for the one end with a lack of coverage, because due to the symmetry, it increases dispersion two fold, as the interval is also widens on the other end and this adjustment leads to a dispersion penalty larger than the coverage benefit. The issue is analogous if QSA *decreases* intervals. Thus, if the model residuals are non-symmetric, symmetric methods lead to sub-optimal adjustments on both sides of the interval.
 
-As the Covid-19 infection and death data is inherently non-symmetrically distributed since the observations are bounded between $[0,Inf]$ and result from exponential growth, we expect model residuals to be skewed towards higher values. Therefore, we examine how the non-symmetric post-processing method `qsa_flexible` adjusts the forecasts and how it preforms in contrast to `qsa_uniform` and `qsa_flexible_symmetric`. 
+As the Covid-19 infection and death data is inherently non-symmetrically distributed since the observation values are naturally contained in the interval between $[0, \infty)$ and result from exponential growth, we expect model residuals to be skewed towards higher values. Therefore, we examine how the non-symmetric post-processing method `qsa_flexible` adjusts the forecasts and how it preforms in contrast to `qsa_uniform` and `qsa_flexible_symmetric`. 
 
 \Cref{tab:qsa-all-methods-table} presents the aggregated performance of `qsa_flexible` on the validation set. The WIS is a clear improvement in comparison to the original data and lies between `qsa_uniform` and `qsa_flexible_symmetric`. Thus, it performs slightly better than the `qsa_uniform` and slightly worse than the `qsa_flexible_symmetric` methods. Our main interest, however, lies in how intervals are adjusted, i.e. in the dispersion, underprediction and overprediction. 
 
@@ -248,18 +248,19 @@ Regarding the last three models we even see a similar pattern among post process
 
 ### Target Types
 
-Comparing the QSA methods across target types reveals notable differences. \Cref{fig:qsa-all-methods-target-types} shows the relative changes in WIS after applying `qsa_uniform`, `qsa_flexible_symmetric` and `qsa_flexible` to the original data broken down by `target_type`. In the aggregate all three methods improve the score for both target types within a similar range. `qsa_flexible_symmetric` performs best for Covid-19 Deaths and `qsa_uniform` for Cases.
+Comparing the QSA methods across target types reveals notable differences. \Cref{tab:qsa-all-methods-target-types} shows the relative changes in WIS after applying `qsa_uniform`, `qsa_flexible_symmetric` and `qsa_flexible` to the original data broken down by `target_type`. In the aggregate all three methods improve the score for both target types within a similar range. `qsa_flexible_symmetric` performs best for Covid-19 Deaths and `qsa_uniform` for Cases.
 
 ```{r, qsa-all-methods-target-types, echo=FALSE}
 df_target <- eval_methods(uk_qsa, summarise_by = "target_type") |>
-  select(target_type, qsa_uniform, qsa_flexible_symmetric, qsa_flexible)
+  select(target_type, qsa_uniform, qsa_flexible_symmetric, qsa_flexible) |>
+  rename(`target type` = target_type)
 
 display_table(df_target,
   caption = "Across both Target Types all QSA methods improve the WIS."
 )
 ```
 
-If we split the forecasting models into human and non-human groups the results change as is shown by \Cref{tab:qsa-all-methods-target-types-model-groups}. Human forecasts primarily benefit from post processing Covid-19 `Cases`, while model forecasts are only improved in their Deaths predictions. 
+If we split the forecasting models into human and non-human groups the results change as is shown by \Cref{fig:qsa-all-methods-target-types-model-groups}. Human forecasts primarily benefit from post processing Covid-19 `Cases`, while model forecasts are only improved in their Deaths predictions. 
 
 As discussed for the human forecast models `qsa_flexible` reduces the WIS most followed by `qsa_uniform` and `qsa_flexible_symmetric`. In terms of overfitting, we observe that `qsa_flexible` is the model that increases the score most. These results illustrate once again that `qsa_flexible` is a riskier model, as it can lead to higher gains or losses due to its potential to fit the training data too closely.
 
@@ -348,9 +349,9 @@ df_quant <- eval_methods(uk_qsa, summarise_by = "quantile") |>
 plot_eval(df_quant, base_size = 8) + ggplot2::labs(x = NULL)
 ```
 
-Yet, aggregation across the `target_type`and `model` dimensions do not represent the full picture, such that we also show the quantile improvements for the human forecasts of Cases as well as the model forecasts of Deaths in \Cref{fig:qsa-quantiles-model-groups-target-types-best}. For human forecasts of Covid-19 Cases the patterns remain similar to the aggregate. For model forecasts of Covid-19 Deaths, however, we observe larger improvements and detect that `qsa_flexible` is useful for small intervals. This suggests that Death prediction intervals benefit from non-symmetric adjustments. Furthermore, model forecasts of Deaths also seem to be one of the rare situations where `qsa_flexible_symmetric` outperforms `qsa_uniform`.
+Yet, aggregation across the `target_type` and `model` dimensions do not represent the full picture, such that we also show the quantile improvements for the human forecasts of Cases as well as the model forecasts of Deaths in \Cref{fig:qsa-quantiles-model-groups-target-types-best}. For human forecasts of Covid-19 Cases the patterns remain similar to the aggregate. For model forecasts of Covid-19 Deaths, however, we observe larger improvements and detect that `qsa_flexible` is useful for small intervals. This suggests that Death prediction intervals benefit from non-symmetric adjustments. Furthermore, model forecasts of Deaths also seem to be one of the rare situations where `qsa_flexible_symmetric` outperforms `qsa_uniform`.
 
-```{r, qsa-quantiles-model-groups-target-types-best, echo=FALSE, fig.cap="QSA Flexible overfits as it intervals are to low in the training and to high in the validation set."}
+```{r, qsa-quantiles-model-groups-target-types-best, echo=FALSE, fig.cap="QSA Flexible overfits as its intervals are too low in the training and too high in the validation set."}
 b <- "black"
 t <- "transparent"
 

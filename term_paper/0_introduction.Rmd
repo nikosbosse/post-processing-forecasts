@@ -16,3 +16,11 @@ links-as-notes: true
 ---
 
 # Introduction {-}
+
+Forecasts can play an important role in informing public policy and personal decision making. During the Covid-19 pandemic, for example, governments and public support for political action, relied heavily on predictions of future case and death numbers. As epidemic developments depend on numerous factors including the decision processes of individuals, there is inherent uncertainty in epidemic forecasts. Thus, there is a growing consensus that these infectious disease forecasts should be probabilistic in nature [@bracher2021]. 
+
+However, many forecasts, tend to be overconfident as a comprehensive review found that observed values where within the 95 $\%$ confidence intervals for only 75 $\%$ of predictions [@Gnanvi2021]. One approach to improve forecasts in terms of their confidence interval coverage, is post-processing. The idea is to adjust forecast uncertainty formalized by prediction quantiles using an absolute value or a certain factor based on the percentage of observations the prediction intervals covered in the past.
+
+We apply post processing methods to human forecasts from the [UK Covid-19 Crowd Forecasting Challenge](https://www.crowdforecastr.org/2021/05/11/uk-challenge/) as well as model based forecasts provided by the [European Covid-19 Forecast Hub](https://covid19forecasthub.eu/index.html). Using these datasets we examine the contributions post-processing techniques can provide and there effects among varying *models*, *target types* such as cases and deaths, forecasting *horizons* and *quantiles*.
+
+Our analysis is divided into 

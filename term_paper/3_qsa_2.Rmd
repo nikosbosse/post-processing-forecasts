@@ -37,7 +37,6 @@ uk_qsa_flexible_no_original <- uk_qsa_flexible |>
   filter(method == "qsa_flexible")
 
 uk_qsa <- bind_rows(uk_qsa_uniform, uk_qsa_flexible_symmetric_no_original, uk_qsa_flexible_no_original)
-# TODO: add empty spaces, less block text.
 ```
 
 ```{r, include=FALSE}
@@ -137,19 +136,29 @@ display_table(
 
 ### Aggregate
 
-We begin by examining a high level overview of the results. \Cref{tab:qsa-all-methods-table} presents the performance of all three QSA flavors on the validation set, aggregated over all *models*, *target types*, *horizons* and *quantiles*. 
+We begin by examining a high-level overview of the results. \Cref{tab:qsa-all-methods-table} presents the performance of all three QSA flavors on the validation set, aggregated over all *models*, *target types*, *horizons* and *quantiles*. 
 
-Starting with `qsa_uniform`, we observe clearl improvements in the WIS as it drops by `r round(uniform_wis_rel,2)` $\%$. As expected, overall, the post-processing increases the dispersion and hence the weighted prediction intervals by a factor of `r round(uniform_dis_fac,2)`. The wider intervals thereby cover more observations which reduces the under- and overprediction by `r round(uniform_under_pred_rel,2)` $\%$. and `r round(uniform_over_pred_rel,2)` $\%$. Interestingly, while both decreases are similar in relative terms, there absolute effects differ substantially. The underprediction reduction decreases the WIS by `r round(uniform_under_pred_val,2)` which amounts to a relative WIS decrease of merely `r round(uniform_under_pred_rel_wis,2)` $\%$, while the overprediction drops by `r round(uniform_over_pred_val,2)` which is equal to a WIS drop by `r round(uniform_over_pred_rel_wis,2)` $\%$. The main driver behind the increase of the intervals, thus is there overcoverage. In other words: the intervals do not reach low enough. Overall, by increasing the intervals and achieving better coverage of smaller observations, while at the same time sacrificing interval sharpness, `qsa_uniform` improves the WIS.
+Starting with `qsa_uniform`, we observe clear improvements in the WIS as it drops by `r round(uniform_wis_rel,2)`$\%$. As expected, this first update increases the overall dispersion and hence the weighted prediction intervals by a factor of `r round(uniform_dis_fac,2)`. The wider intervals therefore cover more observations which reduces the under- and overprediction by `r round(uniform_under_pred_rel,2)`$\%$ and `r round(uniform_over_pred_rel,2)`$\%$. 
 
-Due to the restriction of identical quantile spread adjustments for all quantiles, inherent to `qsa_uniform`, the optimization cannot differ in its post-processing of the various intervals. We speculate that smaller intervals might need different adjustments than larger ones. This can be the case if humans have difficulty of intuitively grasping the concept of confidence intervals, especially since we have seen that the adjustments of `qsa_uniform` are quite substantial. This line of reasoning is our motivation behind the `qsa_flexible_symmetric` method. It allows the QSA adjustments to vary between intervals. Its only restriction is for adjustments to be symmetric, hence identical for each quantile pair, being the lower and upper bounds of symmetric intervals.
+Interestingly, while both decreases are similar in relative terms, their *absolute* effects differ substantially. The underprediction reduction decreases the WIS by `r round(uniform_under_pred_val,2)` which amounts to a relative WIS decrease of merely `r round(uniform_under_pred_rel_wis,2)` $\%$, while the overprediction drops by `r round(uniform_over_pred_val,2)` which is equal to a WIS drop by `r round(uniform_over_pred_rel_wis,2)` $\%$. 
 
-\Cref{tab:qsa-all-methods-table} also presents the aggregated performance of `qsa_flexible_symmetric`. It reports that the WIS remains lower in comparison to the original data, however it does lie above the v `qsa_uniform` by `r round(flexible_symmetric_wis_rel,2)` $\%$. in the aggregate `qsa_flexible_symmetric` seems to overfit compared to the much more restrictive `qsa_uniform`. Further evidence of overfitting are that the dispersion increases even further with a factor of `r round(flexible_symmetric_dis_fac,2)`, and that the underprediction as well as overprediction drop even lower with `r round(flexible_symmetric_under_pred_val,2)` and `r round(flexible_symmetric_over_pred_val,2)` $\%$ changes. 
+We can thus conclude that the main driver behind the increase of the intervals is their *over*coverage. In other words: the intervals do not reach low enough. Overall, by increasing the intervals and achieving better coverage of smaller observations, while at the same time sacrificing interval sharpness, `qsa_uniform` improves the WIS.
 
-`qsa_uniform` and `qsa_flexible_symmetric` are both bound to symmetrically adjust upper and lower bounds of the prediction intervals. This is sensible for adjusting models producing residuals that follow a symmetric distribution. If model residuals are however skewed, and thus interval coverage lacks more heavily on one side, symmetric adjustments lead to sub-optimal results. This happens because the model is confronted with a trade off where it adjusts one side to little and the other side to much. In the case where the post-processing increases intervals it is bound by the dispersion penalty that is heavier, since for each step it takes at reducing undercoverage, e.g. underprediction or overprediction, on one end, it increases dispersion two fold as intervals are also increased in the other end. In the case of decreasing intervals, it is bound by a lack of coverage as for each step it decreases unnecessary large intervals on one side, it also decreases the interval on the other side leading to uncovered observations. Thus, in both cases where post-processing is warranted, but the model residuals are non-symmetrical, symmetric methods lead to sub-optimal adjustments on both sides of the interval.
-As the Covid-19 infection and death data is inherently non-symmetrically distributed, due to the observations being bounded between $[0,Inf]$ and them resulting from exponential growth, we expect model residuals to be skewed towards higher values. Therefor, we examine how the non-symmetric post-processing method `qsa_flexible` adjusts the forecasts and how it preforms in contrast to `qsa_uniform` and `qsa_flexible_symmetric`. 
+Due to the restriction of identical quantile spread adjustments for all quantiles, the optimization cannot differ in its post-processing of the various intervals. We speculate that smaller intervals might need different adjustments than larger ones. This can be the case if humans have difficulty of intuitively grasping the concept of confidence intervals, especially since we have seen that the adjustments of `qsa_uniform` are quite substantial. This line of reasoning is our motivation behind the `qsa_flexible_symmetric` method. It allows the QSA adjustments to vary between intervals. Its only restriction is that the updates with regards to the lower and upper bounds must be *symmetric.*
 
-\Cref{tab:qsa-all-methods-table} presents the aggregated performance of `qsa_flexible` on the validation set. The WIS is a clear improvement in comparison to the original data and lies in between the `qsa_uniform` and `qsa_flexible_symmetric`. Thus, it preforms slightly better than the `qsa_uniform` and slightly worse than the `qsa_flexible_symmetric` methods. Our main interest however lies in how intervals are adjusted, thus in the dispersion, underprediction and overprediction. The dispersion increases after post-processing, however to a lesser degree than for the other methods. The underprediction, most notably and in contrast to the symmetric approaches, substantially increases by `r round(flexible_under_pred_rel,2)` $\%$, while still remaning the lowest of the three WIS components. The overprediction behaves similarly to the  `qsa_flexible_symmetric` method and decreases strongly by `r round(flexible_over_pred_rel,2)` $\%$.
-Due to the unsymmetrical nature of the misscoverage, in the aggregate, `qsa_flexible` moves the intervals downward, by heavily decreasing the lower quantiles in order to reduce overprediction and slightly decreasing the upper quantiles as the lost coverage is more than compensated by a reduction in dispersion. Surprisingly, due to the nature of exponential growth we would have expected human forecasters to underestimate trends, however for the UK Data, we observe an overconfidence in increasing cases and the death tool. 
+\Cref{tab:qsa-all-methods-table} also presents the aggregated performance of `qsa_flexible_symmetric`. It reports that the WIS remains lower in comparison to the original data, however it lies above the value of `qsa_uniform` by `r round(flexible_symmetric_wis_rel,2)`$\%$. In the aggregate `qsa_flexible_symmetric` seems to overfit compared to the much more restrictive `qsa_uniform`. Further evidence of overfitting is that the dispersion continues to increase with a factor of `r round(flexible_symmetric_dis_fac,2)` and that the underprediction as well as overprediction drop even lower by `r round(flexible_symmetric_under_pred_val,2)`$\%$ and `r round(flexible_symmetric_over_pred_val,2)`$\%$. 
+
+`qsa_uniform` and `qsa_flexible_symmetric` are both restricted to symmetrically adjust upper and lower bounds of the prediction intervals. This is sensible for adjusting models producing residuals that follow a symmetric distribution. If, in contrast, model residuals are *skewed*, and thus the interval coverage lacks more heavily on one side, symmetric adjustments lead to sub-optimal results. This happens because the model is confronted with a trade-off where it adjusts one side too little and the other side too much. 
+
+In the case where the post-processing *increases* intervals it is bound by the dispersion penalty that is heavier, since for each step that it takes to reduce undercoverage, e.g. underprediction or overprediction, on one end, it increases dispersion two fold as intervals are also increased on the other end. In the case of *decreasing* intervals, it is bound by a lack of coverage as for each step it decreases unnecessary large intervals on one side, it also decreases the interval on the other side leading to uncovered observations. Thus, in both cases where post-processing is warranted, but the model residuals are non-symmetric, symmetric methods lead to sub-optimal adjustments on both sides of the interval.
+
+As the Covid-19 infection and death data is inherently non-symmetrically distributed since the observations are bounded between $[0,Inf]$ and result from exponential growth, we expect model residuals to be skewed towards higher values. Therefore, we examine how the non-symmetric post-processing method `qsa_flexible` adjusts the forecasts and how it preforms in contrast to `qsa_uniform` and `qsa_flexible_symmetric`. 
+
+\Cref{tab:qsa-all-methods-table} presents the aggregated performance of `qsa_flexible` on the validation set. The WIS is a clear improvement in comparison to the original data and lies between `qsa_uniform` and `qsa_flexible_symmetric`. Thus, it performs slightly better than the `qsa_uniform` and slightly worse than the `qsa_flexible_symmetric` methods. Our main interest, however, lies in how intervals are adjusted, i.e. in the dispersion, underprediction and overprediction. 
+
+The dispersion increases after post-processing, yet to a lesser degree than for the other methods. The underprediction, most notably and in contrast to the symmetric approaches, substantially increases by `r round(flexible_under_pred_rel,2)`$\%$, while still remaining the lowest of the three WIS components. The overprediction behaves similarly to the `qsa_flexible_symmetric` method and decreases strongly by `r round(flexible_over_pred_rel,2)`$\%$.
+
+Due to the asymmetric nature of the miscoverage, `qsa_flexible` moves the intervals downwards in the aggregate by heavily decreasing the lower quantiles in order to reduce overprediction and slightly decreasing the upper quantiles as the lost coverage is more than compensated by a reduction in dispersion. Due to the nature of exponential growth we would have expected human forecasters to *underestimate* trends. However, for the UK Data, we observe an overconfidence in increasing cases and the death tool. 
 
 In the following subsections we increase the granularity of our analysis and examine the QSA flavor preformances across the dimensions of our data, namely the *models*, *target types*, *horizons* and *quantiles*. 
 
@@ -220,7 +229,7 @@ display_table(tab_qsa_model_changes,
 )
 ```
 
-\Cref{tab:qsa-all-methods-models} depicts the results of QSA post-processing for all three methods by model. These more granular results reveal a pattern not visible in the aggregated results. the `qsa_flexible` method preforms significantly worse in the `EuroCOVIDhub-baseline` model by increasing the WIS by `r round(tab_qsa_model_changes[3,3][[1]],2)`$\%$. It overfits the training set as becomes evident by \Cref{fig:qsa-flexible-eu-baseline-intervals}. The figure shows that the original prediction intervals are below the actual values in the training period, then adjust to overshoot the actual values and level out during the validation period. As `qsa_flexible` is able to  adjust the intervals in a non-symmetrical manner, it learns to push both interval bounds upward during the training set. As this pattern of underprediction changes in the validation set and the QSA metrics equally weigh all observations, `qsa_flexible` takes some observations to adjust properly and overpredicts the observations in the meantime. In contrast, `qsa_uniform` and `qsa_flexible_symmetric`, although the also don't improve the WIS in the validation set, overfit much less due to there restraint of making symmetric adjustments.
+\Cref{tab:qsa-all-methods-models} displays the results of QSA post-processing for all three methods stratified by model. These more granular results reveal a pattern that is not visible in the aggregated results: The `qsa_flexible` method performs significantly worse for the `EuroCOVIDhub-baseline` model by increasing the WIS by `r round(tab_qsa_model_changes[3,3][[1]],2)`$\%$. It overfits the training set as indicated by \Cref{fig:qsa-flexible-eu-baseline-intervals}. 
 
 ```{r, qsa-flexible-eu-baseline-intervals, echo=FALSE, out.width="70%", fig.cap="QSA Flexible overfits as it intervals are to low in the training and to high in the validation set."}
 plot_intervals(
@@ -229,33 +238,41 @@ plot_intervals(
 )
 ```
 
-For the `EuroCOVIDhub-ensemble` model we observe that the `qsa_uniform` method has the best performance and could reduce the WIS by `r round(tab_qsa_model_changes[4,3][[1]],2)`. It seems that a simple, quite restrictive uniform adjustment across all quantiles provided the largest benefit. Adding additional flexibility among intervals with `qsa_flexible_symmetric` actually reduced the gains by about half and the further flexibility of `qsa_flexible` with non-symmetric adjustments even lead to a slightly worse prediction. These results are quite encouraging as the `EuroCOVIDhub-ensemble` model represents an ensemble of modelling approaches by professional forecasting models and thus isn't burdened by human overconfidence.
+The figure shows that the original prediction intervals are below the actual values in the training period, then adjust to *overshoot* the actual values and level out during the validation period. As `qsa_flexible` is able to adjust the intervals in a non-symmetrical manner, it learns to push both interval bounds upwards during the training set. As this pattern of underprediction changes in the validation set and the QSA metrics equally weigh all observations, `qsa_flexible` takes some observations to adjust properly and overpredicts the observations in the meantime. In contrast, `qsa_uniform` and `qsa_flexible_symmetric` overfit much less due to their constraint of symmetric adjustments, yet they similarly do *not* improve the WIS in the validation set.
 
-For the human forecasting models, namely `epiforecasts-EpiExpert`, `epiforecasts-EpiExpert_Rt`, `epiforecasts-EpiExpert_direct` and `seabbs`, we observe that all QSA methods significantly improve the WIS. Furthermore for each model, there is at least one method that can reduce the Score by over $10\%$. Regarding the last three models we even see a similar pattern among post processing method performances: `qsa_flexible` reduces the WIS most, followed by `qsa_uniform` and `qsa_flexible_symmetric`. For the first method, this ranking is reversed, however, the scores only vary slightly. An inspection of the WIS components provides further interesting observations: `qsa_flexible` consistently reduces overprediction the most, is the only method that increases underprediction and has the lowest increase in dispersion. These observations are the result of the non-symmetric adjustments which allow `qsa_flexible` to reduce the lower bound without having to increase the upper one. For the optimization this has two effects: For one, it can decrease the lower bound much stronger as the cost of doing so, in terms of dispersion, are cut in half. Second, it can now freely adjust the upper quantile reduce its value until the increase in underprediction is balanced out with the reduction in dispersion.
+For the `EuroCOVIDhub-ensemble` model we observe that the `qsa_uniform` method has the best performance and reduces the WIS by `r round(tab_qsa_model_changes[4,3][[1]],2)`. It seems that a simple, quite restrictive uniform adjustment across all quantile levels provides the largest benefit. Adding additional flexibility among intervals with `qsa_flexible_symmetric` actually *reduces* the gains by about half and the further flexibility of `qsa_flexible` with non-symmetric adjustments even leads to a slightly worse prediction. These results are quite encouraging as the `EuroCOVIDhub-ensemble` model represents an ensemble of modeling approaches by professional forecasting models and is therefore not burdened by human overconfidence.
+
+For the human forecasting models, namely `epiforecasts-EpiExpert`, `epiforecasts-EpiExpert_Rt`, `epiforecasts-EpiExpert_direct` and `seabbs`, we observe that all QSA methods significantly improve the WIS. Furthermore, for each model there is at least one method that can reduce the score by over $10\%$. 
+
+Regarding the last three models we even see a similar pattern among post processing method performances: `qsa_flexible` reduces the WIS most, followed by `qsa_uniform` and `qsa_flexible_symmetric`. For the first method this ranking is reversed, although the scores vary only slightly. An inspection of the WIS components provides further insight: `qsa_flexible` consistently reduces overprediction the most, is the only method that increases underprediction and has the lowest increase in dispersion. These observations are the result of the non-symmetric adjustments which allow `qsa_flexible` to reduce the lower bound without having to increase the upper counterpart. For the optimization this has two effects: First, it can decrease the lower bound much stronger since the cost in terms of dispersion is cut in half. Second, it can now freely adjust the upper quantile until the increase in underprediction is balanced out with the reduction in dispersion.
 
 ### Target Types
 
-Comparing the QSA methods across target types reveals notable differences. \Cref{fig:qsa-all-methods-target-types} shows the relative changes in WIS after applying `qsa_uniform`, `qsa_flexible_symmetric` and `qsa_flexible` to the original data broken down by the `target_type`. In the aggregate all three methods improve the score for both target types within a similar range. `qsa_flexible_symmetric` preforms best for `Deaths` and `qsa_uniform` for `Cases`.
+Comparing the QSA methods across target types reveals notable differences. \Cref{fig:qsa-all-methods-target-types} shows the relative changes in WIS after applying `qsa_uniform`, `qsa_flexible_symmetric` and `qsa_flexible` to the original data broken down by `target_type`. In the aggregate all three methods improve the score for both target types within a similar range. `qsa_flexible_symmetric` performs best for Covid-19 Deaths and `qsa_uniform` for Cases.
 
-```{r, qsa-all-methods-target-types, echo=FALSE, out.width="70%", fig.cap="Across both Target Types all QSA mrthods improve the WIS."}
+```{r, qsa-all-methods-target-types, echo=FALSE, out.width="70%", fig.cap="Across both Target Types all QSA methods improve the WIS."}
 df_target <- eval_methods(uk_qsa, summarise_by = "target_type") |>
   select(target_type, qsa_uniform, qsa_flexible_symmetric, qsa_flexible)
-plot_eval(df_target, base_size = 8) + ggplot2::labs(x = NULL)
+
+plot_eval(df_target, base_size = 8) + labs(x = NULL, y = NULL)
 ```
 
-If we split models into human and model forecasts the results change as is depicted in \Cref{fig:qsa-all-methods-target-types-model-groups}. Human forecasts primarily benefit from post processing for the `target_type` `Cases`, while model forecasts are only improved in their `Deaths` predictions. For both major improvements, as discussed regarding the human forecast models, `qsa_flexible` reduces the WIS most, followed by `qsa_uniform` and `qsa_flexible_symmetric`. in terms of overfitting, we observe that `qsa_flexible` is the only model that increases the score most. these results once more illustrate that `qsa_flexible` is a riskier model, as it can lead to higher gains or losses due to its potential to more closely fit the training data.
+If we split the forecasting models into human and non-human groups the results change as is shown by \Cref{fig:qsa-all-methods-target-types-model-groups}. Human forecasts primarily benefit from post processing Covid-19 `Cases`, while model forecasts are only improved in their Deaths predictions. 
 
-```{r, qsa-all-methods-target-types-model-groups, echo=FALSE, fig.cap="Forecasting improvements differ across target types for different model groups. Human forecasts are primarily improved for cases, while model forecast improvments are only found for deaths."}
+As discussed for the human forecast models `qsa_flexible` reduces the WIS most followed by `qsa_uniform` and `qsa_flexible_symmetric`. In terms of overfitting, we observe that `qsa_flexible` is the model that increases the score most. These results illustrate once again that `qsa_flexible` is a riskier model, as it can lead to higher gains or losses due to its potential to fit the training data too closely.
+
+```{r, qsa-all-methods-target-types-model-groups, echo=FALSE, fig.cap="Forecasting improvements differ across target types for different model groups. Human forecasts are primarily improved for Covid-19 Cases, while model forecast improvments are only found for Covid-19 Deaths."}
 uk_qsa_human <- uk_qsa |>
   filter(model %in% c("epiforecasts-EpiExpert", "epiforecasts-EpiExpert_Rt", "epiforecasts-EpiExpert_direct", "seabbs")) # only human forecast
 
 df_target_human <- eval_methods(uk_qsa_human, summarise_by = "target_type") |>
   select(target_type, qsa_uniform, qsa_flexible_symmetric, qsa_flexible)
+
 p1 <- plot_eval(df_target_human, base_size = 7) +
   labs(
     x = NULL, title = "Human Forecasts (top) vs. Model Forecasts (bottom)",
     subtitle = NULL, y = NULL
-  ) + 
+  ) +
   theme(axis.text.x = element_blank())
 
 uk_qsa_forecaster <- uk_qsa |>
@@ -263,6 +280,7 @@ uk_qsa_forecaster <- uk_qsa |>
 
 df_target_forecasters <- eval_methods(uk_qsa_forecaster, summarise_by = "target_type") |>
   select(target_type, qsa_uniform, qsa_flexible_symmetric, qsa_flexible)
+
 p2 <- plot_eval(df_target_forecasters, base_size = 7) +
   labs(x = NULL, title = NULL, subtitle = NULL, y = NULL)
 
@@ -271,8 +289,6 @@ p1 / p2
 
 ### Horizons
 
-Breaking down the results by the forecasting `horizon` also reveals notable patterns. \Cref{fig:qsa-methods-horizons} plots the WIS changes across horizons for all three methods. Across all QSA methods the improvements to the WIS increase with the `horizon`. The gains are primarily visible for the three and four week ahead predictions. In Contrast the increases in score and overfitting are primarily located at a horizon of one. 
-
 ```{r, qsa-methods-horizons, echo=FALSE, out.width="70%", fig.cap="QSA methods improve forecasts more for larger horizons. For smaller horizons they tend to overfit, this is especially the case with QSA Flexible."}
 df_hor <- eval_methods(uk_qsa, summarise_by = "horizon") |>
   select(horizon, qsa_uniform, qsa_flexible_symmetric, qsa_flexible)
@@ -280,7 +296,7 @@ df_hor <- eval_methods(uk_qsa, summarise_by = "horizon") |>
 plot_eval(df_hor, base_size = 8) + ggplot2::labs(x = NULL)
 ```
 
-Again, a split of the post processed models into human and model forecasts reveals differences as depicted in \Cref{qsa-all-models-horizons-model-groups}. We observe that the aggregate gains soley stem from the human forecast models and that the losses in the WIS are primarily from the model forecasts. Here the method performances also vary more. The largest gains and losses are reported for `qsa_flexible`, while `qsa_uniform` and `qsa_flexible_symmetric` also report improvements but overfit much less.
+Breaking down the results by the forecasting `horizon` also reveals notable patterns. \Cref{fig:qsa-methods-horizons} plots the WIS changes across horizons for all three methods. Across all QSA methods the improvements of the WIS increase with the `horizon` level. The gains are primarily visible for the three and four week-ahead predictions. In contrast, the increases in score and overfitting are primarily located at a horizon of one. 
 
 ```{r, qsa-all-models-horizons-model-groups, echo=FALSE, fig.cap="Forecasting improvements differ across horizons for different model groups. Human forecasts are primarily improved for horizons larger than 2, while model forecast are not improved at all and are overfitted with QSA Flexible."}
 uk_qsa_human <- uk_qsa |>
@@ -288,6 +304,7 @@ uk_qsa_human <- uk_qsa |>
 
 df_target_human <- eval_methods(uk_qsa_human, summarise_by = "horizon") |>
   select(horizon, qsa_uniform, qsa_flexible_symmetric, qsa_flexible)
+
 p1 <- plot_eval(df_target_human, base_size = 7) +
   labs(
     x = NULL, title = "Human Forecasts (top) vs. Model Forecasts (bottom)", subtitle = NULL
@@ -299,6 +316,7 @@ uk_qsa_forecaster <- uk_qsa |>
 
 df_target_forecasters <- eval_methods(uk_qsa_forecaster, summarise_by = "horizon") |>
   select(horizon, qsa_uniform, qsa_flexible_symmetric, qsa_flexible)
+
 p2 <- plot_eval(df_target_forecasters, base_size = 7) +
   labs(
     x = NULL, title = NULL, subtitle = NULL
@@ -307,21 +325,28 @@ p2 <- plot_eval(df_target_forecasters, base_size = 7) +
 p1 / p2
 ```
 
-Additionally breaking down the results by target types as well, reveals the patterns in \Cref{fig:qsa-all-models-horizons-models-target-types} and \Cref{fig:qsa-all-models-horizons-humans-target-types} of the appendix. They show gains for death and losses for case predictions across the board for model forecasts. Again, these tendencies are strongest for the `qsa_flexible` flavor of QSA. Human predictions are primarily improved for cases and the horizons of 3 and 4 weeks ahead. For deaths `qsa_flexible` worsens the score, especially for shorter horizons while `qsa_uniform` and `qsa_flexible_symmetric` slightly improve the scores across all horizons.
+Again, a split of the post processed models into human and model forecasts reveals differences as shown by \Cref{fig:qsa-all-models-horizons-model-groups}. We observe that the aggregate gains solely stem from the human forecasts and that the losses in the WIS are primarily from the model forecasts. Here the method performances also vary more: The largest gains and losses are reported for `qsa_flexible`, while `qsa_uniform` and `qsa_flexible_symmetric` also indicate improvements but overfit much less.
 
-Overall there is a tendency that forecast improvements increase and and the risk of overfitting simultaneously drops with increasing forecasting horizons.
+Additionally, breaking down the results by target types reveals the patterns in \Cref{fig:qsa-all-models-horizons-models-target-types} and \Cref{fig:qsa-all-models-horizons-humans-target-types} in the Appendix. They show gains for death and losses for case predictions across the board for model forecasts. Again, these tendencies are strongest for the `qsa_flexible` flavor of QSA. Human predictions are primarily improved for Covid-19 Cases and forecast horizons of 3 and 4 weeks. For Covid-19 Deaths `qsa_flexible` worsens the score for shorter horizons in particular, while `qsa_uniform` and `qsa_flexible_symmetric` slightly improve the scores across all horizons.
+
+Overall there is a tendency that forecast improvements increase and the risk of overfitting simultaneously drops with increasing forecast horizons.
 
 ### Quantiles
 
-WIS improvements also vary across the different quantiles and intervals. \Cref{fig:qsa-all-models-quantiles} depicts the WIS across quantiles for the three QSA flavors. the improvements are larger for more extreme quantiles. For smaller prediction intervals lying within the $0.25$ and $0.75$ quantiles near to no improvements can be observed for either flavor. This is particularly important regarding `qsa_flexible_symmetric`, as the main motivation behind it was to allow for individual adjustments of each interval pair. Thus we would have expected `qsa_flexible_symmetric` to preform better, particularly for intervals `qsa_uniform` could not improve due to its restrictive nature. Apparently the intervals with coverages equal or smaller than $50$ $\%$ where already quite optimal in the original human forecasts. Furthermore, the gains for the larger intervals remain similar, which suggests that the restriction to adjust all intervals with the same quantile spread factor, did not pose an issue for the Uk data set. 
+WIS improvements also vary across different quantile levels. As shown in \Cref{fig:qsa-all-models-quantiles} the improvements are larger for more extreme quantiles. For smaller prediction intervals between the $0.25$ and $0.75$ quantiles almost no improvements can be observed for any of the three flavors. 
 
-```{r, qsa-all-models-quantiles, echo=FALSE, out.width="70%", fig.cap="QSA improves forecasters larger for more extreme qunatiles and thus larger intervals."}
+This finding is particularly important regarding `qsa_flexible_symmetric`, as the main motivation behind it was to allow for individual adjustments of each interval pair. Thus, we would have expected `qsa_flexible_symmetric` to perform better, particularly for intervals which `qsa_uniform` could not improve due to its restrictive nature. Apparently, the intervals with coverage equal or smaller than $50$% were already quite optimal in the original human forecasts. 
+
+Furthermore, the gains for the larger intervals remain similar, which suggests that the restriction to adjust all intervals with the same quantile spread factor, did not pose an issue for the UK data set. 
+
+```{r, qsa-all-models-quantiles, echo=FALSE, out.width="70%", fig.cap="QSA improves forecasters more for more extreme quantiles and thus larger intervals."}
 df_quant <- eval_methods(uk_qsa, summarise_by = "quantile") |>
   select(quantile, qsa_uniform, qsa_flexible_symmetric, qsa_flexible)
+
 plot_eval(df_quant, base_size = 8) + ggplot2::labs(x = NULL)
 ```
 
-As we have shown that aggregation across the `target_type`and `model` dimensions do not show the full picture, we also show the quantile improvements for the human forecasts of cases as well as the model forecasts of deaths in \Cref{fig:qsa-quantiles-model-groups-target-types-best}. For human forecasts of cases the patterns remain similar to the aggregate. For model forecasts of deaths however, we observe larger improvements and that `qsa_flexible` is useful for small intervals. This results from the death prediction intervals beenfitting from non-symmetric adjustments. Furthermore model forecasts of deaths also seem to be one of the rare cases where `qsa_flexible_symmetric` outpreforms `qsa_uniform`.
+Yet, aggregation across the `target_type`and `model` dimensions do not represent the full picture, such that we also show the quantile improvements for the human forecasts of Cases as well as the model forecasts of Deaths in \Cref{fig:qsa-quantiles-model-groups-target-types-best}. For human forecasts of Covid-19 Cases the patterns remain similar to the aggregate. For model forecasts of Covid-19 Deaths, however, we observe larger improvements and detect that `qsa_flexible` is useful for small intervals. This suggests that Death prediction intervals benefit from non-symmetric adjustments. Furthermore, model forecasts of Deaths also seem to be one of the rare situations where `qsa_flexible_symmetric` outperforms `qsa_uniform`.
 
 ```{r, qsa-quantiles-model-groups-target-types-best, echo=FALSE, fig.cap="QSA Flexible overfits as it intervals are to low in the training and to high in the validation set."}
 b <- "black"
@@ -358,7 +383,9 @@ p2 <- plot_eval(df_hor_forecaster_death, base_size = 7) +
 p1 / p2
 ```
 
-Further examination of the results, in particular subsetting the above results to the `horizon`of three and four revealed an exception to the accordion look of the quantile graphs. For large forecasting horizons and model forecasts of deaths, we observe worse WIS after the adjustments. These result from the high cost of not covering an observation at extreme quantiles. \Cref{fig:qsa-large-quantiles-no-coverage} exemplifies this where all QSA methods substantially reduces the interval sizes in order to reduce dispersion, this then  result in undercoverage of the last week of august. Thus the QSA adjustments, especially for few data points ,as the 13 weeks of the UK data, can underestimate uncertainty at extreme quantiles. This risk increases with the flexibility of the QSA flavor.
+Subsetting the above results to a forecast horizon of three and four weeks reveals an exception to the look of the quantile graphs. For large forecast horizons and model forecasts of Deaths, we observe worse WIS after the adjustments. These stem from the high cost of not covering an observation at extreme quantiles. \Cref{fig:qsa-large-quantiles-no-coverage} exemplifies this where all QSA methods substantially reduce the interval sizes in order to decrease dispersion, which then results in undercoverage of the last week of August. 
+
+Thus, the QSA adjustments can underestimate uncertainty at extreme quantiles, especially for short time series as the 13 weeks of the UK data. This risk increases with the flexibility of the QSA flavor.
 
 ```{r, qsa-large-quantiles-no-coverage, echo=FALSE, out.width="80%", fig.cap="QSA can underestimate uncertainty for extreme quantiles and few data points to learn from."}
 plot_intervals(
@@ -369,10 +396,17 @@ plot_intervals(
 
 ### Conclusion
 
-Overall `qsa_uniform` is the QSA flavor that preformed best among the UK dataset time series. It produced notable improvements to the WIS in the validation set, without overfitting the training data. The additional flexibility among interval adjustments that `qsa_flexible_symmetric` provided did not bring any notable gains. Most surprisingly it could not improve the WIS for smaller prediction intervals. It rather had the tendency to slightly overfit the data. The additional flexibility of non-symmetric interval adjustments `qsa_flexible` offered, had less clear effects. While overall, as `qsa_flexible` and `qsa_flexible_symmetric` could not lower the WIS more than `qsa_uniform`, `qsa_flexible` did outpreform the others methods in the szenarios where post processing was most useful. `qsa_flexible` did however also substantially overfit the data due to its non symmetric adjustments as became evident for the `EuroCOVIDhub-baseline` model. 
+Overall `qsa_uniform` is the QSA flavor that performs best for the UK data set. It produces notable improvements to the WIS in the validation set without overfitting the training data. The additional flexibility among interval adjustments that `qsa_flexible_symmetric` provides does not lead to significant gains. 
 
-In general `qsa_uniform` is the more conservative choice, however `qsa_flexible` can be a better fit for data requiring large and and varying adjustments across quantiles. In regards for when to use QSA, it preformed best when forecasts underestimated uncertainty which was the case for larger horizons as well as more extreme quantiles. Furthermore, the method performance also depended on the types of models as well as the target type. Both taken separately, QSA worked best for human forecast models and cases. Observed together we did find that QSA preformed best for the human forecasts of cases and model forecasts of deaths. The former findings, are in line the hypothesizes that humans can not grasp uncertainty as well as models and that forecasting uncertainty is higher for cases than for deaths, because deaths are strongly linked to past cases.
+Most surprisingly, `qsa_uniform` can not improve the WIS for smaller prediction intervals. It rather has the tendency to slightly overfit the data. The additional flexibility of non-symmetric interval adjustments offered by `qsa_flexible` have less clear effects. Overall, `qsa_flexible` and `qsa_flexible_symmetric` can not lower the WIS more than `qsa_uniform`, yet `qsa_flexible` outpreforms the other methods in the scenarios where post processing is most useful. `qsa_flexible` substantially overfits the data due to its non-symmetric adjustments as became evident for the `EuroCOVIDhub-baseline` model. 
 
-Finally, these results leave much room for further investigating and improving the QSA method. For one, it would be interesting to see whether the described results hold for the EU Hub dataset. This would be particularly interesting as it contains longer time series and hence the models have more data to learn from which could be an advantage for the more flexible methods. Second a natural step would also be to run `qsa_flexible_symmetric` and `qsa_flexible` with penalization. This would however require keeping some observations as test set as we would fit the penalization strength to the validation set and thus a longer time series as in the EU Hub dataset.
+In general `qsa_uniform` is the more conservative choice, while `qsa_flexible` can be a better fit for data requiring large and varying adjustments across quantiles. With regards to the question when to use QSA, it performes best when forecasts underestimat uncertainty which was the case for larger horizons as well as more extreme quantiles. Furthermore, the method performance also depends on the types of forecasting models as well as the target type. Both taken separately, QSA worked best for human forecast models and Covid-19 Case predictions. 
 
-In regards to additional methods, a asymmetric version of `qsa_uniform` whith one adjustment for the quantiles below and one for those above the median. WIth this method one could investigate whether gains observed with `qsa_flexible` can be attributed soly to the asymmetry or are also partially due to the flexibility across interval levels. In general it would be desirable to allow users to set custom restrictions to the vector of QSA factors. Regarding penalization, it might also be interesting to add a penalization form that penalizes towards no adjustments hence towards all QSA factors being equal to one. A final improvement we would also further investigate for larger datasets is to weight the importance of observations in the optimization by there time point. We suggest an exponential smoothing approach that could weight more recent observations stronger than further past ones to allow the optimization of QSA to adapt faster to changes in the data. This would introduce an additional smoothing hyperparameter that would also require fitting on the validation set as for the penalizations.
+Observed together we did find that QSA performed best for the human forecasts of Cases and model forecasts of Deaths. The former observations are in line with the hypothesis that humans can not grasp uncertainty as well as models and that forecasting uncertainty is higher for Covid-19 Cases than for Deaths, since Deaths are strongly linked to *past* Cases.
+
+Finally, these results leave much room for further investigations and improvements to the QSA method. First, it would be interesting to see whether the described results generalize to the European Forecast Hub data set. This would be particularly interesting as it contains longer time series and hence the models have more data to learn from, which could be an advantage for the more flexible methods. 
+Second, a natural step would be to apply `qsa_flexible_symmetric` and `qsa_flexible` with *penalization*. This option requires keeping some observations in a separate test set as we would fit the penalty value to the validation set.
+
+In regards to additional methods, one could imagine an asymmetric version of `qsa_uniform` with one adjustment for the quantiles below and one for those above the median. With this method one could investigate whether gains observed with `qsa_flexible` can be attributed solely to the asymmetry or are rather to the flexibility across interval levels. 
+
+In general, it would be desirable to allow users to set custom restrictions to the vector of QSA factors. Regarding penalization, it might also be interesting to add a penalization form that penalizes towards no adjustments, i.e. pulling all QSA factors closer to a value of one. Moreover, one could weigh the importance of observations in the optimization by their time point. Therefore we suggest an *exponential smoothing* approach that could assign larger weights to more recent observations which would allow the optimization of QSA to adapt faster to changes in the data. This modification would introduce a smoothing hyperparameter that, similar to the penalty approach, requires an additional learning step on the validation set.

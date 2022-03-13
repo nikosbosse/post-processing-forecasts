@@ -62,8 +62,8 @@ The `postforecasts` package implements the QSA optimization in three flavors tha
 \begin{align}
 \begin{split}
 \text{uniform} &: w_i = c \quad i \in [0, 1, \ldots, p-1, p], \quad c \in \mathbb{R} \\
-\text{flexibel\_symmetric} &: w_i = w_{p-i} \quad i \in [0, 1, \ldots, \frac{p}{2}-1], \quad c_{i} \in \mathbb{R} \\
-\text{flexible} &: w_i \in \mathbb{R} 
+\text{flexibel\_symmetric} &: w_i = w_{p-i} \quad i \in [0, 1, \ldots, \frac{p}{2}-1], \quad w_i \in \mathbb{R} \\
+\text{flexible} &: \mathbf{w} \in \mathbb{R^{p}} 
 (\#eq:qsa-flavors)
 \end{split}
 \end{align}

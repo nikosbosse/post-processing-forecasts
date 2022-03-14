@@ -74,7 +74,7 @@ The results of the $12$-week challenge are [publicly available](https://epiforec
 
 ### European Covid-19 Forecast Hub
 
-According to their webpage the *European Covid-19 Forecast Hub* [@euhubdata] collects "short-term forecasts of Covid-19 cases and deaths across Europe, created by a multitude of infectious disease modelling teams". 
+According to their [webpage](https://covid19forecasthub.eu/index.html) the *European Covid-19 Forecast Hub* [@euhubdata] collects "short-term forecasts of Covid-19 cases and deaths across Europe, created by a multitude of infectious disease modelling teams". 
 
 In contrast to the compact UK data described above, the European Forecast Hub data contains almost two million observations for over $20$ European countries.
 Further, the forecasters are knowledgeable research groups that submit their weekly predictions based on statistical models.
@@ -195,7 +195,7 @@ The `postforecasts` functions exported to the end-user can be grouped into three
     The function returns a list of $k+1$ equally shaped data frames for $k$ selected post-processing methods where the first element is given by the original, possibly filtered, data frame.
 
     All list elements can be analyzed separately or collectively by stacking them into one large data frame with the `collect_predictions()` function.
-    The combined data frame is designed to work well with analysis functions of the [scoringutils](https://epiforecasts.io/scoringutils/) package [@R-scoringutils].
+    The combined data frame is designed to work well with analysis functions of the [`scoringutils`](https://epiforecasts.io/scoringutils/) package [@R-scoringutils].
     If multiple post-processing methods are applied, an ensemble model of all selected methods can be added via the `add_ensemble()` function, which lets the user access both the weighted ensemble predictions and a data frame with the corresponding weights.
 
 3.  Evaluation

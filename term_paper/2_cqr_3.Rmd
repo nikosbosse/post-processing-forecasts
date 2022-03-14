@@ -147,7 +147,7 @@ Further, the adjusted intervals would be shifted upwards and usually be too larg
 
 Before numerically evaluating the performance of *regularized* CQR, it is instructive to look at a visual comparison of all three CQR modifications for one specific feature combination as shown in \Cref{fig:ch2-uk-cqr3-intervals}. 
 
-```{r, ch2-uk-cqr3-intervals, echo=FALSE, fig.cap="Comparison of CQR variations on the UK data set", out.width="80%"}
+```{r, ch2-uk-cqr3-intervals, echo=FALSE, fig.cap="Comparison of CQR variations on the UK data set.", out.width="80%"}
 plot_intervals(
   df = uk_cqr3, model = "epiforecasts-EpiExpert_direct", target_type = "Cases",
   quantile = 0.2, horizon = 2
@@ -164,7 +164,7 @@ uk_cqr_multiplicative |>
   scoringutils::score() |>
   scoringutils::summarise_scores(by = c("method")) |>
   select(method:overprediction) |>
-  rename(`interval score` = interval_score) |> 
+  rename(`interval score` = interval_score) |>
   display_table(
     caption = "Performance of Multiplicative CQR on the Training Set",
     striped = FALSE
@@ -188,7 +188,7 @@ uk_cqr_multiplicative |>
   filter(!(model %in% c("epiforecasts-EpiExpert_direct", "epiforecasts-EpiExpert_Rt"))) |>
   select(method:dispersion) |>
   arrange(model) |>
-  rename(`interval score` = interval_score) |> 
+  rename(`interval score` = interval_score) |>
   display_table(caption = "Performance of Multiplicative CQR by Model on the Validation Set")
 ```
 

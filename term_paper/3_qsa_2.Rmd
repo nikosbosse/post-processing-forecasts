@@ -130,7 +130,7 @@ tab_qsa <- bind_rows(tab_uniform, tab_flexible_symmetric[2], tab_flexible[2]) |>
 
 display_table(
   tab_qsa,
-  caption = "QSA Uniform improves WIS by increasing interval widths.",
+  caption = "QSA Uniform improves WIS by increasing interval widths",
 )
 ```
 
@@ -225,7 +225,7 @@ tab_qsa_model_changes <- bind_rows(tab_uniform_model_changes, tab_flexible_symme
   )
 
 display_table(tab_qsa_model_changes,
-  caption = "QSA Methods differ in performance across Models."
+  caption = "QSA Methods differ in performance across Models"
 )
 ```
 
@@ -256,7 +256,7 @@ df_target <- eval_methods(uk_qsa, summarise_by = "target_type") |>
   rename(`target type` = target_type)
 
 display_table(df_target,
-  caption = "Across both Target Types all QSA methods improve the WIS."
+  caption = "Across both Target Types all QSA methods improve the WIS"
 )
 ```
 

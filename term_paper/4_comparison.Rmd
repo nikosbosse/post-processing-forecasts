@@ -229,7 +229,7 @@ tab_validation |>
   relocate(`training score`, .after = `validation score`) |>
   arrange(`validation score`) |>
   display_table(
-    caption = "WIS of all Post-Processing Methods on Training and Validation Set on UK Data."
+    caption = "WIS of all Post-Processing Methods on Training and Validation Set on UK Data"
   )
 ```
 
@@ -264,7 +264,7 @@ weights_full |>
   ) |>
   display_table(caption = paste(
     "Fraction of Feature Combinations where largest",
-    "Ensemble Weight exceeds Threshold."
+    "Ensemble Weight exceeds Threshold"
   ))
 ```
 
@@ -301,7 +301,7 @@ weights_full |>
   display_table(
     caption = paste(
       "Number (Row 1) and Fraction (Row 2)",
-      "of largest Ensemble Weights for each Method."
+      "of largest Ensemble Weights for each Method"
     )
   )
 ```

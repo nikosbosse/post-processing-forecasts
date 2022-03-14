@@ -81,7 +81,7 @@ $$
 
 ### CQR Downsides {#downsides}
 
-```{r, ch2-uk-cqr-asym-intervals, echo=FALSE, out.width="70%", fig.cap="Illustration of CQR's slow reaction process"}
+```{r, ch2-uk-cqr-asym-intervals, echo=FALSE, out.width="70%", fig.cap="Illustration of CQR's slow reaction process."}
 mod <- "seabbs"
 h <- 2
 t <- "Cases"
@@ -268,7 +268,7 @@ While the effect is still positive for quantiles less than $0.15$ or greater tha
 The same statement holds for three or four week-ahead predictions.
 For short term forecasts, however, the effect is negative across *all* quantile levels.
 
-```{r, hub-cqr-asymmetric-location, echo=FALSE, out.width="70%", fig.cap="Asymmetric CQR has negative effects on almost all countries"}
+```{r, hub-cqr-asymmetric-location, echo=FALSE, out.width="70%", fig.cap="Asymmetric CQR has negative effects on almost all countries."}
 hub_cqr_asym_location <- eval_methods(hub_cqr_asymmetric, summarise_by = "location_name")
 plot_eval(hub_cqr_asym_location, heatmap = FALSE) +
   labs(y = NULL, title = "QSA Asymmetric Performance by Country")
@@ -278,7 +278,7 @@ Recall that traditional CQR improved performance for almost all European countri
 In light of the discussion in \Cref{downsides} it is not surprising that Poland keeps its outlier role for asymmetric CQR as well, since the slow reaction process to distribution shifts is coupled with the core of the CQR algorithm and not diminished by merely relaxing the symmetry assumption.
 In contrast to \Cref{fig:ch2-hub-cqr-location}, however, the relative effect of asymmetric CQR is *negative* for almost all of the remaining countries.
 
-```{r, hub-cqr-asymmetric-eval, echo=FALSE, fig.cap="Out-of-sample performance of asymmetric CQR on European Forecast Hub data"}
+```{r, hub-cqr-asymmetric-eval, echo=FALSE, fig.cap="Out-of-sample performance of asymmetric CQR on European Forecast Hub data."}
 b <- "black"
 t <- "transparent"
 

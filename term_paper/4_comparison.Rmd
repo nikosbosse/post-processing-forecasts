@@ -55,7 +55,7 @@ This chapter aims to compare the effectiveness of all post-processing methods th
 In particular, we investigate if some methods consistently *outperform* other procedures across a wide range of scenarios.
 Further, it will be interesting to observe the *types* of adjustments to the original forecasts:
 Some methods might improve the Weighted Interval Score by *extending* the interval width and thus increasing coverage, whereas others might yield a comparable final score by *shrinking* the prediction intervals leading to higher precision.
-One can imagine even more variations: Moving the interval bounds farther apart or closer together can happen *symmetricly* or *asymmetricly* and the interval's midpoint might stay *fixed* or get *shifted* by the post-processing algorithm.
+One can imagine even more variations: Moving the interval bounds farther apart or closer together can happen *symmetrically* or *asymmetrically* and the interval's midpoint might stay *fixed* or get *shifted* by the post-processing algorithm.
 
 Before jumping into the analysis, we propose one additional model that, in contrast to those we have covered so far, does not add any new information to the equation.
 Instead, it *combines* the predictions from existing post-processing methods to build an *ensemble* prediction.
@@ -152,7 +152,7 @@ weights_full |>
   filter(model == "seabbs", rowsum > 0.99, max_weight < 0.8)
 ```
 
-```{r, ch4-intervals, echo=FALSE, fig.cap="Comparison of Prediction Intervals for all Post-Processing Methods including the Ensemble"}
+```{r, ch4-intervals, echo=FALSE, fig.cap="Comparison of Prediction Intervals for all Post-Processing Methods including the Ensemble."}
 mod <- "seabbs"
 t <- "Cases"
 h <- 4
@@ -229,7 +229,7 @@ tab_validation |>
   relocate(`training score`, .after = `validation score`) |>
   arrange(`validation score`) |>
   display_table(
-    caption = "WIS of all Post-Processing Methods on Training and Validation Set on UK Data"
+    caption = "WIS of all Post-Processing Methods on Training and Validation Set on UK Data."
   )
 ```
 
@@ -264,7 +264,7 @@ weights_full |>
   ) |>
   display_table(caption = paste(
     "Fraction of Feature Combinations where largest",
-    "Ensemble Weight exceeds Threshold"
+    "Ensemble Weight exceeds Threshold."
   ))
 ```
 
@@ -301,7 +301,7 @@ weights_full |>
   display_table(
     caption = paste(
       "Number (Row 1) and Fraction (Row 2)",
-      "of largest Ensemble Weights for each Method"
+      "of largest Ensemble Weights for each Method."
     )
   )
 ```
@@ -342,7 +342,7 @@ Within the rows \Cref{fig:ch4-model-target} reveals the ensemble model as a good
 ```{r, ch4-horizon-quantile, echo=FALSE, fig.cap="Method Comparison for each Forecast Horizon and Quantile Level"}
 df_method_horizon <- eval_methods(uk_complete, summarise_by = "horizon")
 p1 <- plot_eval(df_method_horizon, base_size = 7) +
-  labs(title = "Method Comparison by Horizon and Quantile", subtitle = NULL) +
+  labs(title = "Method Comparison by Horizon and Quantile.", subtitle = NULL) +
   theme(axis.text.x = element_blank())
 
 b <- "black"

@@ -26,7 +26,7 @@ knitr::opts_chunk$set(
 
 This chapter introduces Quantile Spread Adjustment (QSA), the second main Post-Processing procedure implemented in the postforecasts package.
 
-\Cref{qsatheory} explains the Theory behind QSA and available flavors. The implementation and options regarding the optimization are discussed in \Cref{qsaoptim}. Results on the UK dataset including a comparison of the different QSA flavors, is provided in \Cref{qsaresults}.
+\Cref{qsatheory} explains the Theory behind QSA and available flavors. The implementation and options regarding the optimization are discussed in \Cref{qsaoptim}. Results on the UK data set including a comparison of the different QSA flavors, is provided in \Cref{qsaresults}.
 
 ## Theory {#qsatheory}
 
@@ -67,7 +67,7 @@ The `postforecasts` package implements the QSA optimization in three flavors tha
 \begin{split}
 \text{uniform} &: w_i = c \quad i \in [0, 1, \ldots, p-1, p], \quad c \in \mathbb{R} \\
 \text{flexibel\_symmetric} &: w_i = w_{p-i} \quad i \in [0, 1, \ldots, \frac{p}{2}-1], \quad w_i \in \mathbb{R} \\
-\text{flexible} &: \mathbf{w} \in \mathbb{R^{p}} 
+\text{flexible} &: \mathbf{w} \in \mathbb{R}^p
 (\#eq:qsa-flavors)
 \end{split}
 \end{align}

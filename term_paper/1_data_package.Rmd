@@ -231,7 +231,7 @@ hub_germany <- hub |>
 
 \Cref{fig:ch1-quantiles-germany} illustrates the $5$%, $20$% $80$% and $95$% quantile predictions of the `EuroCOVIDhub-ensemble` forecasting model during the summer months of $2021$ in Germany.
 
-```{r, ch1-quantiles-germany, fig.cap="Original Quantile Predictions for Covid-19 Cases and Deaths in Germany 2021"}
+```{r, ch1-quantiles-germany, fig.cap="Original Quantile Predictions for Covid-19 Cases and Deaths in Germany 2021."}
 plot_quantiles(
   hub_germany,
   model = "EuroCOVIDhub-ensemble", quantiles = c(0.05, 0.2, 0.8, 0.95)
@@ -282,7 +282,7 @@ The `cv_init_training` parameter specifies the fraction of observations that is 
 As seen in \Cref{tab:ch1-wis-table} CQR increases the *dispersion* of the predictions for Cases significantly.
 One example of these wider intervals is visualized in \Cref{fig:ch1-intervals-germany}.
 
-```{r, ch1-intervals-germany, fig.cap="Original and CQR-adjusted Prediction Intervals for Covid-19 Cases in Germany", out.width="70%"}
+```{r, ch1-intervals-germany, fig.cap="Original and CQR-adjusted Prediction Intervals for Covid-19 Cases in Germany.", out.width="70%"}
 plot_intervals(df_combined, target_type = "Cases", horizon = 2, quantile = 0.05)
 ```
 
@@ -293,7 +293,7 @@ Recall from \Cref{fig:ch1-quantiles-germany} that prediction uncertainty increas
 Similarly, CQR *corrections* also increase in size for forecasts that are submitted further in advance, which can be seen in \Cref{fig:ch1-intervalsgrid-germany} along the horizontal dimension.
 Interestingly, CQR expands the intervals only for Cases whereas the forecasts for Deaths are narrowed!
 
-```{r, ch1-intervalsgrid-germany, fig.cap="Original and CQR-adjusted Prediction Intervals for different Forecast Horizons"}
+```{r, ch1-intervalsgrid-germany, fig.cap="Original and CQR-adjusted Prediction Intervals for different Forecast Horizons."}
 plot_intervals_grid(df_combined, facet_by = "horizon", quantiles = 0.05)
 ```
 
@@ -301,7 +301,7 @@ Besides the target type (Cases or Deaths), it is also useful to compare CQR effe
 Quite intuitively, CQR generally has a stronger *relative* benefit for large time horizons and extreme quantiles, where the original forecaster faced a greater uncertainty.
 \Cref{fig:ch1-eval-germany} illustrates how, in special cases like this one, the effect on the validation set can show rather mixed trends due to disadvantageous adjustments for the two and three weeks-ahead $98$% prediction intervals.
 
-```{r, ch1-eval-germany, fig.cap="Relative Changes in the WIS through CQR for all Quantile-Horizon combinations", out.width="70%"}
+```{r, ch1-eval-germany, fig.cap="Relative Changes in the WIS through CQR for all Quantile-Horizon combinations.", out.width="70%"}
 df_eval <- eval_methods(df_combined, summarise_by = c("quantile", "horizon"))
 plot_eval(df_eval)
 ```

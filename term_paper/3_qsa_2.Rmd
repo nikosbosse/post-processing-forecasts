@@ -140,13 +140,11 @@ We begin by examining a high-level overview of the results. \Cref{tab:qsa-all-me
 
 Starting with `qsa_uniform`, we observe clear improvements in the WIS as it drops by `r round(uniform_wis_rel,2)`$\%$. As expected, the prediction intervals become substantially wider as the dispersion increases by a factor of `r round(uniform_dis_fac,2)`. The wider intervals cover more observations as they reduce the under- and overprediction by `r round(uniform_under_pred_rel,2)`$\%$ and `r round(uniform_over_pred_rel,2)`$\%$. 
 
-Interestingly, while both decreases are similar in relative terms, their *absolute* effects differ substantially. The underprediction drop reduces the WIS by `r round(uniform_under_pred_val,2)`, which amounts to a relative WIS decrease of merely `r round(uniform_under_pred_rel_wis,2)` $\%$, while the overprediction drops by `r round(uniform_over_pred_val,2)` which is equal to a WIS decrease by `r round(uniform_over_pred_rel_wis,2)` $\%$. 
+Interestingly, while both decreases are similar in relative terms, their *absolute* effects differ substantially. The underprediction drop reduces the WIS by `r round(uniform_under_pred_val,2)`, which amounts to a relative WIS decrease of merely `r round(uniform_under_pred_rel_wis,2)`$\%$, while the overprediction drops by `r round(uniform_over_pred_val,2)` which is equal to a WIS decrease by `r round(uniform_over_pred_rel_wis,2)`$\%$. 
 
 We can thus conclude that the main driver behind the increase of the intervals is their *over*coverage. In other words: the intervals do not reach low enough. Overall, by increasing the intervals and achieving better coverage of smaller observations, while at the same time sacrificing interval sharpness, `qsa_uniform` improves the WIS.
 
 Due to the restriction of identical quantile spread adjustments for all quantiles, the optimization cannot differ in its post-processing of the various intervals. We speculate that smaller intervals might need different adjustments than larger ones. This can be the case if humans have difficulty of intuitively grasping the concept of confidence intervals, especially since we have seen that the adjustments of `qsa_uniform` are quite substantial. This line of reasoning is our motivation behind the `qsa_flexible_symmetric` method. It allows the QSA adjustments to vary between intervals. Its only restriction is that the updates, with regards to the lower and upper bounds, must be *symmetric*.
-
-\Cref{tab:qsa-all-methods-table} also presents the aggregated performance of `qsa_flexible_symmetric`. It reports that the WIS remains `r round(flexible_symmetric_wis_rel,2)`$\%$ lower in comparison to the original data, however it lies above the value of `qsa_uniform`. In the aggregate `qsa_flexible_symmetric` seems to overfit compared to the much more restrictive `qsa_uniform`. Further evidence of overfitting is that the dispersion continues to increase with a factor of `r round(flexible_symmetric_dis_fac,2)` and that the underprediction as well as overprediction drop even lower by `r round(flexible_symmetric_under_pred_val,2)`$\%$ and `r round(flexible_symmetric_over_pred_val,2)`$\%$. 
 
 \Cref{tab:qsa-all-methods-table} also presents the aggregated performance of `qsa_flexible_symmetric`. It reports that the WIS remains `r round(flexible_symmetric_wis_rel,2)`$\%$ lower in comparison to the original data, however this lies above the value of `qsa_uniform`. In the aggregate `qsa_flexible_symmetric` thus seems to overfit the training data. Further evidence for this hypothesis is that the interval adjustments are severer as for `qsa_uniform`, since the dispersion increases by a factor of `r round(flexible_symmetric_dis_fac,2)` and this rise in the WIS isn't fully compensated by the under- and overprediction drops by `r round(flexible_symmetric_under_pred_val,2)`$\%$ and `r round(flexible_symmetric_over_pred_val,2)`$\%$. 
 
@@ -258,7 +256,7 @@ df_target <- eval_methods(uk_qsa, summarise_by = "target_type") |>
   rename(`target type` = target_type)
 
 display_table(df_target,
-  caption = "Across both Target Types all QSA methods improve the WIS"
+  caption = "Across both Target Types all QSA methods improve the WIS."
 )
 ```
 

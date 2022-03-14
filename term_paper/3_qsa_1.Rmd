@@ -24,6 +24,12 @@ knitr::opts_chunk$set(
 
 # Quantile Spread Adjustment {#qsa}
 
+This chapter introduces Quantile Spread Adjustment (QSA), the second main Post-Processing procedure implemented in the postforecasts package.
+
+\Cref{#qsatheory} explains the Theory behind QSA and available flavors. The implementation and options regarding the optimization are discussed in \Cref{#qsaoptim}. Results on the UK dataset including a comparison of the different QSA flavors, is provided in \Cref{#qsaresults}.
+
+## Theory {#qsatheory}
+
 The general idea behind Quantile Spread Adjustment (QSA) is to adjust the spreads of each forecasted quantile by some factor. Quantile spreads are defined as the distance between the respective quantile and some basis. Three different points in the forecasting spectrum, intuitively make sensible basis: the median, the next inner neighbor and the symmetric interval quantile. The quantile spread for these different bases are illustrated in \Cref{fig:qs-basis}.
 
 ```{r, qs-basis, echo=FALSE, out.width="80%", fig.cap="Quantile Spreads for different Basis"}
@@ -34,8 +40,6 @@ knitr::include_graphics(
 ```
 
 We choose the median based definition of the quantile spreads for two main reasons. First, in contrast to the neighborhood based definition, the median basis has the advantage that different quantile spreads are independent of each other. This property makes finding the optimal quantile spread adjustments for a large set of quantiles much simpler. It comes at the cost, however, that adjustments might lead to *quantile crossing*^[As discussed in \Cref{#workflow} update_predictions() automatically takes care of quantile crossing by reordering the output predictions in increasing quantile order], which would not be the case for neighborhood based adjustments. Our second reason to use the median basis is that, unlike the interval based approach, it does not restrict adjustments for quantile pairs to be symmetric.
-
-## Theory
 
 Using the median based definition, the next step is to determine how to optimally adjust the quantile spreads. As target function, QSA uses the Weighted Interval Score from \Cref{wis}. Equation \Cref{eq:qsa} shows how the QSA weights $\mathbf{w}$ influence the WIS, where $p$ denotes the number of confidence intervals, $\alpha_{p}$ the certainty level of a confidence interval and $n$ the number of observations.
 
@@ -86,7 +90,7 @@ In addition to different flavors, the `postforecasts` package also provides the 
 
 
 
-## Optimization
+## Optimization {#qsaoptim}
 
 Underneath the hood, `postforecasts` accesses the `optim()` function from the [stats](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/optim) package. Out of the available optimization methods, `BFGS` [@fletcher2013practical] and `L-BFGS-B` [@byrd1995limited] turned out to be the most reliable for QSA. 
 

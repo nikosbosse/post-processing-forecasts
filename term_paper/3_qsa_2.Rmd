@@ -57,7 +57,7 @@ display_table <- function(df, caption, bold_header = TRUE, striped = FALSE) {
 ```
 
 
-## Results
+## Results {#qsaresults}
 
 As for the CQR method, we investigate how well QSA performs for post-processing Covid-19 forecasts. We focus on the UK Covid-19 Forecasting Challenge data set due to computational restrictions.
 

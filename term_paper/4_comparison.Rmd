@@ -360,7 +360,7 @@ p1 / p2
 
 When stratifying by forecast horizons and quantiles in \Cref{fig:ch4-horizon-quantile}, the similarities between the methods are much stronger than in \Cref{fig:ch4-model-target}.
 As we already know from previous chapters, all methods generally work better for larger horizons and quantiles in the tails.
-Aus usual the ensemble predictions are closest to `qsa_flexible` and lead to the largest performance gains for three and four week-ahead predictions while simultaneously indicating the *worst* results for short-term one week ahead forecasts.
+As usual the ensemble predictions are closest to `qsa_flexible` and lead to the largest performance gains for three and four week-ahead predictions while simultaneously indicating the *worst* results for short-term one week ahead forecasts.
 The classical `cqr` method is the only method that reliably works for any forecast horizon, yet the effect sizes are quite small.
 
 The bottom plot of \Cref{fig:ch4-horizon-quantile} provides a deeper understanding on the interaction between post-processing method and quantile level.

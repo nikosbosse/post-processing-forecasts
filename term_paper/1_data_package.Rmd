@@ -138,7 +138,7 @@ $$
 <!-- -->
 where $m$ represents the predicted median.
 
-Thus, as the name suggests, the Weighted Interval Score is a weighted sum of the individual Interval Scores.
+Thus, as the name suggests, the Weighted Interval Score is a weighted sum of the individual Interval Scores.^[As the WIS is based on interval scores, the scores of symmetric quantiles are always identical, e.g. each quantile plot depicting scores will always be symmetric around the median.]
 The weights $w_k$ are typically chosen as $w_k = \frac{\alpha_k}{ 2}$ and the weight $w_0$ for the deviation of the median is usually set to $0.5$.
 
 

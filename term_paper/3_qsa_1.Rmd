@@ -30,7 +30,7 @@ This chapter introduces Quantile Spread Adjustment (QSA), the second main Post-P
 
 ## Theory {#qsatheory}
 
-The general idea behind Quantile Spread Adjustment (QSA) is to adjust the spreads of each forecasted quantile by some factor. Quantile spreads are defined as the distance between the respective quantile and some basis. Three different points in the forecasting spectrum, intuitively make sensible basis: the median, the next inner neighbor and the symmetric interval quantile. The quantile spread for these different bases are illustrated in \Cref{fig:qs-basis}.
+The general idea behind Quantile Spread Adjustment (QSA) is to adjust the spreads of each forecasted quantile by some factor. Quantile spreads are defined as the distance between the respective quantile and some basis. Three different points in the forecasting spectrum, intuitively make sensible basis: the median, the next inner neighbour and the symmetric interval quantile. The quantile spreads for these different bases are illustrated in \Cref{fig:qs-basis}.
 
 ```{r, qs-basis, echo=FALSE, out.width="80%", fig.cap="Quantile Spreads for different Basis"}
 knitr::include_graphics(
@@ -92,7 +92,7 @@ In addition to different flavors, the `postforecasts` package also provides the 
 
 ## Optimization {#qsaoptim}
 
-Underneath the hood, `postforecasts` accesses the `optim()` function from the [`stats`](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/optim) package. Out of the available optimization methods, `BFGS` [@fletcher2013practical] and `L-BFGS-B` [@byrd1995limited] turned out to be the most reliable for QSA. 
+Underneath the hood `postforecasts` accesses the `optim()` function from the [`stats`](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/optim) package. Out of the available optimization methods, `BFGS` [@fletcher2013practical] and `L-BFGS-B` [@byrd1995limited] turned out to be the most reliable for QSA. 
 
 `BFGS` is named after Broyden, Fletcher, Goldfarb and Shanno and a quasi-Newton method. `L-BFGS-B` is a limited memory version of `BFGS` and additionally supports box constraints. As default value we set the optimization method to `L-BFGS-B` as it converges faster than `BFGS` in our data set, due to its limited memory property. The time gain is especially important for the `qsa_flexible_symmetric` and `qsa_flexible` methods which take considerably longer than `qsa_uniform` due to the large number of quantiles. Furthermore `L-BFGS-B` also has the advantage that we can lower bound the quantile spread factor to zero and thereby prevent quantile crossing with the median. 
 

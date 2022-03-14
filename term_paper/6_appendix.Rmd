@@ -106,6 +106,8 @@ p2 <- plot_eval(df_hor_forecaster_deaths, base_size = 7) +
 p1 / p2
 ```
 
+\newpage
+
 ### QSA across inner Quantiles {-}
 
 ```{r, qsa-all-models-narrow-quantiles, echo=FALSE, out.width="70%", fig.cap="QSA improvements are lower for narrower intervals."}

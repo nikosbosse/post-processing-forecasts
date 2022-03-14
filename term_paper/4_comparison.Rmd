@@ -100,7 +100,7 @@ Due to this high computational cost the *maximum number of iterations* within ea
 Here, we ultimately settled with $10.000$ maximum steps which could ensure convergence with respect to a *tolerance level* of $10^{-8}$ in the vast majority of cases.
 
 Finally, it is worth noting that the weight vector of the ensemble model $\mathbf{w}^*$ is learned on a *training set* such that a fair comparison with all individual post-processing methods on a separate *validation set* is possible.
-
+In contrast to the Time Series Cross Validation process of `update_predictions()` the ensemble uses a hard cutoff between training and validation set.
 
 
 ## Comparison of CQR, QSA & Ensemble
@@ -199,7 +199,7 @@ For a random example of the feature space the effect sizes and the effect differ
 
 Except for the last observations on the horizontal axis the forecasts of the two CQR versions are quite similar and significantly closer to the original predictions than the QSA intervals. 
 Within the QSA family `qsa_flexible` and `qsa_flexible_symmetric` produce almost identical corrections whereas `qsa_uniform` behaves quite differently from all other methods and consistently causes the largest intervals.
-The side-by-side comparison nicely illustrates that the traditional CQR version is the only method which adjusts lower and upper bounds symmetrically by an equal amount.
+The side-by-side comparison nicely illustrates that the traditional CQR version is the only method which adjusts lower and upper bounds symmetrically by an equal *absolute* amount (unlike equal *relative* adjustments based on the Quantile Spread as in the case of QSA).
 Since the ensemble method is a linear combination of the individual methods, its corrections are generally not symmetric and the produced intervals are usually centered around a different midpoint than the original forecasts.
 
 \Cref{fig:ch4-intervals} corresponds to exactly one combination of `model`, `target_type`, `horizon` and `quantile` (pair).
@@ -360,7 +360,7 @@ p1 / p2
 
 When stratifying by forecast horizons and quantiles in \Cref{fig:ch4-horizon-quantile}, the similarities between the methods are much stronger than in \Cref{fig:ch4-model-target}.
 As we already know from previous chapters, all methods generally work better for larger horizons and quantiles in the tails.
-Aus usual the ensemble predictions are closest to `qsa_flexible` and lead to the largest performance gains for three and four week-ahead predictions while simultaneously indicating the *worst* results for short-term one week ahead forecasts.
+As usual the ensemble predictions are closest to `qsa_flexible` and lead to the largest performance gains for three and four week-ahead predictions while simultaneously indicating the *worst* results for short-term one week ahead forecasts.
 The classical `cqr` method is the only method that reliably works for any forecast horizon, yet the effect sizes are quite small.
 
 The bottom plot of \Cref{fig:ch4-horizon-quantile} provides a deeper understanding on the interaction between post-processing method and quantile level.

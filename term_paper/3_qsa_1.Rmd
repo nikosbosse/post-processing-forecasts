@@ -33,7 +33,7 @@ knitr::include_graphics(
 )
 ```
 
-We choose the median based definition of the quantile spreads for two main reasons. First, in contrast to the neighborhood based definition, the median basis has the advantage that different quantile spreads are independent of each other. This property makes finding the optimal quantile spread adjustments for a large set of quantiles much simpler. It comes at the cost, however, that adjustments might lead to *quantile crossing*^[As discussed in \Cref{#workflow} update_predictions() automatically takes care of quantile crossing by reordering the output predictions in increasing quantile order], which would not be the case for neighborhood based adjustments. Our second reason to use the median basis is that, unlike the interval based approach, it does not restrict adjustments for quantile pairs to be symmetric.
+We choose the median based definition of the quantile spreads for two main reasons. First, in contrast to the neighborhood based definition, the median basis has the advantage that different quantile spreads are independent of each other. This property makes finding the optimal quantile spread adjustments for a large set of quantiles much simpler. It comes at the cost, however, that adjustments might lead to *quantile crossing*^[As discussed in \Cref{workflow} `update_predictions()` automatically takes care of quantile crossing by reordering the output predictions in increasing quantile order], which would not be the case for neighborhood based adjustments. Our second reason to use the median basis is that, unlike the interval based approach, it does not restrict adjustments for quantile pairs to be symmetric.
 
 ## Theory
 

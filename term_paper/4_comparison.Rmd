@@ -87,7 +87,7 @@ $$
 where all operations for vector inputs $\mathbf{l}$, $\mathbf{u}$ and $\mathbf{y}$ are understood elementwise and the *same* weights $w_j$, $j = 1, \ldots, k$ are chosen for lower and upper quantiles.  
 
 Hence, we choose the (nonlinear) Interval Score (\Cref{wis}) as our objective function that we minimize subject to linear constraints.
-The optimization step is implemented with the [nloptr](https://cran.r-project.org/web/packages/nloptr/index.html) package [@R-nloptr], which describes itself as "an R interface to NLopt, a free/open-source library for nonlinear optimization".
+The optimization step is implemented with the [`nloptr`](https://cran.r-project.org/web/packages/nloptr/index.html) package [@R-nloptr], which describes itself as "an R interface to NLopt, a free/open-source library for nonlinear optimization".
 
 Note that, technically, the weight vector has to be denoted by $\mathbf{w}_{m, l, h, t, q}^*$ since the computed weights are generally different for each feature combination.
 We omit the subscripts at this point to keep the notation clean.

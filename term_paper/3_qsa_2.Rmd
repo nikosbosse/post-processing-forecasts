@@ -266,7 +266,11 @@ If we split the models into human and non-human forecasts, the results change as
 
 For both of these time series groups, `qsa_flexible` reduces the WIS most, followed by `qsa_uniform` and `qsa_flexible_symmetric`. Regarding the human forecasts of `Deaths`and the model forecasts of `Cases`, we observe that `qsa_flexible` is the only model that increases the WIS. These results illustrate that `qsa_flexible` is a riskier model, as it can lead to higher gains or losses due to its potential to fit the training data too closely.
 
+<<<<<<< HEAD
 ```{r, qsa-all-methods-target-types-model-groups, echo=FALSE, fig.cap="Forecasting improvements differ across target types for different model groups. Human forecasts are primarily improved for Covid-19 Cases, while model forecast improvements are only found for Covid-19 Deaths."}
+=======
+```{r, qsa-all-methods-target-types-model-groups, echo=FALSE, out.width="80%",fig.cap="Forecasting improvements differ across target types for different model groups. Human forecasts are primarily improved for Covid-19 Cases, while model forecast improvments are only found for Covid-19 Deaths."}
+>>>>>>> 37688ff0e3bf375d3002abc348ccff90ef814ff1
 uk_qsa_human <- uk_qsa |>
   filter(model %in% c("epiforecasts-EpiExpert", "epiforecasts-EpiExpert_Rt", "epiforecasts-EpiExpert_direct", "seabbs")) # only human forecast
 
@@ -303,7 +307,7 @@ plot_eval(df_hor, base_size = 8) + ggplot2::labs(x = NULL)
 
 Breaking down the results by the forecasting `horizon` for each QSA method also reveals notable patterns as depicted in  \Cref{fig:qsa-methods-horizons}. Across methods the improvements of the WIS increase with the `horizon` level. The gains are primarily visible for the three and four week-ahead predictions, while the increases in score and overfitting are mainly located at a horizon of one. 
 
-```{r, qsa-all-models-horizons-model-groups, echo=FALSE, fig.cap="Forecasting improvements differ across horizons for different model groups. Human forecasts are primarily improved for horizons larger than 2, while model forecast are not improved at all and are overfitted with QSA Flexible."}
+```{r, qsa-all-models-horizons-model-groups, echo=FALSE, out.width="80%", fig.cap="Forecasting improvements differ across horizons for different model groups. Human forecasts are primarily improved for horizons larger than 2, while model forecast are not improved at all and are overfitted with QSA Flexible."}
 uk_qsa_human <- uk_qsa |>
   filter(model %in% c("epiforecasts-EpiExpert", "epiforecasts-EpiExpert_Rt", "epiforecasts-EpiExpert_direct", "seabbs")) # only human forecast
 

@@ -92,7 +92,7 @@ In addition to different flavors, the `postforecasts` package also provides the 
 
 ## Optimization {#qsaoptim}
 
-Underneath the hood, `postforecasts` accesses the `optim()` function from the [stats](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/optim) package. Out of the available optimization methods, `BFGS` [@fletcher2013practical] and `L-BFGS-B` [@byrd1995limited] turned out to be the most reliable for QSA. 
+Underneath the hood, `postforecasts` accesses the `optim()` function from the [`stats`](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/optim) package. Out of the available optimization methods, `BFGS` [@fletcher2013practical] and `L-BFGS-B` [@byrd1995limited] turned out to be the most reliable for QSA. 
 
 `BFGS` is named after Broyden, Fletcher, Goldfarb and Shanno and a quasi-Newton method. `L-BFGS-B` is a limited memory version of `BFGS` and additionally supports box constraints. As default value we set the optimization method to `L-BFGS-B` as it converges faster than `BFGS` in our data set, due to its limited memory property. The time gain is especially important for the `qsa_flexible_symmetric` and `qsa_flexible` methods which take considerably longer than `qsa_uniform` due to the large number of quantiles. Furthermore `L-BFGS-B` also has the advantage that we can lower bound the quantile spread factor to zero and thereby prevent quantile crossing with the median. 
 
@@ -104,7 +104,7 @@ Regarding the QSA optimization functions shape, there is a potential issue: Due 
 
 The `line_search` optimization handles multiple optima by choosing the value closest to $1$, hence the smallest possible adjustment of the quantiles. In essence, this is a regularization. For the `BFGS` and `L-BFGS-B` algorithms plateaus mean that both methods can converge to different optima while attaining the same WIS. In a future version of the package we aim to tackle this by adding a line search after the use of `BFGS` and `L-BFGS-B` in order to find the optima closest to $1$ and thereby regularize the results.
 
-Furthermore, due to the long computation times, particularly for large data sets and small initial training periods, the `postforecasts` package provides the option to run QSA *in parallel*. The parallelization is implemented with the [foreach](https://www.rdocumentation.org/packages/foreach/versions/1.5.2) package [@R-foreach]. It can be activated by defining a parallel processing environment and then specifiying `parallel = TRUE` within the `update_predictions()` function. A parallel processing environment is defined by setting the number of cores available with the `registerDoParallel()` function from the [doParallel](https://www.rdocumentation.org/packages/doParallel/versions/1.0.16) package [@R-doParallel]. 
+Furthermore, due to the long computation times, particularly for large data sets and small initial training periods, the `postforecasts` package provides the option to run QSA *in parallel*. The parallelization is implemented with the [`foreach`](https://www.rdocumentation.org/packages/foreach/versions/1.5.2) package [@R-foreach]. It can be activated by defining a parallel processing environment and then specifiying `parallel = TRUE` within the `update_predictions()` function. A parallel processing environment is defined by setting the number of cores available with the `registerDoParallel()` function from the [`doParallel`](https://www.rdocumentation.org/packages/doParallel/versions/1.0.16) package [@R-doParallel]. 
 
 The following commands are valid for a device with two available cores:
 
@@ -119,11 +119,11 @@ registerDoParallel(cores = 2)
 
 df_updated_parallel <- update_predictions(
   df,
-  methods = "qsa_flexible", 
+  methods = "qsa_flexible",
   optim_method = "L-BFGS-B",
   lower_bound_optim = 0,
   upper_bound_optim = 5,
-  parallel = TRUE, 
+  parallel = TRUE,
   verbose = TRUE
 )
 ```

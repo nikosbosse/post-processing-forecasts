@@ -266,11 +266,8 @@ If we split the models into human and non-human forecasts, the results change as
 
 For both of these time series groups, `qsa_flexible` reduces the WIS most, followed by `qsa_uniform` and `qsa_flexible_symmetric`. Regarding the human forecasts of `Deaths`and the model forecasts of `Cases`, we observe that `qsa_flexible` is the only model that increases the WIS. These results illustrate that `qsa_flexible` is a riskier model, as it can lead to higher gains or losses due to its potential to fit the training data too closely.
 
-<<<<<<< HEAD
-```{r, qsa-all-methods-target-types-model-groups, echo=FALSE, fig.cap="Forecasting improvements differ across target types for different model groups. Human forecasts are primarily improved for Covid-19 Cases, while model forecast improvements are only found for Covid-19 Deaths."}
-=======
+
 ```{r, qsa-all-methods-target-types-model-groups, echo=FALSE, out.width="80%",fig.cap="Forecasting improvements differ across target types for different model groups. Human forecasts are primarily improved for Covid-19 Cases, while model forecast improvments are only found for Covid-19 Deaths."}
->>>>>>> 37688ff0e3bf375d3002abc348ccff90ef814ff1
 uk_qsa_human <- uk_qsa |>
   filter(model %in% c("epiforecasts-EpiExpert", "epiforecasts-EpiExpert_Rt", "epiforecasts-EpiExpert_direct", "seabbs")) # only human forecast
 
@@ -357,7 +354,7 @@ plot_eval(df_quant, base_size = 8) + ggplot2::labs(x = NULL)
 
 Yet, aggregation across the `target_type` and `model` dimensions do not represent the full picture, such that we also show the quantile improvements for the human forecasts of Cases as well as the model forecasts of Deaths in \Cref{fig:qsa-quantiles-model-groups-target-types-best}. For human forecasts of Covid-19 Cases the patterns remain similar to the aggregate. For model forecasts of Covid-19 Deaths, however, we observe larger improvements and detect that `qsa_flexible` is useful for small intervals. This suggests that Death prediction intervals benefit from non-symmetric adjustments. Furthermore, model forecasts of Deaths also seem to be one of the rare situations where `qsa_flexible_symmetric` outperforms `qsa_uniform`. Surprisingly not due to a better performance for narrow but rather for larger intervals.
 
-```{r, qsa-quantiles-model-groups-target-types-best, echo=FALSE, fig.cap="Improvement patterns for QSA for human forecasts of cases are similar to the aggregate. For the model forecasts of deaths, we observe a larger discrepancies whith more extreme gains for larger intervals and even gains for narrow intervals using the qsa_flexible method."}
+```{r, qsa-quantiles-model-groups-target-types-best, echo=FALSE, out.width="80%", fig.cap="Improvement patterns for QSA for human forecasts of cases are similar to the aggregate. For the model forecasts of deaths, we observe a larger discrepancies whith more extreme gains for larger intervals and even gains for narrow intervals using the qsa_flexible method."}
 b <- "black"
 t <- "transparent"
 

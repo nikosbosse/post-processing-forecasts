@@ -315,7 +315,7 @@ This finding is particularly interesting in comparison with \Cref{tab:ch4-wis-co
 `cqr_asymmetric` and `qsa_flexible` indeed have the best training scores whereas `qsa_uniform` performs worst on the training set which exactly corresponds to the order of \Cref{tab:ch4-largest-weights}.
 With this connection in mind it seems even more surprising that the ensemble method generalizes very well to out-of-sample data while simultaneously rewarding potentially overfitting methods like `cqr_asymmetric` during its own learning process.
 
-```{r, ch4-model-target, echo=FALSE, fig.cap="Method Comparison for each Forecasting Model and Target Type"}
+```{r, ch4-model-target, echo=FALSE, fig.cap="Method Comparison for each Forecasting Model and Target Type."}
 df_method_model <- eval_methods(uk_complete, summarise_by = "model")
 p1 <- plot_eval(df_method_model, base_size = 7) +
   labs(y = NULL, title = "Method Comparison by Model and Target Type", subtitle = NULL) +
@@ -339,10 +339,10 @@ Based on the heatmap alone we cannot draw any conclusions if Cases or Deaths ben
 Comparing within the columns `qsa_flexible` and the ensemble are the only methods which indicate stronger benefits for Covid-19 Cases, all alternatives perform better for Deaths.
 Within the rows \Cref{fig:ch4-model-target} reveals the ensemble model as a good post-processing choice for Covid Cases, while `cqr_asymmetric` and `qsa_flexible_symmetric` show promising results for Covid Deaths.
 
-```{r, ch4-horizon-quantile, echo=FALSE, fig.cap="Method Comparison for each Forecast Horizon and Quantile Level"}
+```{r, ch4-horizon-quantile, echo=FALSE, fig.cap="Method Comparison for each Forecast Horizon and Quantile Level."}
 df_method_horizon <- eval_methods(uk_complete, summarise_by = "horizon")
 p1 <- plot_eval(df_method_horizon, base_size = 7) +
-  labs(title = "Method Comparison by Horizon and Quantile.", subtitle = NULL) +
+  labs(title = "Method Comparison by Horizon and Quantile", subtitle = NULL) +
   theme(axis.text.x = element_blank())
 
 b <- "black"

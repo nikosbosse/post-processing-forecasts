@@ -62,7 +62,7 @@ display_table <- function(df, caption, bold_header = TRUE, striped = FALSE) {
 
 ### QSA across Horizons and Target Types for different Models {-}
 
-```{r fig.cap="Forecasting improvements differ across horizons and target types for model forecasts. Model forecasts only improved across all horizons for the death predictions", fig.height=4, fig.width=4.8, qsa-all-models-horizons-models-target-types, echo=FALSE}
+```{r fig.cap="Forecasting improvements differ across horizons and target types for model forecasts. Model forecasts only improved across all horizons for the death predictions.", fig.height=4, fig.width=4.8, qsa-all-models-horizons-models-target-types, echo=FALSE}
 uk_qsa_forecaster <- uk_qsa |>
   filter(model %in% c("EuroCOVIDhub-baseline", "EuroCOVIDhub-ensemble"), target_type == "Cases") # only model forecast
 
@@ -84,7 +84,7 @@ p2 <- plot_eval(df_hor_forecaster_deaths, base_size = 7) +
 p1 / p2
 ```
 
-```{r fig.cap="Forecasting improvements differ across horizons and target types for model forecasts. Human forecasts are primarily improved for cases and the horizons of 3 and 4 weeks ahead. For deaths \\texttt{qsa\\_flexible} worsens the score", fig.height=4, fig.width=4.8, qsa-all-models-horizons-humans-target-types, echo=FALSE}
+```{r fig.cap="Forecasting improvements differ across horizons and target types for model forecasts. Human forecasts are primarily improved for cases and the horizons of 3 and 4 weeks ahead. For deaths \\texttt{qsa\\_flexible} worsens the score.", fig.height=4, fig.width=4.8, qsa-all-models-horizons-humans-target-types, echo=FALSE}
 uk_qsa_forecaster <- uk_qsa |>
   filter(model %in% c("epiforecasts-EpiExpert", "epiforecasts-EpiExpert_Rt", "epiforecasts-EpiExpert_direct", "seabbs"), target_type == "Cases") # only human forecast
 

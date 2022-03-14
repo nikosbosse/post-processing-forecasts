@@ -140,7 +140,7 @@ We begin by examining a high-level overview of the results. \Cref{tab:qsa-all-me
 
 Starting with `qsa_uniform`, we observe clear improvements in the WIS as it drops by `r round(uniform_wis_rel,2)`$\%$. As expected, the prediction intervals become substantially wider as the dispersion increases by a factor of `r round(uniform_dis_fac,2)`. The wider intervals cover more observations as they reduce the under- and overprediction by `r round(uniform_under_pred_rel,2)`$\%$ and `r round(uniform_over_pred_rel,2)`$\%$. 
 
-Interestingly, while both decreases are similar in relative terms, their *absolute* effects differ substantially. The underprediction drop reduces the WIS by `r round(uniform_under_pred_val,2)`, which amounts to a relative WIS decrease of merely `r round(uniform_under_pred_rel_wis,2)` $\%$, while the overprediction drops by `r round(uniform_over_pred_val,2)` which is equal to a WIS decrease by `r round(uniform_over_pred_rel_wis,2)` $\%$. 
+Interestingly, while both decreases are similar in relative terms, their *absolute* effects differ substantially. The underprediction drop reduces the WIS by `r round(uniform_under_pred_val,2)`, which amounts to a relative WIS decrease of merely `r round(uniform_under_pred_rel_wis,2)`$\%$, while the overprediction drops by `r round(uniform_over_pred_val,2)` which is equal to a WIS decrease by `r round(uniform_over_pred_rel_wis,2)`$\%$. 
 
 We can thus conclude that the main driver behind the increase of the intervals is their *over*coverage. In other words: the intervals do not reach low enough. Overall, by increasing the intervals and achieving better coverage of smaller observations, while at the same time sacrificing interval sharpness, `qsa_uniform` improves the WIS.
 

@@ -75,7 +75,7 @@ The `postforecasts` package implements the QSA optimization in three flavors tha
 
 `qsa_uniform` restricts all weight vector values to be identical. `qsa_flexible_symmetric` only restricts pairwise adjustments to be identical. It essentially represents unrestricted QSA with interval based adjustments. Finally, `qsa_flexible` is completely unrestricted as each quantile is adjusted separately. 
 
-In addition to different flavors, the `postforecasts` package also provides the option to regularize the optimization. Equation \Cref{eq:qsa-optimization} displays the penalization term that is added to the WIS. It is designed to penalize differences between weight vector values by adding a factor proportional to the sum of squared deviations of the weight vector values from there mean. It therefore regularizes towards the `qsa_uniform` method and only has an effect for the `qsa_flexible_symmetric` and `qsa_flexible` flavors.
+In addition to different flavors, the `postforecasts` package also provides the option to regularize the optimization. Equation \Cref{eq:qsa-optimization} displays the penalization term that is added to the WIS. It is designed to penalize differences between weight vector values by adding a factor proportional to the sum of squared deviations of the weight vector values from their mean. It therefore regularizes towards the `qsa_uniform` method and only has an effect for the `qsa_flexible_symmetric` and `qsa_flexible` flavors.
 
 <!--  -->
 \begin{align}

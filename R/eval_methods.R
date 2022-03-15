@@ -6,7 +6,7 @@ apply_scoring <- function(df_combined, summarise_by, training_set) {
   } else {
     df_combined <- df_combined |> extract_validation_set()
   }
-  
+
   df_combined |>
     scoringutils::score() |>
     scoringutils::summarise_scores(by = c("method", summarise_by)) |>
@@ -125,6 +125,9 @@ round_output <- function(df, round_digits) {
   return(df)
 }
 
+#' Compute the relative/percentage changes in the Weighted Interval Score of multiple
+#' Post-Processing Methods compared to the original Forecasts
+#' @export
 
 eval_methods <- function(df_combined, summarise_by, training_set = FALSE,
                          margins = FALSE, row_averages = FALSE, col_averages = FALSE,
@@ -167,10 +170,10 @@ eval_methods <- function(df_combined, summarise_by, training_set = FALSE,
       dplyr::arrange(row_margins_df[[1]]) |>
       dplyr::pull(.data$relative_change)
 
-    col_margins_df <-  eval_one_category(df_combined, summarise_by = summarise_by[2], training_set)
+    col_margins_df <- eval_one_category(df_combined, summarise_by = summarise_by[2], training_set)
     # sort first column to keep same order as columns in 'result_wide_format'
-    col_margins <- col_margins_df |> 
-      dplyr::arrange(col_margins_df[[1]]) |> 
+    col_margins <- col_margins_df |>
+      dplyr::arrange(col_margins_df[[1]]) |>
       dplyr::pull(.data$relative_change)
 
     return(

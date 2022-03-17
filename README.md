@@ -177,7 +177,7 @@ bounds of the ensemble intervals are approximately halfway between the
 lower (upper) bounds of the `cqr_asymmetric` and `qsa_flexible`
 intervals.
 
-![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
 Except for the last observations on the horizontal axis the forecasts of
 the two CQR versions are quite similar and significantly closer to the
@@ -193,124 +193,15 @@ collects the WIS for each method on the training and validation set,
 aggregated over all models, target types, horizons and quantiles and
 sorted by increasing validation score:
 
-<table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;">
-<thead>
-<tr>
-<th style="text-align:center;font-weight: bold;">
-method
-</th>
-<th style="text-align:center;font-weight: bold;">
-validation score
-</th>
-<th style="text-align:center;font-weight: bold;">
-training score
-</th>
-<th style="text-align:center;font-weight: bold;">
-dispersion
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center;">
-ensemble
-</td>
-<td style="text-align:center;">
-57.69
-</td>
-<td style="text-align:center;">
-18.22
-</td>
-<td style="text-align:center;">
-21.73
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-qsa_uniform
-</td>
-<td style="text-align:center;">
-60.00
-</td>
-<td style="text-align:center;">
-20.88
-</td>
-<td style="text-align:center;">
-26.84
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-qsa_flexible
-</td>
-<td style="text-align:center;">
-60.47
-</td>
-<td style="text-align:center;">
-19.48
-</td>
-<td style="text-align:center;">
-25.31
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-qsa_flexible_symmetric
-</td>
-<td style="text-align:center;">
-60.92
-</td>
-<td style="text-align:center;">
-20.49
-</td>
-<td style="text-align:center;">
-33.22
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-cqr
-</td>
-<td style="text-align:center;">
-62.15
-</td>
-<td style="text-align:center;">
-20.82
-</td>
-<td style="text-align:center;">
-24.10
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-cqr_asymmetric
-</td>
-<td style="text-align:center;">
-63.97
-</td>
-<td style="text-align:center;">
-14.46
-</td>
-<td style="text-align:center;">
-17.99
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-original
-</td>
-<td style="text-align:center;">
-65.74
-</td>
-<td style="text-align:center;">
-23.62
-</td>
-<td style="text-align:center;">
-12.00
-</td>
-</tr>
-</tbody>
-</table>
+|         method         | validation score | training score | dispersion |
+|:----------------------:|:----------------:|:--------------:|:----------:|
+|        ensemble        |      57.69       |     18.22      |   21.73    |
+|      qsa_uniform       |      60.00       |     20.88      |   26.84    |
+|      qsa_flexible      |      60.47       |     19.48      |   25.31    |
+| qsa_flexible_symmetric |      60.92       |     20.49      |   33.22    |
+|          cqr           |      62.15       |     20.82      |   24.10    |
+|     cqr_asymmetric     |      63.97       |     14.46      |   17.99    |
+|        original        |      65.74       |     23.62      |   12.00    |
 
 Based on the table above, our comparison of the `postforecasts`
 post-processing methods yields a couple of interesting findings:

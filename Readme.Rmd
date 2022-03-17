@@ -1,12 +1,18 @@
 ---
 output: github_document
-always_allow_html: true
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, collapse = TRUE)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  comment = "##",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
 
 devtools::load_all(".")
 library(dplyr)
@@ -14,17 +20,6 @@ library(ggplot2)
 library(patchwork)
 
 uk_complete <- readr::read_rds(here::here("data_results", "uk_complete.rds"))
-```
-
-```{r, include=FALSE}
-display_table <- function(df, caption, bold_header = TRUE) {
-  tab <- df |>
-    kableExtra::kbl(digits = 2, align = "c") |>
-    kableExtra::row_spec(row = 0, bold = bold_header) |>
-    kableExtra::kable_styling(position = "center", full_width = FALSE)
-
-  return(tab)
-}
 ```
 
 ```{r, include=FALSE}
@@ -229,8 +224,8 @@ tab_validation <- uk_complete |>
 tab_validation |>
   mutate(`training score` = tab_training$`training score`) |>
   relocate(`training score`, .after = `validation score`) |>
-  arrange(`validation score`) |>
-  display_table()
+  arrange(`validation score`) |> 
+  knitr::kable(digits = 2, align = "c")
 ```
 
 Based on the table above, our comparison of the `postforecasts` post-processing methods yields a couple of interesting findings:

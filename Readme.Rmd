@@ -6,10 +6,7 @@ always_allow_html: true
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(
-  echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center",
-  out.width = "100%", dpi = 300, fig.asp = 0.618, collapse = TRUE
-)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, collapse = TRUE)
 
 devtools::load_all(".")
 library(dplyr)

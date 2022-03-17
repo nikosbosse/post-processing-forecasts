@@ -6,8 +6,8 @@
 The goal of the `postforecasts` package is to unite a variety of
 post-processing methods into a single easy-to-use interface.
 
-This repository was created in context of the Statistical Practical
-Training course offered by the Chair of Statistics at the University of
+This repository was created in context of the *Practical Statistical
+Training* course offered by the Chair of Statistics at the University of
 Göttingen during Winter Term 2021/22. If you want to jump straight to
 the results of our project, please refer to the final course paper
 `term_paper/Herp_Beck_Post-Processing.pdf` which explains the theory as

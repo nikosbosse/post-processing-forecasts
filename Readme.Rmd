@@ -169,7 +169,7 @@ The color legend displays the ensemble weights for each method:
 In this case only the asymmetric CQR and the flexible (not symmetric) QSA methods contribute to the ensemble.
 As a simple weighted average with weights close to $0.5$ the lower (upper) bounds of the ensemble intervals are approximately halfway between the lower (upper) bounds of the `cqr_asymmetric` and `qsa_flexible` intervals.
 
-```{r, echo=FALSE, fig.cap="Comparison of Prediction Intervals for all Post-Processing Methods including the Ensemble."}
+```{r, echo=FALSE}
 mod <- "seabbs"
 t <- "Cases"
 h <- 4

@@ -177,7 +177,7 @@ bounds of the ensemble intervals are approximately halfway between the
 lower (upper) bounds of the `cqr_asymmetric` and `qsa_flexible`
 intervals.
 
-<img src="README_files/figure-gfm/unnamed-chunk-6-1.png" title="Comparison of Prediction Intervals for all Post-Processing Methods including the Ensemble." alt="Comparison of Prediction Intervals for all Post-Processing Methods including the Ensemble." width="100%" style="display: block; margin: auto;" />
+<img src="README_files/figure-gfm/unnamed-chunk-6-1.png" width="100%" style="display: block; margin: auto;" />
 
 Except for the last observations on the horizontal axis the forecasts of
 the two CQR versions are quite similar and significantly closer to the

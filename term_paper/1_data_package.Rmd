@@ -287,7 +287,7 @@ plot_intervals(df_combined, target_type = "Cases", horizon = 2, quantile = 0.05)
 ```
 
 Indeed, the 2 weeks-ahead $90$% prediction intervals for Covid Cases in Germany are widened by CQR.
-The grey dashed line indicates the end of the training set within the Cross Validation as specified by the `cv_init_training` parameter.
+The solid black line represents the true Case incidences whereas the grey dashed line indicates the end of the training set within the Cross Validation as specified by the `cv_init_training` parameter.
 
 Recall from \Cref{fig:ch1-quantiles-germany} that prediction uncertainty increases with larger forecast horizons.
 Similarly, CQR *corrections* also increase in size for forecasts that are submitted further in advance, which can be seen in \Cref{fig:ch1-intervalsgrid-germany} along the horizontal dimension.

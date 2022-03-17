@@ -1,5 +1,8 @@
 #' @importFrom rlang .data
 
+#' Visualize original Forecast Intervals for the UK or European Forecast Hub Data Sets
+#' @export
+
 plot_quantiles <- function(df, model = NULL, location = NULL,
                            quantiles = c(0.05, 0.5, 0.95), base_size = 9) {
   l <- process_model_input(df, model)
@@ -36,7 +39,8 @@ plot_quantiles <- function(df, model = NULL, location = NULL,
 }
 
 
-#' @importFrom rlang .data
+#' Visualize updated Forecast Intervals for multiple Post-Processing Methods
+#' @export
 
 plot_intervals <- function(df, model = NULL, location = NULL,
                            target_type = c("Cases", "Deaths"),
@@ -82,7 +86,9 @@ plot_intervals <- function(df, model = NULL, location = NULL,
 }
 
 
-#' @importFrom rlang .data
+#' Visualize updated Forecast Intervals along the `target_type` and `horizon` or
+#' `quantile` dimensions
+#' @export
 
 plot_intervals_grid <- function(df, model = NULL, location = NULL,
                                 facet_by = c("horizon", "quantile"),
@@ -160,6 +166,9 @@ plot_intervals_grid <- function(df, model = NULL, location = NULL,
 
   return(p)
 }
+
+#' Visualize the Output of `eval_methods()` as a Barplot or Heatmap
+#' @export
 
 plot_eval <- function(df_eval, heatmap = TRUE, base_size = 9) {
   if (ncol(df_eval) > 2 && !heatmap) {

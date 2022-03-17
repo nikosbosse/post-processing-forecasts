@@ -16,3 +16,4 @@ $postforecasts_0\.0\.0\.9000\.tar\.gz$
 ^.*\.Rproj$
 ^\.Rproj\.user$
 
+^README\.Rmd$

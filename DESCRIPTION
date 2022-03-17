@@ -1,15 +1,15 @@
 Package: postforecasts
-Title: Post Processing Methods for Time Series Forecasts
+Title: Post Processing Methods for Covid-19 Forecasts
 Version: 0.0.0.9000
 Authors@R: c(
-      person(given = "Matthias",
-             family = "Herp",
-             role = c("aut", "cre"),
-             email = "matthias.herp@stud.uni-goettingen.de"),
       person(given = "Joel",
              family = "Beck",
-             role = "aut",
+             role = c("aut", "cre"),
              email = "joel.beck@stud.uni-goettingen.de"),
+      person(given = "Matthias",
+             family = "Herp",
+             role = "aut",
+             email = "matthias.herp@stud.uni-goettingen.de"),
       person(given = "Nikos",
              family = "Bosse",
              role = "ctb",

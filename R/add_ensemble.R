@@ -157,6 +157,9 @@ update_subset_ensemble <- function(df_combined, ensemble_df, weights_df, methods
   list(ensemble_df = ensemble_df, weights_df = weights_df)
 }
 
+#' Add an Ensemble Model of multiple Post-Processing Methods
+#' @export
+
 add_ensemble <- function(df_combined, train_val_split = TRUE, verbose = FALSE,
                          max_iter = 1e5, print_level = 0) {
 

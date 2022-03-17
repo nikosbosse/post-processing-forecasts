@@ -42,17 +42,16 @@ extract_set <- function(df_combined, set = c("train", "validation"),
 }
 
 
-### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
-### extracting the validation set from the combined dataset
-
-extract_validation_set <- function(df_combined, cv_init_training = NULL) {
-  extract_set(df_combined, set = "validation", cv_init_training = cv_init_training)
+#' Extract all Observations that were contained in the Training Set during Model Fitting
+#' @export
+extract_training_set <- function(df_combined, cv_init_training = NULL) {
+  extract_set(df_combined, set = "train", cv_init_training = cv_init_training)
 }
 
 
-### . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ..
-### extracting the training set from the combined dataset
+#' Extract all Observations that were contained in the Validation Set during Model Fitting
+#' @export
 
-extract_training_set <- function(df_combined, cv_init_training = NULL) {
-  extract_set(df_combined, set = "train", cv_init_training = cv_init_training)
+extract_validation_set <- function(df_combined, cv_init_training = NULL) {
+  extract_set(df_combined, set = "validation", cv_init_training = cv_init_training)
 }

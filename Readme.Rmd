@@ -57,12 +57,14 @@ The results of the $12$-week challenge are [publicly available](https://epiforec
 
 According to their [webpage](https://covid19forecasthub.eu/index.html) the *European Covid-19 Forecast Hub* collects "short-term forecasts of Covid-19 cases and deaths across Europe, created by a multitude of infectious disease modelling teams". 
 
-In contrast to the compact UK data described above, the European Forecast Hub data contains almost two million observations for over $20$ European countries.
+In contrast to the compact UK data, the European Forecast Hub data contains almost two million observations for over $20$ European countries.
 Further, the forecasters are knowledgeable research groups that submit their weekly predictions based on statistical models.
 Although the data collection continues in regular frequency up to this day, our data set is limited to a $32$-week span from March $2021$ until October $2021$.
 
-The overall structure of the two data sets introduced above is very similar.
-Since we will refer to some particularly important columns by name frequently throughout the next chapters, they are briefly described here:
+---
+
+The overall structure of the two data sets above is very similar.
+To get a better understanding of the data the most important columns for our analysis are briefly explained here:
 
 - `location`: The country for which the forecasts were submitted.
 Equals `GB` for the UK data. Our analysis for the European Forecast Hub data selects $18$ different European countries.

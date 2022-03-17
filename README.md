@@ -3,11 +3,8 @@
 
 # postforecasts
 
-<!-- badges: start -->
-<!-- badges: end -->
-
-The goal of `postforecasts` is to unite a variety of post-processing
-methods into a single easy-to-use interface.
+The goal of the `postforecasts` package is to unite a variety of
+post-processing methods into a single easy-to-use interface.
 
 This repository was created in context of the Statistical Practical
 Training course offered by the Chair of Statistics at the University of

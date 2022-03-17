@@ -3,6 +3,8 @@
 export(add_ensemble)
 export(collect_predictions)
 export(eval_methods)
+export(extract_training_set)
+export(extract_validation_set)
 export(plot_eval)
 export(plot_intervals)
 export(plot_intervals_grid)

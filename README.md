@@ -118,7 +118,8 @@ incentivizes the forecaster to state their true best belief and cannot
 be manipulated in favour of own interests. It combines measures for
 interval *sharpness* as well as *overprediction* and *underprediction*
 and can thus be understood as a trade-off between interval *coverage*
-and *precision*.
+and *precision*. A lower WIS score indicates a better overall
+performance.
 
 For a rigorous mathematical introduction of the WIS see Section 2.1.3 of
 our course paper.
@@ -144,6 +145,7 @@ post-processing methods for the UK data can be conveniently loaded with
 the command
 
 ``` r
+library(postforecasts)
 uk_results <- readRDS("data_results/uk_complete.rds")
 ```
 
@@ -151,8 +153,6 @@ The required computations for obtaining these results can be reproduced
 with the following commands but may take a lot of computation time:
 
 ``` r
-library(postforecasts)
-
 uk_data <- readRDS("data_modified/uk_data_incidences.csv")
 
 uk_results <- uk_data |>
@@ -170,14 +170,14 @@ The following figure provides a visual illustration of original and
 adjusted prediction intervals of all post-processing methods including
 the ensemble for one specific combination of the variables `model`,
 `target_type`, `horizon` and `quantile`. The color legend displays the
-ensemble weights for each method: In this case only the asymmetric CQR
+ensemble weights for each method. In this case only the asymmetric CQR
 and the flexible (not symmetric) QSA methods contribute to the ensemble.
 As a simple weighted average with weights close to 0.5 the lower (upper)
 bounds of the ensemble intervals are approximately halfway between the
 lower (upper) bounds of the `cqr_asymmetric` and `qsa_flexible`
-intervals.
+intervals:
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" style="display: block; margin: auto;" />
 
 Except for the last observations on the horizontal axis the forecasts of
 the two CQR versions are quite similar and significantly closer to the
@@ -287,3 +287,126 @@ The `postforecasts` functions can be grouped into three categories:
     for each selected method compared to the original quantile
     predictions. Further, these relative changes can be visualized by
     the `plot_eval()` function.
+
+To illustrate the application of the functions above to a practical
+example we use the Covid-19 data for Germany in 2021 that is provided by
+the European Forecast Hub.
+
+``` r
+hub_1 <- readr::read_csv(here::here("data_modified", "hub_data_1_incidences.csv"))
+hub_2 <- readr::read_csv(here::here("data_modified", "hub_data_2_incidences.csv"))
+hub_3 <- readr::read_csv(here::here("data_modified", "hub_data_3_incidences.csv"))
+
+hub <- dplyr::bind_rows(hub_1, hub_2, hub_3)
+
+hub_germany <- hub |>
+  dplyr::filter(location == "DE") |>
+  dplyr::distinct(
+    model, target_end_date, target_type, quantile, horizon,
+    .keep_all = TRUE
+  )
+```
+
+We start with a visual overview of the original 5%, 20% 80% and 95%
+quantile predictions during the summer months of 2021 in Germany that
+were submitted by the `EuroCOVIDhub-ensemble` forecasting model:
+
+``` r
+plot_quantiles(
+  hub_germany,
+  model = "EuroCOVIDhub-ensemble", quantiles = c(0.05, 0.2, 0.8, 0.95)
+)
+```
+
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" style="display: block; margin: auto;" />
+
+The original predictions look quite noisy overall with the clear trend
+that uncertainty and, hence, the interval width increases with growing
+forecast horizons. We want to analyze if one particular post-processing
+method, *Conformalized Quantile Regression*, improves the predictive
+performance for this model on a validation set by computing the Weighted
+Interval Scores for Covid-19 Cases and Covid-19 Deaths separately:
+
+``` r
+df_updated <- update_predictions(
+  hub_germany,
+  methods = "cqr", models = "EuroCOVIDhub-ensemble", cv_init_training = 0.5
+)
+df_combined <- collect_predictions(df_updated)
+```
+
+``` r
+df_combined |>
+  extract_validation_set() |>
+  scoringutils::score() |>
+  scoringutils::summarise_scores(by = c("method", "target_type"))
+```
+
+|  method  | target type | interval score | dispersion |
+|:--------:|:-----------:|:--------------:|:----------:|
+|   cqr    |    Cases    |     13.40      |    5.07    |
+| original |    Cases    |     13.78      |    3.81    |
+|   cqr    |   Deaths    |      0.06      |    0.01    |
+| original |   Deaths    |      0.05      |    0.03    |
+
+We can observe that CQR improved the WIS for Covid-19 Cases, whereas the
+predictive performance for Covid-19 Deaths dropped slightly.
+
+The `update_predictions()` and `collect_predictions()` combination
+immediately generalize to multiple post-processing methods. The only
+syntax change is a vector input of strings for the `methods` argument
+instead of a single string. Hence, if not desired, the user does not
+have to learn separate interfaces for each method nor be familar with
+the precise implementation. This design allows for maximum syntactic
+consistency by masking the internal functionality.
+
+Further, the `update_predictions()` function automatically takes care of
+*quantile crossing* by reordering the output predictions in increasing
+quantile order. The `cv_init_training` parameter specifies the fraction
+of observations that is used for the pure training set before the Time
+Series Cross Validation process starts.
+
+As seen in the previous table CQR increases the *dispersion* of the
+predictions for Cases significantly. We can visualize one example of
+these wider intervals with the `plot_intervals()` function:
+
+``` r
+plot_intervals(df_combined, target_type = "Cases", horizon = 2, quantile = 0.05)
+```
+
+<img src="man/figures/README-unnamed-chunk-12-1.png" width="80%" style="display: block; margin: auto;" />
+
+Indeed, the 2 weeks-ahead 90% prediction intervals for Covid Cases in
+Germany are widened by CQR. The solid black line represents the true
+Case incidences whereas the grey dashed line indicates the end of the
+training set within the Cross Validation as specified by the
+`cv_init_training` parameter.
+
+Recall that prediction uncertainty increases with larger forecast
+horizons. Similarly, CQR *corrections* also increase in size for
+forecasts that are submitted further in advance, which can be seen in
+the next plot along the horizontal dimension. Interestingly, CQR expands
+the intervals only for Cases whereas the forecasts for Deaths are
+narrowed!
+
+``` r
+plot_intervals_grid(df_combined, facet_by = "horizon", quantiles = 0.05)
+```
+
+<img src="man/figures/README-unnamed-chunk-13-1.png" width="100%" style="display: block; margin: auto;" />
+
+Besides the target type (Cases or Deaths), it is also useful to compare
+CQR effects across forecast horizons or quantiles. Quite intuitively,
+CQR generally has a stronger *relative* benefit for large time horizons
+and extreme quantiles, where the original forecaster faced a greater
+uncertainty. The figure below illustrates how, in special cases like
+this one, the effect on the validation set can show rather mixed trends
+due to disadvantageous adjustments for the two and three weeks-ahead 98%
+prediction intervals:
+
+``` r
+df_eval <- eval_methods(df_combined, summarise_by = c("quantile", "horizon"))
+plot_eval(df_eval)
+```
+
+<img src="man/figures/README-unnamed-chunk-14-1.png" width="80%" style="display: block; margin: auto;" />

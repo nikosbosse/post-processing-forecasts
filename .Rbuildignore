@@ -4,7 +4,7 @@
 ^Rmd$
 ^presentations$
 ^term_paper$
-^Readme_files$
+^Background$
 ^tests/Archiv$
 ^tests/test-parallel-qsa\.R$
 ^nohup\.out$

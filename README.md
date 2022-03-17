@@ -177,7 +177,7 @@ bounds of the ensemble intervals are approximately halfway between the
 lower (upper) bounds of the `cqr_asymmetric` and `qsa_flexible`
 intervals:
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
 Except for the last observations on the horizontal axis the forecasts of
 the two CQR versions are quite similar and significantly closer to the
@@ -318,7 +318,7 @@ plot_quantiles(
 )
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
 
 The original predictions look quite noisy overall with the clear trend
 that uncertainty and, hence, the interval width increases with growing
@@ -374,7 +374,7 @@ these wider intervals with the `plot_intervals()` function:
 plot_intervals(df_combined, target_type = "Cases", horizon = 2, quantile = 0.05)
 ```
 
-<img src="man/figures/README-unnamed-chunk-12-1.png" width="80%" style="display: block; margin: auto;" />
+<img src="man/figures/README-unnamed-chunk-12-1.png" width="100%" />
 
 Indeed, the 2 weeks-ahead 90% prediction intervals for Covid Cases in
 Germany are widened by CQR. The solid black line represents the true
@@ -393,7 +393,7 @@ narrowed!
 plot_intervals_grid(df_combined, facet_by = "horizon", quantiles = 0.05)
 ```
 
-<img src="man/figures/README-unnamed-chunk-13-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="man/figures/README-unnamed-chunk-13-1.png" width="100%" />
 
 Besides the target type (Cases or Deaths), it is also useful to compare
 CQR effects across forecast horizons or quantiles. Quite intuitively,
@@ -409,4 +409,4 @@ df_eval <- eval_methods(df_combined, summarise_by = c("quantile", "horizon"))
 plot_eval(df_eval)
 ```
 
-<img src="man/figures/README-unnamed-chunk-14-1.png" width="80%" style="display: block; margin: auto;" />
+<img src="man/figures/README-unnamed-chunk-14-1.png" width="100%" />

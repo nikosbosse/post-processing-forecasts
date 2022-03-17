@@ -13,8 +13,7 @@ knitr::opts_chunk$set(
   fig.path = "man/figures/README-",
   out.width = "100%",
   dpi = 300,
-  fig.asp = 0.618,
-  fig.align = "center"
+  fig.asp = 0.618
 )
 ```
 
@@ -341,7 +340,7 @@ The `cv_init_training` parameter specifies the fraction of observations that is 
 As seen in the previous table CQR increases the *dispersion* of the predictions for Cases significantly.
 We can visualize one example of these wider intervals with the `plot_intervals()` function:
 
-```{r, out.width="80%"}
+```{r}
 plot_intervals(df_combined, target_type = "Cases", horizon = 2, quantile = 0.05)
 ```
 
@@ -360,7 +359,7 @@ Besides the target type (Cases or Deaths), it is also useful to compare CQR effe
 Quite intuitively, CQR generally has a stronger *relative* benefit for large time horizons and extreme quantiles, where the original forecaster faced a greater uncertainty.
 The figure below illustrates how, in special cases like this one, the effect on the validation set can show rather mixed trends due to disadvantageous adjustments for the two and three weeks-ahead $98$% prediction intervals:
 
-```{r, out.width="80%"}
+```{r}
 df_eval <- eval_methods(df_combined, summarise_by = c("quantile", "horizon"))
 plot_eval(df_eval)
 ```

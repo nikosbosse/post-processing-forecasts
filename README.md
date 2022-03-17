@@ -330,7 +330,7 @@ post-processing methods yields a couple of interesting findings:
     different strengths and weaknesses depending on the location in
     feature space.
 
--   The asymmetric CQR method suffers most from *overfitting*, as it
+-   The asymmetric CQR method suffers most from *overfitting* as it
     results in the lowest training but highest validation score for the
     small UK data set.
 

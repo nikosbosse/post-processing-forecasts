@@ -1,0 +1,1828 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Post-Processing COVID-19 Forecasts</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Matthias Herp &amp; Joel Beck" />
+    <script src="hub-presentation_files/header-attrs/header-attrs.js"></script>
+    <link href="hub-presentation_files/tile-view/tile-view.css" rel="stylesheet" />
+    <script src="hub-presentation_files/tile-view/tile-view.js"></script>
+    <link href="hub-presentation_files/panelset/panelset.css" rel="stylesheet" />
+    <script src="hub-presentation_files/panelset/panelset.js"></script>
+    <script src="hub-presentation_files/mark.js/mark.min.js"></script>
+    <link href="hub-presentation_files/xaringanExtra-search/search.css" rel="stylesheet" />
+    <script src="hub-presentation_files/xaringanExtra-search/search.js"></script>
+    <script>window.addEventListener('load', function() { window.xeSearch = new RemarkSearch({"position":"bottom-left","caseSensitive":false,"showIcon":false,"autoSearch":false}) })</script>
+    <link href="hub-presentation_files/tachyons/tachyons.min.css" rel="stylesheet" />
+    <script src="hub-presentation_files/xaringanExtra_fit-screen/fit-screen.js"></script>
+    <link href="hub-presentation_files/xaringanExtra-extra-styles/xaringanExtra-extra-styles.css" rel="stylesheet" />
+    <script src="hub-presentation_files/xaringanExtra-progressBar/progress-bar.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Post-Processing COVID-19 Forecasts
+## - Forecasting Hub Presentation -<br><br>
+### Matthias Herp &amp; Joel Beck
+### 11.02.2022
+
+---
+
+&lt;!-- here classes for second slide --&gt;
+
+
+&lt;!-- General Layout &amp; Workflow --&gt;
+&lt;!-- ----------------------------------------------------------------------- --&gt;
+
+&lt;!-- 
+build pdf slides with the xaringanBuilder package 
+use e.g. xaringanBuilder::build_pdf(input = "file-path", partial_slides = TRUE, complex_slides = FALSE, keep_intermediates = TRUE) 
+--&gt;
+
+&lt;!-- 
+Slide Classes:
+
+- top, middle, bottom
+- left, center, right
+- inverse
+
+- background-image: url(link)
+- background-size: cover | contain
+- background-position: center
+
+- name
+- template
+- layout: true | false
+- count: false
+- seal: true | false (create title slide from YAML header)
+
+
+Content Classes:
+
+- .left[], .center[], .right[] (alignment)
+- .left-column[], .right-column[] (positioning, unequal width)
+- .pull-left[], .pull-right[] (positioning, equal width)
+- .footnote[]
+- .color[]
+- custom classes defined in CSS code chunks, 
+e.g. .tiny[], .small[], .medium[], .large[], .huge[]
+
+
+Colors:
+- Color Scheme Generator: https://coolors.co/
+- Google Color Picker
+
+Images:
+- Background Images: https://unsplash.com/
+
+Fonts:
+- Google Fonts: https://fonts.google.com/
+
+Emojis:
+- Find Emoji Name: https://emojipedia.org/
+- Use Ermoji Addin to get Unicode Symbol or R Code for emo package
+- emo Package: https://github.com/hadley/emo 
+
+Icons:
+- icon Package: https://pkg.mitchelloharawild.com/icons/
+
+Embedding:
+- Images and Gifs: usual Markdown Syntax ![]() or html syntax &lt;iframe&gt;&lt;/iframe&gt;
+- Youtube Videos: Click 'Teilen =&gt; Einbetten' below the video, can also control the starting time of the video
+- Example: &lt;iframe width="800" height="400" src="link" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen&gt;&lt;/iframe&gt;
+
+--&gt;
+
+
+&lt;!-- Settings for xaringanthemer &amp; xaringanExtra --&gt;
+&lt;!-- ----------------------------------------------------------------------- --&gt;
+
+
+
+
+&lt;!-- CSS Classes taken from Garrick Aiden-Buie's Blog --&gt;
+&lt;!-- ----------------------------------------------------------------------- --&gt;
+
+&lt;style type="text/css"&gt;
+/* 
+This code highlights the last item in an incremental list 
+Add 'class: highlight-last-item' or 'class: bold-last-item' to slide 
+*/
+
+.highlight-last-item &gt; ul &gt; li, 
+.highlight-last-item &gt; ol &gt; li {
+  opacity: 0.5;
+}
+
+.highlight-last-item &gt; ul &gt; li:last-of-type,
+.highlight-last-item &gt; ol &gt; li:last-of-type {
+  opacity: 1;
+}
+
+.bold-last-item &gt; ul &gt; li:last-of-type,
+.bold-last-item &gt; ol &gt; li:last-of-type {
+  font-weight: bold;
+}
+
+/* fixes positioning of double .pull-left[] on same slide */
+.pull-right ~ * { clear: unset; }
+.pull-right + * { clear: both; }
+&lt;/style&gt;
+
+&lt;!-- 
+CSS Changes in CSS code chunks **and** inside of &lt;style&gt; tags apply to the **entire** document, indpendent of their location.
+To apply changes only to the current slide, create new CSS class and put text into enclosing brackets.
+
+Thus, &lt;style&gt; tags are NOT necessary for xaringan !!
+--&gt;
+
+
+&lt;!-- CSS Classes taken from Thomas Mock --&gt;
+&lt;!-- https://github.com/jthomasmock/tidymodels-workshops/blob/master/tidymodels-intro-phil.Rmd --&gt;
+&lt;!-- ----------------------------------------------------------------------- --&gt;
+
+&lt;style type="text/css"&gt;
+.hljs-github .hjls {
+  background: black;
+}
+
+.remark-slide thead, .remark-slide tr:nth-child(2n) {
+  background-color: white;
+}
+.remark-slide thead, .remark-slide tr:nth-child(2n) {
+  background-color: white;
+}
+
+/* footer specifications */
+div.my-footer {
+    background-color: #1a1917;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    height: 20px;
+    width: 100%;
+}
+div.my-footer span {
+    font-size: 10pt;
+    color: #F7F8FA;
+    position: absolute;
+    left: 15px;
+    bottom: 2px;
+}
+&lt;/style&gt;
+
+
+&lt;!-- Custom CSS Classes --&gt;
+&lt;!-- ----------------------------------------------------------------------- --&gt;
+
+&lt;style type="text/css"&gt;
+.bold {
+  font-weight: bold;
+}
+
+.underline {
+  text-decoration: underline;  
+}
+
+.mono {
+  font-family: 'Fira Mono', monospace;
+}
+
+/* make left and right column horizontally aligned */
+.right-column {
+  padding-top: 0;
+}
+
+/* 
+The first two commands change the background of the input code block,
+the repeated commands with the star change the background of the output code block
+
+With special name .remark-code this is set as the new default, add custom prefix ( e.g. .grey-code-bg .remark-code) to leave the default unchanged
+*/
+.remark-code, .remark-code * {
+    background-color: #f0f2f0;
+}
+&lt;/style&gt;
+
+&lt;style type="text/css"&gt;
+/* Font Size Categories for Text and Code */
+.size-60 {
+  font-size: 60%;
+}
+.size-60 pre .remark-code {
+  font-size: 60%;
+}
+.size-60 .remark-code {
+  font-size: 60%;
+}
+
+.size-70 {
+  font-size: 70%;
+}
+.size-70 pre .remark-code {
+  font-size: 70%;
+}
+.size-70 .remark-code {
+  font-size: 70%;
+}
+
+.size-80 {
+  font-size: 80%;
+}
+.size-80 pre .remark-code {
+  font-size: 80%;
+}
+.size-80 .remark-code {
+  font-size: 80%;
+}
+
+.size-90 {
+  font-size: 90%;
+}
+.size-90 pre .remark-code {
+  font-size: 90%;
+}
+.size-90 .remark-code {
+  font-size: 90%;
+}
+
+.size-100 {
+  font-size: 100%;
+}
+.size-100 pre .remark-code {
+  font-size: 100%;
+}
+.size-100 .remark-code {
+  font-size: 100%;
+}
+
+.size-110 {
+  font-size: 110%;
+}
+.size-110 pre .remark-code {
+  font-size: 110%;
+}
+.size-110 .remark-code {
+  font-size: 110%;
+}
+
+.size-120 {
+  font-size: 120%;
+}
+.size-120 pre .remark-code {
+  font-size: 120%;
+}
+.size-120 .remark-code {
+  font-size: 120%;
+}
+
+.size-130 {
+  font-size: 130%;
+}
+.size-130 pre .remark-code {
+  font-size: 130%;
+}
+.size-130 .remark-code {
+  font-size: 130%;
+}
+
+.size-140 {
+  font-size: 140%;
+}
+.size-140 pre .remark-code {
+  font-size: 140%;
+}
+.size-140 .remark-code {
+  font-size: 140%;
+}
+
+.size-150 {
+  font-size: 150%;
+}
+.size-150 pre .remark-code {
+  font-size: 150%;
+}
+.size-150 .remark-code {
+  font-size: 150%;
+}
+&lt;/style&gt;
+
+
+&lt;style type="text/css"&gt;
+/* Two - Column Layouts of different widths */
+.left-75 {
+  width: 75%;
+  float: left;
+}
+.right-20 {
+  width: 20%;
+  float: right;
+}
+.right-20 + * {
+  clear: both;
+}
+
+
+.left-70 {
+  width: 70%;
+  float: left;
+}
+.right-25 {
+  width: 25%;
+  float: right;
+}
+.right-25 + * {
+  clear: both;
+}
+
+
+.left-65 {
+  width: 65%;
+  float: left;
+}
+.right-30 {
+  width: 30%;
+  float: right;
+}
+.right-30 + * {
+  clear: both;
+}
+
+
+.left-60 {
+  width: 60%;
+  float: left;
+}
+.right-35 {
+  width: 35%;
+  float: right;
+}
+.right-35 + * {
+  clear: both;
+}
+
+
+.left-55 {
+  width: 55%;
+  float: left;
+}
+.right-40 {
+  width: 40%;
+  float: right;
+}
+.right-40 + * {
+  clear: both;
+}
+
+
+.left-40 {
+  width: 40%;
+  float: left;
+}
+.right-55 {
+  width: 55%;
+  float: right;
+}
+.right-55 + * {
+  clear: both;
+}
+
+
+.left-35 {
+  width: 35%;
+  float: left;
+}
+.right-60 {
+  width: 60%;
+  float: right;
+}
+.right-60 + * {
+  clear: both;
+}
+
+
+.left-30 {
+  width: 30%;
+  float: left;
+}
+.right-65 {
+  width: 65%;
+  float: right;
+}
+.right-65 + * {
+  clear: both;
+}
+
+
+.left-25 {
+  width: 25%;
+  float: left;
+}
+.right-65 {
+  width: 65%;
+  float: right;
+}
+.right-65 + * {
+  clear: both;
+}
+
+
+.left-20 {
+  width: 20%;
+  float: left;
+}
+.right-75 {
+  width: 75%;
+  float: right;
+}
+.right-75 + * {
+  clear: both;
+}
+&lt;/style&gt;
+
+
+&lt;!-- Code Chunk Options --&gt;
+&lt;!-- ----------------------------------------------------------------------- --&gt;
+
+
+
+
+&lt;!-- Example First Slide for Link Footer --&gt;
+&lt;!-- ----------------------------------------------------------------------- --&gt;
+
+&lt;!-- layout: true --&gt;
+
+&lt;!-- &lt;div class="my-footer"&gt;&lt;span&gt;text&lt;/span&gt;&lt;/div&gt; --&gt;
+
+&lt;!-- this adds the link footer to all slides, depends on my-footer class in css--&gt;
+
+&lt;!-- --- --&gt;
+
+
+
+&lt;!-- here content of second slide --&gt;
+
+## Motivation:&lt;br&gt;UK Covid-19 Crowd Forecasting Challenge
+
+.footnote[ 
+https://www.crowdforecastr.org/2021/05/11/uk-challenge/ &lt;br&gt;
+https://epiforecasts.io/uk-challenge/
+]
+
+- Idea: Compare forecasts from humans with model-based predictions of Covid-19 Cases and Deaths for the next 4 weeks in the United Kingdom
+
+--
+
+- Empirically human forecasts are surprisingly competitive and in some cases even better than statistical models 
+
+--
+
+- This is mostly true for **point** forecasts, prediction **intervals** are often chosen too narrow, i.e. humans tend to be too confident in their own predictions
+
+--
+
+- Goal: Use valuable information from point forecasts and adjust prediction intervals / quantile forecasts with an appropriate correction procedure  
+
+--
+
+- Part of ongoing research project by the **epiforecasts** group at the London School of Hygiene &amp; Tropical Medicine where our project supervisor Nikos Bosse is engaged as a doctoral candidate
+
+---
+
+## Setting
+
+- Post-Processing Covid19 forecasts: Systematically adjust existing prediction intervals with the goal of better out-of-sample performance
+
+--
+
+- Original forecasts from two data sources: The **UK Covid-19 Crowd Forecasting Challenge**&lt;sup&gt;1&lt;/sup&gt; (includes forecasts of non-expert individuals) and the **European Forecast Hub**&lt;sup&gt;2&lt;/sup&gt; (forecasts from international research groups)
+
+.footnote[ 
+[1] https://www.crowdforecastr.org/2021/05/11/uk-challenge/ &lt;br&gt;
+[2] https://covid19forecasthub.eu/index.html
+]
+
+--
+
+- We consider five dimensions: **location**, **model**, **target type**, **horizon** and **quantile**
+
+--
+
+- The quality of prediction intervals is measured by the **Weighted Interval Score** based on a trade-off between interval coverage and precision  
+
+---
+
+## Evaluation
+
+- Based on **Weighted Interval Score**&lt;sup&gt;1&lt;/sup&gt;  
+
+.center.bold[WIS = Sharpness + Overprediction + Underprediction]
+
+.footnote[[1] https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008618]
+
+--
+
+  - For a given quantile level `\(\alpha\)`, true observed value `\(y\)` as well as lower bound `\(l\)` and upper bound `\(u\)` of the corresponding `\((1 - \alpha) \cdot 100\)`% prediction interval, the score is computed as
+
+$$
+Score_\alpha(y) = (u-l) + \frac{2}{\alpha} \cdot (l-y) \cdot \mathbf{1} (y \leq l) + \frac{2}{\alpha} \cdot (y-u) \cdot \mathbf{1}(y \geq u)
+$$
+
+--
+
+- The Score of the entire model can be obtained from a weighted sum over all (included) quantile levels `\(\alpha\)`  
+
+--
+
+- Implemented in the .mono[**scoringutils**] R package written by Nikos
+
+---
+class: inverse, center, middle
+
+# The .mono[postforecasts] package 📦
+
+---
+
+## Core Idea
+
+- Structured and unifying framework for implementing various post-processing techniques
+
+--
+
+- Aims to establish a consistent workflow for a collection of post-processing methods
+&lt;!-- supported by an intuitive user interface  --&gt;
+
+--
+
+- Allows for convenient comparisons between methods for the data of interest
+&lt;!-- and the choice of the best method --&gt;
+
+---
+
+## Code example
+
+.left-30[
+
+- Sub-samples of the data can be specified along all five data dimensions
+
+- **cv_init_training** sets the end point of the training set
+
+- Results can be extracted for the validation set separately
+
+]
+
+.right-65[
+
+
+```r
+df_updated &lt;- update_predictions(
+    df = uk_data, 
+    methods = "cqr", 
+    models = "epiforecasts-EpiExpert",
+    cv_init_training = 5, 
+    horizons = 4, 
+    verbose = FALSE, 
+    parallel = FALSE
+  )
+df_combined &lt;- df_updated |&gt; collect_predictions()
+```
+
+
+```r
+df_combined |&gt;
+  extract_validation_set() |&gt;
+  scoringutils::score() |&gt;
+  scoringutils::summarise_scores(by = c("method")) |&gt;
+  dplyr::select(-c("coverage_deviation","bias","aem")) |&gt;
+  display_table()
+```
+
+<div id="dkmlibdljl" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#dkmlibdljl .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: 0;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#dkmlibdljl .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#dkmlibdljl .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#dkmlibdljl .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#dkmlibdljl .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#dkmlibdljl .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#dkmlibdljl .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#dkmlibdljl .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#dkmlibdljl .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#dkmlibdljl .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#dkmlibdljl .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#dkmlibdljl .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#dkmlibdljl .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#dkmlibdljl .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#dkmlibdljl .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#dkmlibdljl .gt_row {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#dkmlibdljl .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#dkmlibdljl .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#dkmlibdljl .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#dkmlibdljl .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#dkmlibdljl .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#dkmlibdljl .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#dkmlibdljl .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#dkmlibdljl .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#dkmlibdljl .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#dkmlibdljl .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#dkmlibdljl .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#dkmlibdljl .gt_left {
+  text-align: left;
+}
+
+#dkmlibdljl .gt_center {
+  text-align: center;
+}
+
+#dkmlibdljl .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#dkmlibdljl .gt_font_normal {
+  font-weight: normal;
+}
+
+#dkmlibdljl .gt_font_bold {
+  font-weight: bold;
+}
+
+#dkmlibdljl .gt_font_italic {
+  font-style: italic;
+}
+
+#dkmlibdljl .gt_super {
+  font-size: 65%;
+}
+
+#dkmlibdljl .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 65%;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">method</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">interval_score</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">dispersion</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">underprediction</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">overprediction</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">cqr</td>
+<td class="gt_row gt_right">59050.84</td>
+<td class="gt_row gt_right">23085.12</td>
+<td class="gt_row gt_right">1119.788</td>
+<td class="gt_row gt_right">34845.93</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">original</td>
+<td class="gt_row gt_right gt_striped">62768.42</td>
+<td class="gt_row gt_right gt_striped">10771.58</td>
+<td class="gt_row gt_right gt_striped">3617.736</td>
+<td class="gt_row gt_right gt_striped">48379.10</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+
+]
+
+---
+class: inverse, middle, center
+
+# Conformalized Quantile Regression
+
+---
+
+## CQR Algorithm
+
+Theory based on Paper Romano Y., Patterson E., and Candès E. (2019): *Conformalized Quantile Regression*
+
+**Step 1:** &lt;br&gt;
+Split the data into a training and validation (here called *calibration*) set, indexed by `\(I_1\)` and `\(I_2\)`, respectively.
+
+--
+
+**Step 2:** &lt;br&gt;
+For a given quantile `\(\alpha\)` and a given quantile regression algorithm `\(\mathcal{A}\)`, calculate lower and upper interval bounds on the training set:
+
+$$
+`\begin{aligned}
+\left\{ \hat{ q}_{\alpha, low}, \; \hat{ q}_{\alpha, high} \right\} \leftarrow \mathcal{A} \left( \left\{ (X_i, Y_i): i \in I_1 \right\} \right) 
+\end{aligned}`
+$$
+
+--
+
+**Step 3:** &lt;br&gt;
+Compute **conformity scores** on the calibration set:
+
+$$
+`\begin{aligned}
+E_i := \operatorname*{max} \left\{ \hat{ q}_{\alpha, low}(X_i) - Y_i, \; Y_i - \hat{ q}_{\alpha, high}(X_i) \right\} \quad \forall \; i \in I_2
+\end{aligned}`
+$$
+
+For each `\(i\)`, the corresponding score `\(E_i\)` is **positive** if `\(Y_i\)` is **outside** the interval `\(\left[ \hat{ q}_{\alpha, low}(X_i), \; \hat{ q}_{\alpha, high}(X_i) \right]\)` and **negative** if `\(Y_i\)` is **inside** the interval.
+
+---
+
+## CQR Algorithm
+
+**Step 4:** &lt;br&gt;
+Compute the **margin** `\(Q_{1 - \alpha}(E, I_2)\)` given by the `\((1 - \alpha)(1 + \frac{ 1}{ 1 + \left| I_2 \right| })\)`-th empirical quantile of the scores `\(E_i\)` in the calibration set.
+
+--
+
+**Step 5:** &lt;br&gt;
+On the basis of the original prediction interval bounds `\(\hat{ q}_{\alpha, low}(X_i)\)` and `\(\hat{ q}_{\alpha, high}(X_i)\)`, the new *post-processed* prediction interval for `\(Y_i\)` is given by:
+
+$$
+`\begin{aligned}
+C(X_{n+1}) = \left[ \hat{ q}_{\alpha,  low}(X_i) - Q_{1 - \alpha}(E, I_2), \; \hat{ q}_{\alpha,  high}(X_i) + Q_{1 - \alpha}(E, I_2) \right].
+\end{aligned}`
+$$
+---
+
+## CQR Extensions
+
+We propose a **asymmetric** extension of CQR that uses different margins for the upper and lower bounds
+
+--
+
+**Step 3:** &lt;br&gt;
+Compute **upper and lower bound conformity scores** on the calibration set:
+
+$$
+`\begin{aligned}
+E_{i, low} &amp;:= \hat{ q}_{\alpha, low}(X_i) - Y_i \quad \forall \; i \in I_2 \\
+E_{i, high} &amp;:= Y_i - \hat{ q}_{\alpha, high}(X_i) \quad \forall \; i \in I_2 
+\end{aligned}`
+$$
+--
+
+**Step 5:** &lt;br&gt;
+The new *post-processed* prediction interval for `\(Y_i\)` is given by:
+
+$$
+`\begin{aligned}
+C(X_{n+1}) = \left[ \hat{ q}_{\alpha, low}(X_i) - Q_{1 - \alpha, low}(E_{low}, I_2), \; \hat{ q}_{\alpha, high}(X_i) + Q_{1 - \alpha, high}(E_{high}, I_2) \right].
+\end{aligned}`
+$$
+---
+
+## CQR Extensions
+
+We also propose a **asymmetric and multiplicative** extension of CQR that uses relative margins bounds
+
+--
+
+**Step 3:** &lt;br&gt;
+Compute **upper and lower bound conformity scores** on the calibration set:
+
+$$
+`\begin{aligned}
+E_{i, low} &amp;:= \frac{ Y_i}{ \hat{ q}_{\alpha, low}(X_i)} \quad \forall \; i \in I_2 \\
+E_{i, high} &amp;:= \frac{ Y_i}{ \hat{ q}_{\alpha, high}(X_i)} \quad \forall \; i \in I_2,
+\end{aligned}`
+$$
+
+--
+
+**Step 5:** &lt;br&gt;
+The new *post-processed* prediction interval for `\(Y_i\)` is given by:
+
+$$
+`\begin{aligned}
+C(X_{n+1}) = \left[ \hat{ q}_{\alpha, low}(X_i) \cdot Q_{1 - \alpha, low}(E_{low}, I_2), \; \hat{ q}_{\alpha, high}(X_i) \cdot Q_{1 - \alpha, high}(E_{high}, I_2) \right].
+\end{aligned}`
+$$
+
+---
+
+## CQR Extensions
+
+While the idea of multiplicative correction terms is appealing, it turns out that the approach above is flawed in two ways:
+
+--
+
+1. It is very outlier sensitive and tends to **produce huge margins** for short time series.
+
+--
+
+--&gt; A possible solution is to **regularize the conformity scores** by a root transformation:
+
+$$
+`\begin{aligned}
+E_{i, low}^{reg} = E_{i, low}^{ \left( \frac{ 1}{ \sigma_{E_{low}}} \right)}, \quad 
+E_{i, high}^{reg} = E_{i, high}^{ \left( \frac{ 1}{ \sigma_{E_{high}}} \right)},
+\end{aligned}`
+$$
+--
+
+2. It can result in **extreme intervals shifts**, in our case typically upward.
+
+--
+
+--&gt; To counteract this we restrained the shifts to both either decrease or increase the interval:
+
+$$
+`\begin{aligned}
+Q_{1 - \alpha, low} \cdot Q_{1 - \alpha, high} \stackrel{ !}{ =} 1.
+\end{aligned}`
+$$
+
+---
+
+## CQR Results
+
+&lt;div class="figure"&gt;
+&lt;img src="hub-presentation_files/figure-html/ch2-uk-cqr3-intervals-1.png" alt="Comparison of CQR variations on the UK data set." width="80%" /&gt;
+&lt;p class="caption"&gt;Comparison of CQR variations on the UK data set.&lt;/p&gt;
+&lt;/div&gt;
+
+---
+class: inverse, center, middle
+
+# Quantile Spread Averaging (QSA)
+
+---
+
+## QSA - Intuition
+
+.left-30[ 
+- Three possibilities to define quantile spreads
+
+- We choose median based quantile spreads due to the advantages:
+    + spreads are independent of quantile number 
+    + non-symmetric adjustments are possible
+
+- Disadvantage: quantile crossing
+
+]
+
+.right-65[ 
+
+![](Images/qs_all.png)
+
+]
+
+---
+
+## QSA - Theory 
+
+Let `\(n\)` specify the number of observations in the training set within this combination, `\(\mathbf{y} \in \mathbb{R}^n\)` the vector of true values and `\(\hat{\mathbf{q}}_1, \ldots, \hat{\mathbf{q}}_p \in \mathbb{R}^n\)` vectors of quantile estimates for `\(p\)` different probability levels.
+
+Then, for each time series, the quantile spread adjustment computes the quantile spread factors `\(\mathbf{w}^* \in \mathbb{R}^p\)` by minimizing the weighted interval score:
+$$
+`\begin{aligned}
+\mathbf{w}^*
+&amp;= \operatorname*{arg\,min}_{\mathbf{w} \in \mathbb{R}^p} WIS_\alpha(\mathbf{y}) \\
+&amp;= \operatorname*{arg\,min}_{\mathbf{w} \in \mathbb{R}^p} \sum_{i=1}^p \sum_{j=1}^n (u_{i,j}^*-l_{i,j}^*) + \frac{2}{\alpha} \cdot (l_{i,j}^*-y_j) \cdot \mathbf{1} (y_j \leq l_{i,j}^*) + \frac{2}{\alpha} \cdot (y_j-u_{i,j}^*) \cdot \mathbf{1}(y_j \geq u_{i,j}^*) \\
+\text{s.t.} \qquad l_{i,j}^* &amp;= l_{i,j} + (l_{i,j}-m) \cdot w_i \quad \text{and} \quad 
+u_{i,j}^* = u_{i,j} + (u_{i,j}-m) \cdot w_i 
+\end{aligned}`
+$$
+
+--
+
+The optimization uses the **optim** function from the **stats**&lt;sup&gt;1&lt;/sup&gt; package. 
+As optimization method we use the quasi-Newton method **BFGS** named after Broyden, Fletcher, Goldfarb and Shanno.
+
+&lt;!-- read in preparation: https://en.wikipedia.org/wiki/Broyden–Fletcher–Goldfarb–Shanno_algorithm and find reference to the paper for footnotes. --&gt;
+
+.footnote[ 
+https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/optim
+]
+
+---
+
+## QSA - Flavors and Extensions 
+
+The **postforecasts** package offers three flavors of QSA where each restricts `\(\mathbf{w}\)` differently:
+- uniform: `\(i \in [0, 1, \ldots, p-1, p] \quad w_i = c\)`
+- flexibel: No Restrictions
+- flexibel-symmetric: `\(i \in [0, 1, \ldots, m-1] \quad w_i = w_{p-i}\)`
+
+--
+
+Furthermore, **postforecasts** provides regularization towards QSA Uniform by adding a regularization term `\(Pen(w)\)` with the weight `\(r\)` to the score function: 
+
+$$
+`\begin{aligned}
+\mathbf{w}^*
+&amp;= \operatorname*{arg\,min}_{\mathbf{w} \in \mathbb{R}^p} \ WIS_\alpha(\mathbf{y}) + r \cdot Pen(\mathbf{w}), \quad Pen(\mathbf{w}) = \sum_{i=1}^p (w_i - \bar{w})^2 \\
+\text{s.t.} \qquad \bar{w} &amp;= \frac{1}{p} \sum_{i=1}^p w_i
+\end{aligned}`
+$$
+---
+class: inverse, center, middle
+
+# Ensemble Model
+
+---
+
+---
+
+## Ensemble Model
+
+Predictions for a combination of location, model, target type, horizon and quantile are computed as a convex linear combination of the individual methods. 
+
+$$
+`\begin{aligned}
+\mathbf{w}^*
+= \operatorname*{arg\,min}_{ \mathbf{w} \in [0, 1]^k} IS_\alpha(\mathbf{y})
+&amp;= \operatorname*{arg\,min}_{ \mathbf{w} \in [0, 1]^k} (\mathbf{u}-\mathbf{l}) + \frac{2}{\alpha} \cdot (\mathbf{l}-\mathbf{y}) \cdot 1(\mathbf{y} \leq \mathbf{l}) + \frac{2}{\alpha} \cdot (\mathbf{y}-\mathbf{u}) \cdot 1(\mathbf{y} \geq \mathbf{u}), \\
+\text{with} \qquad \mathbf{l} &amp;= \sum_{j=1}^{k} w_j \mathbf{l}_j, \;\; \mathbf{u} = \sum_{j=1}^{k} w_j \mathbf{u}_j \\
+\text{s.t.} \qquad \left \Vert \mathbf{w} \right \Vert_1 &amp;= \sum_{j=1}^{k} w_j = 1,
+\end{aligned}`
+$$
+--
+
+Advantages of this method are:
+
+1. Predictions remain in the same scale as the individual methods
+
+2. Interpretable coefficients as fractional contribution of experts
+
+---
+class: inverse, center, middle
+
+# Results
+
+---
+
+## Comparison of Prediction Intervals for all Post-Processing Methods including the Ensemble
+
+
+
+&lt;img src="hub-presentation_files/figure-html/ch4-intervals-1.png" width="100%" /&gt;
+
+---
+
+# Overall Method Comparison Results
+
+.left-30[
+
+- Results only for the UK data due to computational demands of QSA
+
+- Ensemble is clearly the best model in the aggregate
+
+- QSA methods tended to be better than CQR
+
+]
+
+.right-65[
+
+<div id="wqxcxxahhi" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#wqxcxxahhi .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: 0;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#wqxcxxahhi .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#wqxcxxahhi .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#wqxcxxahhi .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#wqxcxxahhi .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#wqxcxxahhi .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#wqxcxxahhi .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#wqxcxxahhi .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#wqxcxxahhi .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#wqxcxxahhi .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#wqxcxxahhi .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#wqxcxxahhi .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#wqxcxxahhi .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#wqxcxxahhi .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#wqxcxxahhi .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#wqxcxxahhi .gt_row {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#wqxcxxahhi .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#wqxcxxahhi .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#wqxcxxahhi .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#wqxcxxahhi .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#wqxcxxahhi .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#wqxcxxahhi .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#wqxcxxahhi .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#wqxcxxahhi .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#wqxcxxahhi .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#wqxcxxahhi .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#wqxcxxahhi .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#wqxcxxahhi .gt_left {
+  text-align: left;
+}
+
+#wqxcxxahhi .gt_center {
+  text-align: center;
+}
+
+#wqxcxxahhi .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#wqxcxxahhi .gt_font_normal {
+  font-weight: normal;
+}
+
+#wqxcxxahhi .gt_font_bold {
+  font-weight: bold;
+}
+
+#wqxcxxahhi .gt_font_italic {
+  font-style: italic;
+}
+
+#wqxcxxahhi .gt_super {
+  font-size: 65%;
+}
+
+#wqxcxxahhi .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 65%;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">method</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">validation score</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">training score</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">dispersion</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">ensemble</td>
+<td class="gt_row gt_right">57.693</td>
+<td class="gt_row gt_right">18.220</td>
+<td class="gt_row gt_right">21.731</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">qsa_uniform</td>
+<td class="gt_row gt_right gt_striped">60.001</td>
+<td class="gt_row gt_right gt_striped">20.881</td>
+<td class="gt_row gt_right gt_striped">26.835</td></tr>
+    <tr><td class="gt_row gt_left">qsa_flexible</td>
+<td class="gt_row gt_right">60.470</td>
+<td class="gt_row gt_right">19.480</td>
+<td class="gt_row gt_right">25.314</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">qsa_flexible_symmetric</td>
+<td class="gt_row gt_right gt_striped">60.919</td>
+<td class="gt_row gt_right gt_striped">20.487</td>
+<td class="gt_row gt_right gt_striped">33.218</td></tr>
+    <tr><td class="gt_row gt_left">cqr</td>
+<td class="gt_row gt_right">62.153</td>
+<td class="gt_row gt_right">20.821</td>
+<td class="gt_row gt_right">24.096</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">cqr_asymmetric</td>
+<td class="gt_row gt_right gt_striped">63.972</td>
+<td class="gt_row gt_right gt_striped">14.463</td>
+<td class="gt_row gt_right gt_striped">17.988</td></tr>
+    <tr><td class="gt_row gt_left">original</td>
+<td class="gt_row gt_right">65.739</td>
+<td class="gt_row gt_right">23.615</td>
+<td class="gt_row gt_right">12.001</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+
+]
+
+---
+
+## Method Comparison for each Forecasting Model and Target Type.
+
+&lt;img src="hub-presentation_files/figure-html/ch4-model-target-1.png" width="100%" /&gt;
+
+---
+
+## Method Comparison for each Forecast Horizon and Quantile Level
+
+&lt;img src="hub-presentation_files/figure-html/ch4-horizon-quantile-1.png" width="100%" /&gt;
+
+---
+
+## CQR on the Hub Data
+
+&lt;img src="hub-presentation_files/figure-html/ch2-hub-cqr-eval-1.png" width="100%" /&gt;
+
+---
+
+## CQR Anomalie Poland
+
+&lt;img src="hub-presentation_files/figure-html/ch2-hub-cqr-location-1.png" width="70%" /&gt;
+
+---
+
+## CQR Anomalie Poland
+
+&lt;img src="hub-presentation_files/figure-html/ch2-hub-cqr-poland-intervals-1.png" width="100%" /&gt;
+
+--
+
+---
+class: inverse, center, middle
+
+# Conclusion
+
+---
+
+## Conclusion
+
+- We presented CQR and QSA model flavors for post processing
+
+- For the UK data, post processing improved human forecasts, in particular QSA improved forecasts to a greater amount than CQR
+
+- Furthermore we found an Ensemble of methods to provide thee best adjustments out of sample
+
+- In the Hub data we showed that with CQR post-processing can even benefit model predictions
+
+---
+
+## Possible Next Steps
+
+- Examine QSA and Ensemble adjustments for the Hub data
+
+- Examine Regularized QSA results for both data sets
+
+- Use exponential smoothing to weight observations depending on how far back they where for CQR and QSA
+
+- Apply the methods to further time series analysis domains
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"slideNumberFormat": "%current% / %total%",
+"highlightStyle": "github",
+"highlightLines": true,
+"highlightSpans": true,
+"ratio": "16:9",
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

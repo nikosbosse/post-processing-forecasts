@@ -2,7 +2,7 @@
 title: "Post-Processing COVID-19 Forecasts"
 subtitle: "- Forecasting Hub Presentation -<br><br>"
 author: "Matthias Herp & Joel Beck"
-date: "11.02.2022"
+date: "13.06.2022"
 output:
   xaringan::moon_reader:
     css: xaringan-themer.css
@@ -80,11 +80,11 @@ https://www.crowdforecastr.org/2021/05/11/uk-challenge/ <br>
 https://epiforecasts.io/uk-challenge/
 ]
 
-- Idea: Compare forecasts from humans with model-based predictions of Covid-19 Cases and Deaths for the next 4 weeks in the United Kingdom
+- Idea: Compare **forecasts from humans** with model-based predictions of Covid-19 Cases and Deaths for the next 4 weeks in the United Kingdom
 
 --
 
-- Empirically human forecasts are surprisingly competitive and in some cases even better than statistical models 
+- Empirically human forecasts are **surprisingly competitive** and in some cases even better than statistical models 
 
 --
 
@@ -92,7 +92,7 @@ https://epiforecasts.io/uk-challenge/
 
 --
 
-- Goal: Use valuable information from point forecasts and adjust prediction intervals / quantile forecasts with an appropriate correction procedure  
+- Goal: Use valuable information from point forecasts and **adjust prediction intervals** / quantile forecasts with an appropriate correction procedure  
 
 --
 
@@ -101,10 +101,6 @@ https://epiforecasts.io/uk-challenge/
 ---
 
 ## Setting
-
-- Post-Processing Covid19 forecasts: Systematically adjust existing prediction intervals with the goal of better out-of-sample performance
-
---
 
 - Original forecasts from two data sources: The **UK Covid-19 Crowd Forecasting Challenge**<sup>1</sup> (includes forecasts of non-expert individuals) and the **European Forecast Hub**<sup>2</sup> (forecasts from international research groups)
 
@@ -125,7 +121,7 @@ https://epiforecasts.io/uk-challenge/
 
 ## Evaluation
 
-- Based on **Weighted Interval Score**<sup>1</sup>  
+- Theory based on Paper by Bracher J., Ray E., Gneiting T., and Reich N. (2019): **Weighted Interval Score**<sup>1</sup>  
 
 .center.bold[WIS = Sharpness + Overprediction + Underprediction]
 
@@ -156,16 +152,16 @@ class: inverse, center, middle
 
 ## Core Idea
 
-- Structured and unifying framework for implementing various post-processing techniques
+- Structured and unifying framework for implementing **various post-processing** techniques
 
 --
 
-- Aims to establish a consistent workflow for a collection of post-processing methods
+- Aims to establish a **consistent workflow** for a collection of post-processing methods
 <!-- supported by an intuitive user interface  -->
 
 --
 
-- Allows for convenient comparisons between methods for the data of interest
+- Allows for **convenient comparisons** between methods for the data of interest
 <!-- and the choice of the best method -->
 
 ---
@@ -174,11 +170,11 @@ class: inverse, center, middle
 
 .left-30[
 
-- Sub-samples of the data can be specified along all five data dimensions
+- **Sub-samples** of the data can be specified along all five data dimensions
 
-- **cv_init_training** sets the end point of the training set
+- .mono[cv_init_training] sets the end point of the **training set**
 
-- Results can be extracted for the validation set separately
+- Results can be extracted for the **validation set** separately
 
 ]
 
@@ -323,7 +319,7 @@ $$
 
 ## CQR Extensions
 
-While the idea of multiplicative correction terms is appealing, it turns out that the approach above is flawed in two ways:
+While the idea of multiplicative correction terms is appealing, it turns out that the approach is empirically flawed in two ways:
 
 --
 
@@ -354,19 +350,6 @@ Q_{1 - \alpha, low} \cdot Q_{1 - \alpha, high} \stackrel{ !}{ =} 1.
 $$
 
 ---
-
-## CQR Results
-
-```{r, ch2-uk-cqr3-intervals, echo=FALSE, fig.cap="Comparison of CQR variations on the UK data set.", out.width="80%"}
-uk_cqr3 <- readr::read_rds(here::here("data_results", "uk_cqr3.rds"))
-
-plot_intervals(
-  df = uk_cqr3, model = "epiforecasts-EpiExpert_direct", target_type = "Cases",
-  quantile = 0.2, horizon = 2
-)
-```
-
----
 class: inverse, center, middle
 
 # Quantile Spread Averaging (QSA)
@@ -378,7 +361,7 @@ class: inverse, center, middle
 .left-30[ 
 - Three possibilities to define quantile spreads
 
-- We choose median based quantile spreads due to the advantages:
+- We choose **median based quantile spreads** due to the advantages:
     + spreads are independent of quantile number 
     + non-symmetric adjustments are possible
 
@@ -398,7 +381,7 @@ class: inverse, center, middle
 
 Let $n$ specify the number of observations in the training set within this combination, $\mathbf{y} \in \mathbb{R}^n$ the vector of true values and $\hat{\mathbf{q}}_1, \ldots, \hat{\mathbf{q}}_p \in \mathbb{R}^n$ vectors of quantile estimates for $p$ different probability levels.
 
-Then, for each time series, the quantile spread adjustment computes the quantile spread factors $\mathbf{w}^* \in \mathbb{R}^p$ by minimizing the weighted interval score:
+Then, for each time series, the quantile spread adjustment computes the **quantile spread factors** $\mathbf{w}^* \in \mathbb{R}^p$ by **minimizing the weighted interval score**:
 $$
 \begin{aligned}
 \mathbf{w}^*
@@ -425,9 +408,9 @@ https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/optim
 ## QSA - Flavors and Extensions 
 
 The **postforecasts** package offers three flavors of QSA where each restricts $\mathbf{w}$ differently:
-- uniform: $i \in [0, 1, \ldots, p-1, p] \quad w_i = c$
-- flexibel: No Restrictions
-- flexibel-symmetric: $i \in [0, 1, \ldots, m-1] \quad w_i = w_{p-i}$
+- **uniform**: $i \in [0, 1, \ldots, p-1, p] \quad w_i = c$
+- **flexibel**: No Restrictions
+- **flexibel-symmetric**: $i \in [0, 1, \ldots, m-1] \quad w_i = w_{p-i}$
 
 --
 
@@ -447,16 +430,14 @@ class: inverse, center, middle
 
 ---
 
----
-
 ## Ensemble Model
 
-Predictions for a combination of location, model, target type, horizon and quantile are computed as a convex linear combination of the individual methods. 
+Predictions for a combination of location, model, target type, horizon and quantile are computed as a **convex linear combination** of the individual methods. 
 
 $$
 \begin{aligned}
 \mathbf{w}^*
-= \operatorname*{arg\,min}_{ \mathbf{w} \in [0, 1]^k} IS_\alpha(\mathbf{y})
+= \operatorname*{arg\,min}_{ \mathbf{w} \in [0, 1]^k} WIS_\alpha(\mathbf{y})
 &= \operatorname*{arg\,min}_{ \mathbf{w} \in [0, 1]^k} (\mathbf{u}-\mathbf{l}) + \frac{2}{\alpha} \cdot (\mathbf{l}-\mathbf{y}) \cdot 1(\mathbf{y} \leq \mathbf{l}) + \frac{2}{\alpha} \cdot (\mathbf{y}-\mathbf{u}) \cdot 1(\mathbf{y} \geq \mathbf{u}), \\
 \text{with} \qquad \mathbf{l} &= \sum_{j=1}^{k} w_j \mathbf{l}_j, \;\; \mathbf{u} = \sum_{j=1}^{k} w_j \mathbf{u}_j \\
 \text{s.t.} \qquad \left \Vert \mathbf{w} \right \Vert_1 &= \sum_{j=1}^{k} w_j = 1,
@@ -466,9 +447,9 @@ $$
 
 Advantages of this method are:
 
-1. Predictions remain in the same scale as the individual methods
+1. Predictions remain in the **same scale** as the individual methods
 
-2. Interpretable coefficients as fractional contribution of experts
+2. Interpretable coefficients as **fractional contribution** of experts
 
 ---
 class: inverse, center, middle
@@ -545,11 +526,11 @@ plot_intervals(
 
 .left-30[
 
-- Results only for the UK data due to computational demands of QSA
+- Results only for the **UK data** due to computational demands of QSA
 
-- Ensemble is clearly the best model in the aggregate
+- **Ensemble** is clearly the best model in the aggregate
 
-- QSA methods tended to be better than CQR
+- **QSA** methods tended to be better than CQR
 
 ]
 
@@ -661,7 +642,7 @@ p1 + p2
 
 ## CQR Anomalie Poland
 
-```{r, ch2-hub-cqr-location, echo=FALSE, out.width="70%"}
+```{r, ch2-hub-cqr-location, echo=FALSE}
 df_cqr_hub_location <- eval_methods(hub_cqr, summarise_by = c("location_name"))
 plot_eval(df_cqr_hub_location, heatmap = FALSE) + labs(y = NULL, title = "CQR Improvements of Weighted Interval Score by Country")
 ```
@@ -698,20 +679,32 @@ class: inverse, center, middle
 
 - We presented CQR and QSA model flavors for post processing
 
-- For the UK data, post processing improved human forecasts, in particular QSA improved forecasts to a greater amount than CQR
+--
 
-- Furthermore we found an Ensemble of methods to provide thee best adjustments out of sample
+- For the UK data, **post processing improved human forecasts**, in particular QSA improved forecasts to a greater amount than CQR
 
-- In the Hub data we showed that with CQR post-processing can even benefit model predictions
+--
+
+- Furthermore we found an **Ensemble of methods** to provide the best adjustments out of sample
+
+--
+
+- In the Hub data we showed that with CQR **post-processing can benefit model predictions**
 
 ---
 
 ## Possible Next Steps
 
-- Examine QSA and Ensemble adjustments for the Hub data
+- Examine QSA and Ensemble adjustments for the **Hub data**
 
-- Examine Regularized QSA results for both data sets
+--
 
-- Use exponential smoothing to weight observations depending on how far back they where for CQR and QSA
+- Examine **Regularized QSA** results for both data sets
 
-- Apply the methods to further time series analysis domains
+--
+
+- Use **exponential smoothing to weight observations** depending on how far back they where for CQR and QSA
+
+--
+
+- Apply the methods to **further domains**

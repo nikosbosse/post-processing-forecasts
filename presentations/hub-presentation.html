@@ -26,7 +26,7 @@ class: center, middle, inverse, title-slide
 # Post-Processing COVID-19 Forecasts
 ## - Forecasting Hub Presentation -<br><br>
 ### Matthias Herp &amp; Joel Beck
-### 11.02.2022
+### 13.06.2022
 
 ---
 
@@ -471,11 +471,11 @@ https://www.crowdforecastr.org/2021/05/11/uk-challenge/ &lt;br&gt;
 https://epiforecasts.io/uk-challenge/
 ]
 
-- Idea: Compare forecasts from humans with model-based predictions of Covid-19 Cases and Deaths for the next 4 weeks in the United Kingdom
+- Idea: Compare **forecasts from humans** with model-based predictions of Covid-19 Cases and Deaths for the next 4 weeks in the United Kingdom
 
 --
 
-- Empirically human forecasts are surprisingly competitive and in some cases even better than statistical models 
+- Empirically human forecasts are **surprisingly competitive** and in some cases even better than statistical models 
 
 --
 
@@ -483,7 +483,7 @@ https://epiforecasts.io/uk-challenge/
 
 --
 
-- Goal: Use valuable information from point forecasts and adjust prediction intervals / quantile forecasts with an appropriate correction procedure  
+- Goal: Use valuable information from point forecasts and **adjust prediction intervals** / quantile forecasts with an appropriate correction procedure  
 
 --
 
@@ -492,10 +492,6 @@ https://epiforecasts.io/uk-challenge/
 ---
 
 ## Setting
-
-- Post-Processing Covid19 forecasts: Systematically adjust existing prediction intervals with the goal of better out-of-sample performance
-
---
 
 - Original forecasts from two data sources: The **UK Covid-19 Crowd Forecasting Challenge**&lt;sup&gt;1&lt;/sup&gt; (includes forecasts of non-expert individuals) and the **European Forecast Hub**&lt;sup&gt;2&lt;/sup&gt; (forecasts from international research groups)
 
@@ -516,7 +512,7 @@ https://epiforecasts.io/uk-challenge/
 
 ## Evaluation
 
-- Based on **Weighted Interval Score**&lt;sup&gt;1&lt;/sup&gt;  
+- Theory based on Paper by Bracher J., Ray E., Gneiting T., and Reich N. (2019): **Weighted Interval Score**&lt;sup&gt;1&lt;/sup&gt;  
 
 .center.bold[WIS = Sharpness + Overprediction + Underprediction]
 
@@ -547,16 +543,16 @@ class: inverse, center, middle
 
 ## Core Idea
 
-- Structured and unifying framework for implementing various post-processing techniques
+- Structured and unifying framework for implementing **various post-processing** techniques
 
 --
 
-- Aims to establish a consistent workflow for a collection of post-processing methods
+- Aims to establish a **consistent workflow** for a collection of post-processing methods
 &lt;!-- supported by an intuitive user interface  --&gt;
 
 --
 
-- Allows for convenient comparisons between methods for the data of interest
+- Allows for **convenient comparisons** between methods for the data of interest
 &lt;!-- and the choice of the best method --&gt;
 
 ---
@@ -565,11 +561,11 @@ class: inverse, center, middle
 
 .left-30[
 
-- Sub-samples of the data can be specified along all five data dimensions
+- **Sub-samples** of the data can be specified along all five data dimensions
 
-- **cv_init_training** sets the end point of the training set
+- .mono[cv_init_training] sets the end point of the **training set**
 
-- Results can be extracted for the validation set separately
+- Results can be extracted for the **validation set** separately
 
 ]
 
@@ -599,12 +595,12 @@ df_combined |&gt;
   display_table()
 ```
 
-<div id="dkmlibdljl" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="zjzjgzxove" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#dkmlibdljl .gt_table {
+#zjzjgzxove .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: 0;
@@ -629,7 +625,7 @@ df_combined |&gt;
   border-left-color: #D3D3D3;
 }
 
-#dkmlibdljl .gt_heading {
+#zjzjgzxove .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -641,7 +637,7 @@ df_combined |&gt;
   border-right-color: #D3D3D3;
 }
 
-#dkmlibdljl .gt_title {
+#zjzjgzxove .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -651,7 +647,7 @@ df_combined |&gt;
   border-bottom-width: 0;
 }
 
-#dkmlibdljl .gt_subtitle {
+#zjzjgzxove .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -661,13 +657,13 @@ df_combined |&gt;
   border-top-width: 0;
 }
 
-#dkmlibdljl .gt_bottom_border {
+#zjzjgzxove .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#dkmlibdljl .gt_col_headings {
+#zjzjgzxove .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -682,7 +678,7 @@ df_combined |&gt;
   border-right-color: #D3D3D3;
 }
 
-#dkmlibdljl .gt_col_heading {
+#zjzjgzxove .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -702,7 +698,7 @@ df_combined |&gt;
   overflow-x: hidden;
 }
 
-#dkmlibdljl .gt_column_spanner_outer {
+#zjzjgzxove .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -714,15 +710,15 @@ df_combined |&gt;
   padding-right: 4px;
 }
 
-#dkmlibdljl .gt_column_spanner_outer:first-child {
+#zjzjgzxove .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#dkmlibdljl .gt_column_spanner_outer:last-child {
+#zjzjgzxove .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#dkmlibdljl .gt_column_spanner {
+#zjzjgzxove .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -734,7 +730,7 @@ df_combined |&gt;
   width: 100%;
 }
 
-#dkmlibdljl .gt_group_heading {
+#zjzjgzxove .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -756,7 +752,7 @@ df_combined |&gt;
   vertical-align: middle;
 }
 
-#dkmlibdljl .gt_empty_group_heading {
+#zjzjgzxove .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -771,15 +767,15 @@ df_combined |&gt;
   vertical-align: middle;
 }
 
-#dkmlibdljl .gt_from_md > :first-child {
+#zjzjgzxove .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#dkmlibdljl .gt_from_md > :last-child {
+#zjzjgzxove .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#dkmlibdljl .gt_row {
+#zjzjgzxove .gt_row {
   padding-top: 15px;
   padding-bottom: 15px;
   padding-left: 5px;
@@ -798,7 +794,7 @@ df_combined |&gt;
   overflow-x: hidden;
 }
 
-#dkmlibdljl .gt_stub {
+#zjzjgzxove .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -810,7 +806,7 @@ df_combined |&gt;
   padding-left: 12px;
 }
 
-#dkmlibdljl .gt_summary_row {
+#zjzjgzxove .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -820,7 +816,7 @@ df_combined |&gt;
   padding-right: 5px;
 }
 
-#dkmlibdljl .gt_first_summary_row {
+#zjzjgzxove .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -830,7 +826,7 @@ df_combined |&gt;
   border-top-color: #D3D3D3;
 }
 
-#dkmlibdljl .gt_grand_summary_row {
+#zjzjgzxove .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -840,7 +836,7 @@ df_combined |&gt;
   padding-right: 5px;
 }
 
-#dkmlibdljl .gt_first_grand_summary_row {
+#zjzjgzxove .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -850,11 +846,11 @@ df_combined |&gt;
   border-top-color: #D3D3D3;
 }
 
-#dkmlibdljl .gt_striped {
+#zjzjgzxove .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#dkmlibdljl .gt_table_body {
+#zjzjgzxove .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -863,7 +859,7 @@ df_combined |&gt;
   border-bottom-color: #D3D3D3;
 }
 
-#dkmlibdljl .gt_footnotes {
+#zjzjgzxove .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -877,13 +873,13 @@ df_combined |&gt;
   border-right-color: #D3D3D3;
 }
 
-#dkmlibdljl .gt_footnote {
+#zjzjgzxove .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#dkmlibdljl .gt_sourcenotes {
+#zjzjgzxove .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -897,41 +893,41 @@ df_combined |&gt;
   border-right-color: #D3D3D3;
 }
 
-#dkmlibdljl .gt_sourcenote {
+#zjzjgzxove .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#dkmlibdljl .gt_left {
+#zjzjgzxove .gt_left {
   text-align: left;
 }
 
-#dkmlibdljl .gt_center {
+#zjzjgzxove .gt_center {
   text-align: center;
 }
 
-#dkmlibdljl .gt_right {
+#zjzjgzxove .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#dkmlibdljl .gt_font_normal {
+#zjzjgzxove .gt_font_normal {
   font-weight: normal;
 }
 
-#dkmlibdljl .gt_font_bold {
+#zjzjgzxove .gt_font_bold {
   font-weight: bold;
 }
 
-#dkmlibdljl .gt_font_italic {
+#zjzjgzxove .gt_font_italic {
   font-style: italic;
 }
 
-#dkmlibdljl .gt_super {
+#zjzjgzxove .gt_super {
   font-size: 65%;
 }
 
-#dkmlibdljl .gt_footnote_marks {
+#zjzjgzxove .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -1082,7 +1078,7 @@ $$
 
 ## CQR Extensions
 
-While the idea of multiplicative correction terms is appealing, it turns out that the approach above is flawed in two ways:
+While the idea of multiplicative correction terms is appealing, it turns out that the approach is empirically flawed in two ways:
 
 --
 
@@ -1113,15 +1109,6 @@ Q_{1 - \alpha, low} \cdot Q_{1 - \alpha, high} \stackrel{ !}{ =} 1.
 $$
 
 ---
-
-## CQR Results
-
-&lt;div class="figure"&gt;
-&lt;img src="hub-presentation_files/figure-html/ch2-uk-cqr3-intervals-1.png" alt="Comparison of CQR variations on the UK data set." width="80%" /&gt;
-&lt;p class="caption"&gt;Comparison of CQR variations on the UK data set.&lt;/p&gt;
-&lt;/div&gt;
-
----
 class: inverse, center, middle
 
 # Quantile Spread Averaging (QSA)
@@ -1133,7 +1120,7 @@ class: inverse, center, middle
 .left-30[ 
 - Three possibilities to define quantile spreads
 
-- We choose median based quantile spreads due to the advantages:
+- We choose **median based quantile spreads** due to the advantages:
     + spreads are independent of quantile number 
     + non-symmetric adjustments are possible
 
@@ -1153,7 +1140,7 @@ class: inverse, center, middle
 
 Let `\(n\)` specify the number of observations in the training set within this combination, `\(\mathbf{y} \in \mathbb{R}^n\)` the vector of true values and `\(\hat{\mathbf{q}}_1, \ldots, \hat{\mathbf{q}}_p \in \mathbb{R}^n\)` vectors of quantile estimates for `\(p\)` different probability levels.
 
-Then, for each time series, the quantile spread adjustment computes the quantile spread factors `\(\mathbf{w}^* \in \mathbb{R}^p\)` by minimizing the weighted interval score:
+Then, for each time series, the quantile spread adjustment computes the **quantile spread factors** `\(\mathbf{w}^* \in \mathbb{R}^p\)` by **minimizing the weighted interval score**:
 $$
 `\begin{aligned}
 \mathbf{w}^*
@@ -1180,9 +1167,9 @@ https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/optim
 ## QSA - Flavors and Extensions 
 
 The **postforecasts** package offers three flavors of QSA where each restricts `\(\mathbf{w}\)` differently:
-- uniform: `\(i \in [0, 1, \ldots, p-1, p] \quad w_i = c\)`
-- flexibel: No Restrictions
-- flexibel-symmetric: `\(i \in [0, 1, \ldots, m-1] \quad w_i = w_{p-i}\)`
+- **uniform**: `\(i \in [0, 1, \ldots, p-1, p] \quad w_i = c\)`
+- **flexibel**: No Restrictions
+- **flexibel-symmetric**: `\(i \in [0, 1, \ldots, m-1] \quad w_i = w_{p-i}\)`
 
 --
 
@@ -1202,16 +1189,14 @@ class: inverse, center, middle
 
 ---
 
----
-
 ## Ensemble Model
 
-Predictions for a combination of location, model, target type, horizon and quantile are computed as a convex linear combination of the individual methods. 
+Predictions for a combination of location, model, target type, horizon and quantile are computed as a **convex linear combination** of the individual methods. 
 
 $$
 `\begin{aligned}
 \mathbf{w}^*
-= \operatorname*{arg\,min}_{ \mathbf{w} \in [0, 1]^k} IS_\alpha(\mathbf{y})
+= \operatorname*{arg\,min}_{ \mathbf{w} \in [0, 1]^k} WIS_\alpha(\mathbf{y})
 &amp;= \operatorname*{arg\,min}_{ \mathbf{w} \in [0, 1]^k} (\mathbf{u}-\mathbf{l}) + \frac{2}{\alpha} \cdot (\mathbf{l}-\mathbf{y}) \cdot 1(\mathbf{y} \leq \mathbf{l}) + \frac{2}{\alpha} \cdot (\mathbf{y}-\mathbf{u}) \cdot 1(\mathbf{y} \geq \mathbf{u}), \\
 \text{with} \qquad \mathbf{l} &amp;= \sum_{j=1}^{k} w_j \mathbf{l}_j, \;\; \mathbf{u} = \sum_{j=1}^{k} w_j \mathbf{u}_j \\
 \text{s.t.} \qquad \left \Vert \mathbf{w} \right \Vert_1 &amp;= \sum_{j=1}^{k} w_j = 1,
@@ -1221,9 +1206,9 @@ $$
 
 Advantages of this method are:
 
-1. Predictions remain in the same scale as the individual methods
+1. Predictions remain in the **same scale** as the individual methods
 
-2. Interpretable coefficients as fractional contribution of experts
+2. Interpretable coefficients as **fractional contribution** of experts
 
 ---
 class: inverse, center, middle
@@ -1244,22 +1229,22 @@ class: inverse, center, middle
 
 .left-30[
 
-- Results only for the UK data due to computational demands of QSA
+- Results only for the **UK data** due to computational demands of QSA
 
-- Ensemble is clearly the best model in the aggregate
+- **Ensemble** is clearly the best model in the aggregate
 
-- QSA methods tended to be better than CQR
+- **QSA** methods tended to be better than CQR
 
 ]
 
 .right-65[
 
-<div id="wqxcxxahhi" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="ndepdapgoo" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#wqxcxxahhi .gt_table {
+#ndepdapgoo .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: 0;
@@ -1284,7 +1269,7 @@ class: inverse, center, middle
   border-left-color: #D3D3D3;
 }
 
-#wqxcxxahhi .gt_heading {
+#ndepdapgoo .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1296,7 +1281,7 @@ class: inverse, center, middle
   border-right-color: #D3D3D3;
 }
 
-#wqxcxxahhi .gt_title {
+#ndepdapgoo .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1306,7 +1291,7 @@ class: inverse, center, middle
   border-bottom-width: 0;
 }
 
-#wqxcxxahhi .gt_subtitle {
+#ndepdapgoo .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1316,13 +1301,13 @@ class: inverse, center, middle
   border-top-width: 0;
 }
 
-#wqxcxxahhi .gt_bottom_border {
+#ndepdapgoo .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#wqxcxxahhi .gt_col_headings {
+#ndepdapgoo .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1337,7 +1322,7 @@ class: inverse, center, middle
   border-right-color: #D3D3D3;
 }
 
-#wqxcxxahhi .gt_col_heading {
+#ndepdapgoo .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1357,7 +1342,7 @@ class: inverse, center, middle
   overflow-x: hidden;
 }
 
-#wqxcxxahhi .gt_column_spanner_outer {
+#ndepdapgoo .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1369,15 +1354,15 @@ class: inverse, center, middle
   padding-right: 4px;
 }
 
-#wqxcxxahhi .gt_column_spanner_outer:first-child {
+#ndepdapgoo .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#wqxcxxahhi .gt_column_spanner_outer:last-child {
+#ndepdapgoo .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#wqxcxxahhi .gt_column_spanner {
+#ndepdapgoo .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1389,7 +1374,7 @@ class: inverse, center, middle
   width: 100%;
 }
 
-#wqxcxxahhi .gt_group_heading {
+#ndepdapgoo .gt_group_heading {
   padding: 8px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1411,7 +1396,7 @@ class: inverse, center, middle
   vertical-align: middle;
 }
 
-#wqxcxxahhi .gt_empty_group_heading {
+#ndepdapgoo .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1426,15 +1411,15 @@ class: inverse, center, middle
   vertical-align: middle;
 }
 
-#wqxcxxahhi .gt_from_md > :first-child {
+#ndepdapgoo .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#wqxcxxahhi .gt_from_md > :last-child {
+#ndepdapgoo .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#wqxcxxahhi .gt_row {
+#ndepdapgoo .gt_row {
   padding-top: 15px;
   padding-bottom: 15px;
   padding-left: 5px;
@@ -1453,7 +1438,7 @@ class: inverse, center, middle
   overflow-x: hidden;
 }
 
-#wqxcxxahhi .gt_stub {
+#ndepdapgoo .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1465,7 +1450,7 @@ class: inverse, center, middle
   padding-left: 12px;
 }
 
-#wqxcxxahhi .gt_summary_row {
+#ndepdapgoo .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1475,7 +1460,7 @@ class: inverse, center, middle
   padding-right: 5px;
 }
 
-#wqxcxxahhi .gt_first_summary_row {
+#ndepdapgoo .gt_first_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1485,7 +1470,7 @@ class: inverse, center, middle
   border-top-color: #D3D3D3;
 }
 
-#wqxcxxahhi .gt_grand_summary_row {
+#ndepdapgoo .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1495,7 +1480,7 @@ class: inverse, center, middle
   padding-right: 5px;
 }
 
-#wqxcxxahhi .gt_first_grand_summary_row {
+#ndepdapgoo .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1505,11 +1490,11 @@ class: inverse, center, middle
   border-top-color: #D3D3D3;
 }
 
-#wqxcxxahhi .gt_striped {
+#ndepdapgoo .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#wqxcxxahhi .gt_table_body {
+#ndepdapgoo .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1518,7 +1503,7 @@ class: inverse, center, middle
   border-bottom-color: #D3D3D3;
 }
 
-#wqxcxxahhi .gt_footnotes {
+#ndepdapgoo .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1532,13 +1517,13 @@ class: inverse, center, middle
   border-right-color: #D3D3D3;
 }
 
-#wqxcxxahhi .gt_footnote {
+#ndepdapgoo .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding: 4px;
 }
 
-#wqxcxxahhi .gt_sourcenotes {
+#ndepdapgoo .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1552,41 +1537,41 @@ class: inverse, center, middle
   border-right-color: #D3D3D3;
 }
 
-#wqxcxxahhi .gt_sourcenote {
+#ndepdapgoo .gt_sourcenote {
   font-size: 90%;
   padding: 4px;
 }
 
-#wqxcxxahhi .gt_left {
+#ndepdapgoo .gt_left {
   text-align: left;
 }
 
-#wqxcxxahhi .gt_center {
+#ndepdapgoo .gt_center {
   text-align: center;
 }
 
-#wqxcxxahhi .gt_right {
+#ndepdapgoo .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#wqxcxxahhi .gt_font_normal {
+#ndepdapgoo .gt_font_normal {
   font-weight: normal;
 }
 
-#wqxcxxahhi .gt_font_bold {
+#ndepdapgoo .gt_font_bold {
   font-weight: bold;
 }
 
-#wqxcxxahhi .gt_font_italic {
+#ndepdapgoo .gt_font_italic {
   font-style: italic;
 }
 
-#wqxcxxahhi .gt_super {
+#ndepdapgoo .gt_super {
   font-size: 65%;
 }
 
-#wqxcxxahhi .gt_footnote_marks {
+#ndepdapgoo .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 65%;
@@ -1661,7 +1646,7 @@ class: inverse, center, middle
 
 ## CQR Anomalie Poland
 
-&lt;img src="hub-presentation_files/figure-html/ch2-hub-cqr-location-1.png" width="70%" /&gt;
+&lt;img src="hub-presentation_files/figure-html/ch2-hub-cqr-location-1.png" width="100%" /&gt;
 
 ---
 
@@ -1682,23 +1667,35 @@ class: inverse, center, middle
 
 - We presented CQR and QSA model flavors for post processing
 
-- For the UK data, post processing improved human forecasts, in particular QSA improved forecasts to a greater amount than CQR
+--
 
-- Furthermore we found an Ensemble of methods to provide thee best adjustments out of sample
+- For the UK data, **post processing improved human forecasts**, in particular QSA improved forecasts to a greater amount than CQR
 
-- In the Hub data we showed that with CQR post-processing can even benefit model predictions
+--
+
+- Furthermore we found an **Ensemble of methods** to provide the best adjustments out of sample
+
+--
+
+- In the Hub data we showed that with CQR **post-processing can benefit model predictions**
 
 ---
 
 ## Possible Next Steps
 
-- Examine QSA and Ensemble adjustments for the Hub data
+- Examine QSA and Ensemble adjustments for the **Hub data**
 
-- Examine Regularized QSA results for both data sets
+--
 
-- Use exponential smoothing to weight observations depending on how far back they where for CQR and QSA
+- Examine **Regularized QSA** results for both data sets
 
-- Apply the methods to further time series analysis domains
+--
+
+- Use **exponential smoothing to weight observations** depending on how far back they where for CQR and QSA
+
+--
+
+- Apply the methods to **further domains**
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
